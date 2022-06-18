@@ -36,9 +36,10 @@ public class Sonafridge : ModuleRules
 			{
 				"InputCore",
 				"Engine",
+                "CoreUObject",
 				"Slate",
 				"SlateCore",
-				"CoreUObject"
+				"UMG"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
