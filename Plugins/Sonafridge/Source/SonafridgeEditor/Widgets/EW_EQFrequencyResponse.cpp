@@ -27,8 +27,8 @@ void UEW_EQFrequencyResponse::OnBandChanged(TSharedPtr<FEQBand> InBand)
 	BakeResponse();
 }
 
-void UEW_EQFrequencyResponse::OnSizeChanged(FVector2D OldSize,
-                                      FVector2D NewSize)
+void UEW_EQFrequencyResponse::OnSizeChanged(const FVector2D& OldSize,
+                                            const FVector2D& NewSize)
 {
 	LastSize = NewSize;
 	BakeGrid();

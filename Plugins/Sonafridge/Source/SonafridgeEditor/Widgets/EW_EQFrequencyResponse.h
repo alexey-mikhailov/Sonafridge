@@ -16,13 +16,13 @@ public:
 	UEW_EQFrequencyResponse();
 	void Init(UEW_EQ* InRootWidget, TSharedPtr<IEQSettings> InSettings);
 
-	DECLARE_EVENT_TwoParams(UEW_EQFrequencyResponse, FSizeChanged, FVector2D OldSize, FVector2D NewSize)
+	DECLARE_EVENT_TwoParams(UEW_EQFrequencyResponse, FSizeChanged, const FVector2D& OldSize, const FVector2D& NewSize)
 	FSizeChanged GetEvent_SizeChanged() const { return SizeChanged; }
 
 protected:
 	virtual void OnBandChanged(TSharedPtr<FEQBand> InBand);
-	virtual void OnSizeChanged(FVector2D NewSize,
-	                           FVector2D OldSize);
+	virtual void OnSizeChanged(const FVector2D& NewSize,
+	                           const FVector2D& OldSize);
 
 	virtual void   NativeConstruct() override;
 	virtual FReply NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
