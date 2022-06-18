@@ -152,7 +152,7 @@ int32 UEW_EQFrequencyResponse::NativePaint(const FPaintArgs&        Args,
 
 	if (!Settings) return Result;
 
-	FVector2D Size = AllottedGeometry.GetAbsoluteSize();
+	FVector2D Size = AllottedGeometry.GetLocalSize();
 	if (Size != LastSize)
 	{
 		SizeChanged.Broadcast(LastSize, Size);
