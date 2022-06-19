@@ -4,7 +4,10 @@
 #include "KnobWidget.h"
 
 #include "Components/RetainerBox.h"
+#include "Components/ScaleBox.h"
 #include "Kismet/KismetMaterialLibrary.h"
+#include "Slate/SRetainerWidget.h"
+#include "Widgets/Images/SImage.h"
 
 UKnobWidget::UKnobWidget(const FObjectInitializer& ObjectInitializer)
 	: UUserWidget(ObjectInitializer)
@@ -12,33 +15,73 @@ UKnobWidget::UKnobWidget(const FObjectInitializer& ObjectInitializer)
 	SizeChanged.AddUObject(this, &UKnobWidget::OnSizeChanged);
 }
 
-void UKnobWidget::SetValue(float InValue)
-{
-	Value = InValue;
-	Invalidate(EInvalidateWidgetReason::Paint);
-}
-
-void UKnobWidget::SetNormalizedThickness(float InValue)
-{
-	NormalizedThickness = InValue;
-	Invalidate(EInvalidateWidgetReason::Paint);
-}
-
 void UKnobWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (RetainerBox && EffectMaterial)
+	if (!RetainerWidget)
 	{
-		MaterialInstance = UKismetMaterialLibrary::CreateDynamicMaterialInstance
-		(
-			this, 
-			EffectMaterial
-		);
+		RetainerWidget = SNew(SRetainerWidget).RenderOnInvalidation(true)
+		                                      .RenderOnPhase(true)
+		                                      .Phase(0)
+		                                      .PhaseCount(1)
+		                 [
+			                 SNew(SImage)
+		                 ];
+	}
 
+	if (EffectMaterial)
+	{
+		MaterialInstance = UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, EffectMaterial);
+		RetainerWidget->SetEffectMaterial(MaterialInstance);
+	}
+
+	if (IsValid(MaterialInstance))
+	{
 		MaterialInstance->SetScalarParameterValue("Value", Value);
 		MaterialInstance->SetScalarParameterValue("Thickness", NormalizedThickness);
-		RetainerBox->SetEffectMaterial(MaterialInstance);
+		MaterialInstance->SetScalarParameterValue("Blurriness", Blurriness);
+		MaterialInstance->SetVectorParameterValue("BackColor", BackColor);
+		MaterialInstance->SetVectorParameterValue("ForeColor", ForeColor);
+	}
+}
+
+void UKnobWidget::ReleaseSlateResources(bool bReleaseChildren)
+{
+	Super::ReleaseSlateResources(bReleaseChildren);
+	RetainerWidget.Reset();
+	MaterialInstance = nullptr;
+}
+
+void UKnobWidget::SynchronizeProperties()
+{
+	Super::SynchronizeProperties();
+
+	if (!RetainerWidget)
+	{
+		RetainerWidget = SNew(SRetainerWidget).RenderOnInvalidation(true)
+		                                      .RenderOnPhase(true)
+		                                      .Phase(0)
+		                                      .PhaseCount(1)
+		                 [
+			                 SNew(SImage)
+		                 ];
+	}
+
+	MaterialInstance = RetainerWidget->GetEffectMaterial();
+	if (!IsValid(MaterialInstance) && EffectMaterial)
+	{
+		MaterialInstance = UKismetMaterialLibrary::CreateDynamicMaterialInstance(this, EffectMaterial);
+		RetainerWidget->SetEffectMaterial(MaterialInstance);
+	}
+
+	if (IsValid(MaterialInstance))
+	{
+		MaterialInstance->SetScalarParameterValue("Value", Value);
+		MaterialInstance->SetScalarParameterValue("Thickness", NormalizedThickness);
+		MaterialInstance->SetScalarParameterValue("Blurriness", Blurriness);
+		MaterialInstance->SetVectorParameterValue("BackColor", BackColor);
+		MaterialInstance->SetVectorParameterValue("ForeColor", ForeColor);
 	}
 }
 
@@ -76,7 +119,6 @@ FReply UKnobWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const F
 FReply UKnobWidget::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = Super::NativeOnMouseButtonUp(InGeometry, InMouseEvent);
-	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
 
 	if (bIsDragging)
 	{
@@ -152,7 +194,34 @@ int32 UKnobWidget::NativePaint(const FPaintArgs&        Args,
 	{
 		SizeChanged.Broadcast(LastSize, Size);
 	}
-	
+
+	if (RetainerWidget.IsValid())
+	{
+		float     Side;
+		FVector2D Pos = FVector2D::ZeroVector;
+
+		if (Size.X > Size.Y)
+		{
+			Side = Size.Y;
+			Pos += { .5f * (Size.X - Size.Y), 0.f };
+		}
+		else
+		{
+			Side = Size.X;
+			Pos += { 0.f, .5f * (Size.Y - Size.X) };
+		}
+		
+		FGeometry Geometry = AllottedGeometry.MakeChild({ Side, Side }, FSlateLayoutTransform(Pos));
+
+		RetainerWidget->Paint(Args,
+		                      Geometry,
+		                      MyCullingRect,
+		                      OutDrawElements,
+		                      LayerId,
+		                      InWidgetStyle,
+		                      bParentEnabled);
+	}
+
 	return Result;
 }
 

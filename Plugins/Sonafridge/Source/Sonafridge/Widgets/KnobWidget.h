@@ -6,8 +6,6 @@
 #include "Blueprint/UserWidget.h"
 #include "KnobWidget.generated.h"
 
-class URetainerBox;
-
 /**
  * 
  */
@@ -43,17 +41,14 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	FLinearColor ForeColor = FLinearColor::White;
 
-	UPROPERTY(meta = (BindWidget))
-	URetainerBox* RetainerBox;
-
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UMaterial* EffectMaterial;
 
-	void SetValue(float InValue);
-	void SetNormalizedThickness(float InValue);
-
 protected:
 	virtual void NativeConstruct() override;
+	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
+
+	virtual void SynchronizeProperties() override;
 
 	void OnSizeChanged(const FVector2D& OldSize,
 	                   const FVector2D& NewSize);
@@ -95,6 +90,8 @@ private:
 	FVector2D     LastSize;
 	FVector2D     LastMousePos;
 	FVector2D     PresstimeMousePos;
+
+	TSharedPtr<SRetainerWidget> RetainerWidget;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* MaterialInstance;
