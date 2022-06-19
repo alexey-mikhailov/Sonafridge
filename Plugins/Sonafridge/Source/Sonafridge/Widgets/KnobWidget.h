@@ -19,8 +19,11 @@ class SONAFRIDGE_API UKnobWidget : public UUserWidget
 public:
 	UKnobWidget(const FObjectInitializer& ObjectInitializer);
 
-	DECLARE_EVENT_TwoParams(UEW_EQFrequencyResponse, FSizeChanged, const FVector2D& OldSize, const FVector2D& NewSize)
+	DECLARE_EVENT_TwoParams(UKnobWidget, FSizeChanged, const FVector2D& OldSize, const FVector2D& NewSize)
 	FSizeChanged GetEvent_SizeChanged() const { return SizeChanged; }
+
+	DECLARE_EVENT_TwoParams(UKnobWidget, FValueChanged, float OldValue, float NewValue)
+	FValueChanged GetEvent_ValueChanged() const { return ValueChanged; }
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (UIMin = 0.f, UIMax = 1.f))
 	float Value = 0.f;
@@ -83,11 +86,12 @@ protected:
 	                          const FWidgetStyle&      InWidgetStyle,
 	                          bool                     bParentEnabled) const override;
 private:
-	bool         bIsDragging = false;
-	FSizeChanged SizeChanged;
-	FVector2D    LastSize;
-	FVector2D    LastMousePos;
-	FVector2D    PresstimeMousePos;
+	bool          bIsDragging = false;
+	FSizeChanged  SizeChanged;
+	FValueChanged ValueChanged;
+	FVector2D     LastSize;
+	FVector2D     LastMousePos;
+	FVector2D     PresstimeMousePos;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* MaterialInstance;

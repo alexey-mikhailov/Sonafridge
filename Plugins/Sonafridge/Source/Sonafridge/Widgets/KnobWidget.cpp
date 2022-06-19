@@ -112,6 +112,7 @@ void UKnobWidget::OnMouseDrag(FReply&              InOutReply,
                               const FPointerEvent& InMouseEvent,
                               const FVector2D&     InMousePos)
 {
+	float OldValue = Value;
 	FVector2D MouseDelta = InMousePos - LastMousePos;
 	Value -= MouseDelta.Y * Responsiveness;
 	Value = FMath::Clamp(Value, 0.f, 1.f);
@@ -120,6 +121,8 @@ void UKnobWidget::OnMouseDrag(FReply&              InOutReply,
 	{
 		MaterialInstance->SetScalarParameterValue("Value", Value);
 	}
+
+	ValueChanged.Broadcast(OldValue, Value);
 }
 
 FReply UKnobWidget::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
