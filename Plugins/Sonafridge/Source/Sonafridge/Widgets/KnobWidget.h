@@ -32,6 +32,9 @@ public:
 	float NormalizedThickness = .1f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float Blurriness = 1.f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float Responsiveness = .0025;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
