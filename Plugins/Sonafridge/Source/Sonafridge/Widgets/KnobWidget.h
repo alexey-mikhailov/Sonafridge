@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Sonafridge/ColorManagement/HSRColor.h"
 #include "KnobWidget.generated.h"
 
-/**
- * 
- */
+class SKnobWidget;
+
 UCLASS()
-class SONAFRIDGE_API UKnobWidget : public UUserWidget
+class SONAFRIDGE_API UKnobWidget : public UWidget
 {
 	GENERATED_BODY()
 
@@ -27,62 +27,32 @@ public:
 	float Value = 0.f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	float NormalizedThickness = .1f;
+	float NormalThickness = .5f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float Blurriness = 1.f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	float Responsiveness = .0025;
+	float FastResponsiveness = 2.f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FLinearColor BackColor = FLinearColor::White;
+	float FineResponsiveness = .2f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FLinearColor ForeColor = FLinearColor::White;
+	FLinearColor BackColor = HSR(.62f, .333f, .333f);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	UMaterial* EffectMaterial;
+	FLinearColor ForeColor = HSR(.62f, .667f, .5f);
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UMaterialInterface* Material;
 
 protected:
-	virtual void NativeConstruct() override;
+	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
-
 	virtual void SynchronizeProperties() override;
 
-	void OnSizeChanged(const FVector2D& OldSize,
-	                   const FVector2D& NewSize);
 
-	virtual void NativeOnMouseEnter(const FGeometry&     InGeometry,
-	                                const FPointerEvent& InMouseEvent) override;
-
-	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
-
-	virtual FReply NativeOnMouseButtonDown(const FGeometry&     InGeometry,
-	                                       const FPointerEvent& InMouseEvent) override;
-
-	virtual FReply NativeOnMouseButtonUp(const FGeometry&     InGeometry,
-	                                     const FPointerEvent& InMouseEvent) override;
-
-	virtual FReply NativeOnMouseMove(const FGeometry&     InGeometry,
-	                                 const FPointerEvent& InMouseEvent) override;
-
-	virtual void NativeOnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent) override;
-
-	void OnMouseDrag(FReply&              InOutReply,
-	                 const FGeometry&     InGeometry,
-	                 const FPointerEvent& InMouseEvent,
-	                 const FVector2D&     InMousePos);
-
-	virtual FReply NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
-
-	virtual int32 NativePaint(const FPaintArgs&        Args,
-	                          const FGeometry&         AllottedGeometry,
-	                          const FSlateRect&        MyCullingRect,
-	                          FSlateWindowElementList& OutDrawElements,
-	                          int32                    LayerId,
-	                          const FWidgetStyle&      InWidgetStyle,
-	                          bool                     bParentEnabled) const override;
 private:
 	bool          bIsDragging = false;
 	FSizeChanged  SizeChanged;
@@ -90,11 +60,12 @@ private:
 	FVector2D     LastSize;
 	FVector2D     LastMousePos;
 	FVector2D     PresstimeMousePos;
+	FSlateBrush   Brush;
 
-	TSharedPtr<SRetainerWidget> RetainerWidget;
+	TSharedPtr<SKnobWidget> KnobWidget;
 
 	UPROPERTY()
-	UMaterialInstanceDynamic* MaterialInstance;
+	UMaterialInstanceDynamic* BrushMID;
 
-	bool IsInsideRing(const FVector2D& InMousePos) const;
+	void OnValueDeltaRequested(float ValueDelta);
 };
