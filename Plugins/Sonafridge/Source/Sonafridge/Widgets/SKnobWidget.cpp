@@ -47,7 +47,7 @@ void SKnobWidget::SetBrush(const FSlateBrush& InBrush)
 
 void SKnobWidget::UpdateMaterial()
 {
-	auto BrushMID = GetMaterial();
+	UMaterialInstanceDynamic* BrushMID = GetMaterial();
 
 	if (IsValid(BrushMID))
 	{
@@ -62,12 +62,32 @@ void SKnobWidget::UpdateMaterial()
 void SKnobWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	SLeafWidget::OnMouseEnter(InGeometry, InMouseEvent);
+
+	if (!bIsDragging)
+	{
+		UMaterialInstanceDynamic* BrushMID = GetMaterial();
+		if (IsValid(BrushMID))
+		{
+			BrushMID->SetScalarParameterValue("Is Hover", true);
+		}
+	}
+
 	MouseEntered.ExecuteIfBound();
 }
 
 void SKnobWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
 {
 	SLeafWidget::OnMouseLeave(InMouseEvent);
+
+	if (!bIsDragging)
+	{
+		UMaterialInstanceDynamic* BrushMID = GetMaterial();
+		if (IsValid(BrushMID))
+		{
+			BrushMID->SetScalarParameterValue("Is Hover", false);
+		}
+	}
+
 	MouseLeaved.ExecuteIfBound();
 }
 
@@ -75,7 +95,7 @@ FReply SKnobWidget::OnMouseWheel(const FGeometry& InGeometry, const FPointerEven
 {
 	FReply Reply = SLeafWidget::OnMouseWheel(InGeometry, InMouseEvent);
 	
-	ValueDeltaRequested.ExecuteIfBound(WheelStepAttribute.Get());
+	ValueDeltaRequested.ExecuteIfBound(WheelStepAttribute.Get() * InMouseEvent.GetWheelDelta());
 
 	return Reply;
 }
@@ -93,6 +113,12 @@ FReply SKnobWidget::OnMouseButtonDown(const FGeometry& InGeometry, const FPointe
 		bIsDragging = true;
 	}
 
+	UMaterialInstanceDynamic* BrushMID = GetMaterial();
+	if (IsValid(BrushMID))
+	{
+		BrushMID->SetScalarParameterValue("Is Pressed", true);
+	}
+
 	return Reply;
 }
 
@@ -105,6 +131,12 @@ FReply SKnobWidget::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerE
 		Reply = Reply.ReleaseMouseCapture();
 		MouseCaptureFinished.ExecuteIfBound();
 		bIsDragging = false;
+	}
+
+	UMaterialInstanceDynamic* BrushMID = GetMaterial();
+	if (IsValid(BrushMID))
+	{
+		BrushMID->SetScalarParameterValue("Is Pressed", false);
 	}
 
 	return Reply;
