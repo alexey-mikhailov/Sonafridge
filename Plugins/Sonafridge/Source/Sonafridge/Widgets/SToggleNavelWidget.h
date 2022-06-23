@@ -6,14 +6,15 @@
 #include "SlateMaterialBrush.h"
 
 
-class SONAFRIDGE_API SNavelWidget final : public SLeafWidget
+class SONAFRIDGE_API SToggleNavelWidget final : public SLeafWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SNavelWidget)
+	SLATE_BEGIN_ARGS(SToggleNavelWidget)
 		: _Locked(false)
 		, _WheelStep(0.01f)
 		, _MouseFastSpeed(1.0f)
 		, _MouseFineSpeed(0.2f)
+		, _IsOn(false)
 		, _Thickness(0.f)
 		, _Blurriness(0.f)
 		, _BackColor(FLinearColor::Gray)
@@ -24,6 +25,7 @@ public:
 		SLATE_ATTRIBUTE(float, WheelStep)
 		SLATE_ATTRIBUTE(float, MouseFastSpeed)
 		SLATE_ATTRIBUTE(float, MouseFineSpeed)
+		SLATE_ATTRIBUTE(bool, IsOn)
 		SLATE_ATTRIBUTE(float, Thickness)
 		SLATE_ATTRIBUTE(float, Blurriness)
 		SLATE_ATTRIBUTE(FLinearColor, BackColor)
@@ -34,6 +36,7 @@ public:
 		SLATE_EVENT(FSimpleDelegate, MouseLeaved)
 		SLATE_EVENT(FSimpleDelegate, MouseCaptureStarted)
 		SLATE_EVENT(FSimpleDelegate, MouseCaptureFinished)
+		SLATE_EVENT(FSimpleDelegate, ToggleStateRequested)
 		SLATE_EVENT(FOnFloatValueChanged, ValueDeltaRequested)
 
 	SLATE_END_ARGS()
@@ -74,6 +77,7 @@ private:
 	TAttribute<float>        WheelStepAttribute;
 	TAttribute<float>        MouseFastSpeedAttribute;
 	TAttribute<float>        MouseFineSpeedAttribute;
+	TAttribute<bool>         IsOnAttribute;
 	TAttribute<float>        BlurrinessAttribute;
 	TAttribute<FLinearColor> BackColorAttribute;
 	TAttribute<FLinearColor> ForeColorAttribute;
@@ -83,6 +87,7 @@ private:
 	FSimpleDelegate      MouseLeaved;
 	FSimpleDelegate      MouseCaptureStarted;
 	FSimpleDelegate      MouseCaptureFinished;
+	FSimpleDelegate      ToggleStateRequested;
 	FOnFloatValueChanged ValueDeltaRequested;
 
 	TSharedPtr<SImage> Image;

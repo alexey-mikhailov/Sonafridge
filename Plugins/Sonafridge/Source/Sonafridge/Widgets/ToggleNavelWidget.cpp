@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "NavelWidget.h"
+#include "ToggleNavelWidget.h"
 
-#include "SNavelWidget.h"
+#include "SToggleNavelWidget.h"
 #include "Components/RetainerBox.h"
 #include "Components/ScaleBox.h"
 #include "Components/Widget.h"
@@ -12,7 +12,7 @@
 
 #define LOCTEXT_NAMESPACE "Sonafridge"
 
-UNavelWidget::UNavelWidget(const FObjectInitializer& ObjectInitializer)
+UToggleNavelWidget::UToggleNavelWidget(const FObjectInitializer& ObjectInitializer)
 	: UWidget(ObjectInitializer)
 {
 	Material = LoadObject<UMaterialInterface>
@@ -22,16 +22,18 @@ UNavelWidget::UNavelWidget(const FObjectInitializer& ObjectInitializer)
 	);
 }
 
-TSharedRef<SWidget> UNavelWidget::RebuildWidget()
+TSharedRef<SWidget> UToggleNavelWidget::RebuildWidget()
 {
-	NavelWidget = SNew(SNavelWidget)
+	NavelWidget = SNew(SToggleNavelWidget)
 		.MouseFastSpeed_Lambda([this] { return FastResponsiveness; })
 		.MouseFineSpeed_Lambda([this] { return FineResponsiveness; })
+		.IsOn_Lambda([this] { return IsOn; })
 		.Blurriness_Lambda([this] { return Blurriness; })
 		.BackColor_Lambda([this] { return BackColor; })
 		.ForeColor_Lambda([this] { return ForeColor; })
 		.AlphaMask_Lambda([this] { return AlphaMask; })
-		.ValueDeltaRequested_UObject(this, &UNavelWidget::OnValueDeltaRequested);
+		.ToggleStateRequested_UObject(this, &UToggleNavelWidget::OnToggleStateRequested)
+		.ValueDeltaRequested_UObject(this, &UToggleNavelWidget::OnValueDeltaRequested);
 
 	if (Material)
 	{
@@ -49,29 +51,37 @@ TSharedRef<SWidget> UNavelWidget::RebuildWidget()
 	return NavelWidget.ToSharedRef();
 }
 
-void UNavelWidget::ReleaseSlateResources(bool bReleaseChildren)
+void UToggleNavelWidget::ReleaseSlateResources(bool bReleaseChildren)
 {
 	Super::ReleaseSlateResources(bReleaseChildren);
 	NavelWidget.Reset();
 }
 
-void UNavelWidget::SynchronizeProperties()
+void UToggleNavelWidget::SynchronizeProperties()
 {
 	Super::SynchronizeProperties();
 
-	ensureMsgf(NavelWidget, TEXT("UNavelWidget::SynchronizeProperties. "
+	ensureMsgf(NavelWidget, TEXT("UToggleNavelWidget::SynchronizeProperties. "
 	                             "RebuildWidget should already be called. "));
 	NavelWidget->UpdateMaterial();
 }
 
-const FText UNavelWidget::GetPaletteCategory()
+const FText UToggleNavelWidget::GetPaletteCategory()
 {
 	return LOCTEXT("Sonafridge", "Sonafridge");
 }
 
-void UNavelWidget::OnValueDeltaRequested(float ValueDelta)
+void UToggleNavelWidget::OnToggleStateRequested()
+{
+	IsOn = !IsOn;
+	ToggleStateChanged.Broadcast(!IsOn, IsOn);
+}
+
+void UToggleNavelWidget::OnValueDeltaRequested(float ValueDelta)
 {
 	ValueChanged.Broadcast(ValueDelta);
 }
 
 #undef LOCTEXT_NAMESPACE
+
+

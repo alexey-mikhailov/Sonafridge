@@ -1,17 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "SNavelWidget.h"
+#include "SToggleNavelWidget.h"
 
 #include "SlateMaterialBrush.h"
 #include "Widgets/Images/SImage.h"
 
-void SNavelWidget::Construct(const FArguments& InArgs)
+void SToggleNavelWidget::Construct(const FArguments& InArgs)
 {
 	IsLockedAttribute = InArgs._Locked;
 	WheelStepAttribute = InArgs._WheelStep;
 	MouseFastSpeedAttribute = InArgs._MouseFastSpeed;
 	MouseFineSpeedAttribute = InArgs._MouseFineSpeed;
+	IsOnAttribute = InArgs._IsOn;
 	BlurrinessAttribute = InArgs._Blurriness;
 	BackColorAttribute = InArgs._BackColor;
 	ForeColorAttribute = InArgs._ForeColor;
@@ -22,11 +23,12 @@ void SNavelWidget::Construct(const FArguments& InArgs)
 	MouseCaptureStarted = InArgs._MouseCaptureStarted;
 	MouseCaptureFinished = InArgs._MouseCaptureFinished;
 	ValueDeltaRequested = InArgs._ValueDeltaRequested;
+	ToggleStateRequested = InArgs._ToggleStateRequested;
 
 	Image = SNew(SImage);
 }
 
-void SNavelWidget::SetBrush(const FSlateBrush& InBrush)
+void SToggleNavelWidget::SetBrush(const FSlateBrush& InBrush)
 {
 	Brush = InBrush;
 	Image->SetImage(&Brush);
@@ -36,6 +38,7 @@ void SNavelWidget::SetBrush(const FSlateBrush& InBrush)
 
 	if (IsValid(BrushMID))
 	{
+		BrushMID->SetScalarParameterValue("Is On", IsOnAttribute.Get());
 		BrushMID->SetScalarParameterValue("Blurriness", BlurrinessAttribute.Get());
 		BrushMID->SetVectorParameterValue("Back Color", BackColorAttribute.Get());
 		BrushMID->SetVectorParameterValue("Fore Color", ForeColorAttribute.Get());
@@ -43,12 +46,13 @@ void SNavelWidget::SetBrush(const FSlateBrush& InBrush)
 	}
 }
 
-void SNavelWidget::UpdateMaterial()
+void SToggleNavelWidget::UpdateMaterial()
 {
 	UMaterialInstanceDynamic* BrushMID = GetMaterial();
 
 	if (IsValid(BrushMID))
 	{
+		BrushMID->SetScalarParameterValue("Is On", IsOnAttribute.Get());
 		BrushMID->SetScalarParameterValue("Blurriness", BlurrinessAttribute.Get());
 		BrushMID->SetVectorParameterValue("Back Color", BackColorAttribute.Get());
 		BrushMID->SetVectorParameterValue("Fore Color", ForeColorAttribute.Get());
@@ -56,7 +60,7 @@ void SNavelWidget::UpdateMaterial()
 	}
 }
 
-void SNavelWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+void SToggleNavelWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	SLeafWidget::OnMouseEnter(InGeometry, InMouseEvent);
 
@@ -72,7 +76,7 @@ void SNavelWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent
 	MouseEntered.ExecuteIfBound();
 }
 
-void SNavelWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
+void SToggleNavelWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
 {
 	SLeafWidget::OnMouseLeave(InMouseEvent);
 
@@ -88,7 +92,7 @@ void SNavelWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
 	MouseLeaved.ExecuteIfBound();
 }
 
-FReply SNavelWidget::OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SToggleNavelWidget::OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseWheel(InGeometry, InMouseEvent);
 	
@@ -97,7 +101,7 @@ FReply SNavelWidget::OnMouseWheel(const FGeometry& InGeometry, const FPointerEve
 	return Reply;
 }
 
-FReply SNavelWidget::OnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SToggleNavelWidget::OnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseButtonDown(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
@@ -119,7 +123,7 @@ FReply SNavelWidget::OnMouseButtonDown(const FGeometry& InGeometry, const FPoint
 	return Reply;
 }
 
-FReply SNavelWidget::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SToggleNavelWidget::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseButtonUp(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
@@ -131,16 +135,22 @@ FReply SNavelWidget::OnMouseButtonUp(const FGeometry& InGeometry, const FPointer
 		bIsDragging = false;
 	}
 
+	if (MousePos == PresstimeMousePos)
+	{
+		ToggleStateRequested.ExecuteIfBound();
+	}
+
 	UMaterialInstanceDynamic* BrushMID = GetMaterial();
 	if (IsValid(BrushMID))
 	{
 		BrushMID->SetScalarParameterValue("Is Pressed", false);
+		BrushMID->SetScalarParameterValue("Is On", IsOnAttribute.Get());
 	}
 	
 	return Reply;
 }
 
-FReply SNavelWidget::OnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SToggleNavelWidget::OnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseMove(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
@@ -154,7 +164,7 @@ FReply SNavelWidget::OnMouseMove(const FGeometry& InGeometry, const FPointerEven
 	return Reply;
 }
 
-void SNavelWidget::OnMouseDrag(FReply&              InOutReply,
+void SToggleNavelWidget::OnMouseDrag(FReply&              InOutReply,
                               const FGeometry&     InGeometry,
                               const FPointerEvent& InMouseEvent,
                               const FVector2D&     InMousePos)
@@ -171,13 +181,13 @@ void SNavelWidget::OnMouseDrag(FReply&              InOutReply,
 	ValueDeltaRequested.ExecuteIfBound(ValueDelta);
 }
 
-void SNavelWidget::OnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent)
+void SToggleNavelWidget::OnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent)
 {
 	SLeafWidget::OnMouseCaptureLost(CaptureLostEvent);
 	bIsDragging = false;
 }
 
-int32 SNavelWidget::OnPaint(const FPaintArgs&        Args,
+int32 SToggleNavelWidget::OnPaint(const FPaintArgs&        Args,
                             const FGeometry&         AllottedGeometry,
                             const FSlateRect&        MyCullingRect,
                             FSlateWindowElementList& OutDrawElements,
@@ -186,7 +196,7 @@ int32 SNavelWidget::OnPaint(const FPaintArgs&        Args,
                             bool                     bParentEnabled) const
 {
     int32        Result = LayerId;
-    SNavelWidget* MutableThis = const_cast<SNavelWidget*>(this);
+    SToggleNavelWidget* MutableThis = const_cast<SToggleNavelWidget*>(this);
 
     FVector2D Size = AllottedGeometry.GetLocalSize();
 
@@ -221,12 +231,12 @@ int32 SNavelWidget::OnPaint(const FPaintArgs&        Args,
     return Result;
 }
 
-FVector2D SNavelWidget::ComputeDesiredSize(float) const
+FVector2D SToggleNavelWidget::ComputeDesiredSize(float) const
 {
 	return FVector2D::ZeroVector;
 }
 
-bool SNavelWidget::IsInsideCircle(const FVector2D& InMousePos) const
+bool SToggleNavelWidget::IsInsideCircle(const FVector2D& InMousePos) const
 {
 	FVector2D Center = LastSize / 2.f;
 	float DistanceToMouse = (InMousePos - Center).Size();

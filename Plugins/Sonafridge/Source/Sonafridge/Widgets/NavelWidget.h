@@ -11,10 +11,10 @@ class SNavelWidget;
 
 
 /// <summary>
-/// Widget which combines checkbox and slider.
+/// Infinite radial slider.
 /// Nabel itself does not display slideable value. It transfers the change of value to others. 
 /// </summary>
-UCLASS()
+UCLASS(meta = (DisplayName = "Navel"))
 class SONAFRIDGE_API UNavelWidget : public UWidget
 {
 	GENERATED_BODY()
@@ -25,14 +25,8 @@ public:
 	DECLARE_EVENT_TwoParams(UNavelWidget, FSizeChanged, const FVector2D& OldSize, const FVector2D& NewSize)
 	FSizeChanged GetEvent_SizeChanged() const { return SizeChanged; }
 
-	DECLARE_EVENT_TwoParams(UNavelWidget, FToggleStateChanged, bool Oldvalue, bool NewValue)
-	FToggleStateChanged GetEvent_ToggleStateChanged() const { return ToggleStateChanged; }
-
 	DECLARE_EVENT_OneParam(UNavelWidget, FValueChanged, float ValueDelta)
 	FValueChanged GetEvent_ValueChanged() const { return ValueChanged; }
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	bool IsOn = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float Blurriness = 1.f;
@@ -59,25 +53,23 @@ protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 	virtual void SynchronizeProperties() override;
-
+	virtual const FText GetPaletteCategory() override;
 
 private:
-	bool          bIsDragging = false;
-
 	FSizeChanged        SizeChanged;
-	FToggleStateChanged ToggleStateChanged;
 	FValueChanged       ValueChanged;
 
+	FSlateBrush   Brush;
 	FVector2D     LastSize;
 	FVector2D     LastMousePos;
 	FVector2D     PresstimeMousePos;
-	FSlateBrush   Brush;
+
+	bool bIsDragging = false;
 
 	TSharedPtr<SNavelWidget> NavelWidget;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* BrushMID;
 
-	void OnToggleStateRequested();
 	void OnValueDeltaRequested(float ValueDelta);
 };

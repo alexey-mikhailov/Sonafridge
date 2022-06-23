@@ -5,33 +5,34 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Sonafridge/ColorManagement/HSRColor.h"
-#include "KnobWidget.generated.h"
+#include "ToggleNavelWidget.generated.h"
 
-class SKnobWidget;
+class SToggleNavelWidget;
+
 
 /// <summary>
-/// Finite radial slider.
-/// Nabel itself does not display slideable value. It transfers the change of value to others. 
+/// Widget which combines checkbox and finite radial slider.
+/// ToggleNabel itself does not display slideable value. It transfers the change of value to others. 
 /// </summary>
-UCLASS(meta = (DisplayName = "Knob"))
-class SONAFRIDGE_API UKnobWidget : public UWidget
+UCLASS(meta = (DisplayName = "Toggle Navel"))
+class SONAFRIDGE_API UToggleNavelWidget : public UWidget
 {
 	GENERATED_BODY()
 
 public:
-	UKnobWidget(const FObjectInitializer& ObjectInitializer);
+	UToggleNavelWidget(const FObjectInitializer& ObjectInitializer);
 
-	DECLARE_EVENT_TwoParams(UKnobWidget, FSizeChanged, const FVector2D& OldSize, const FVector2D& NewSize)
+	DECLARE_EVENT_TwoParams(UToggleNavelWidget, FSizeChanged, const FVector2D& OldSize, const FVector2D& NewSize)
 	FSizeChanged GetEvent_SizeChanged() const { return SizeChanged; }
 
-	DECLARE_EVENT_TwoParams(UKnobWidget, FValueChanged, float OldValue, float NewValue)
+	DECLARE_EVENT_TwoParams(UToggleNavelWidget, FToggleStateChanged, bool Oldvalue, bool NewValue)
+	FToggleStateChanged GetEvent_ToggleStateChanged() const { return ToggleStateChanged; }
+
+	DECLARE_EVENT_OneParam(UToggleNavelWidget, FValueChanged, float ValueDelta)
 	FValueChanged GetEvent_ValueChanged() const { return ValueChanged; }
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (UIMin = 0.f, UIMax = 1.f))
-	float Value = 0.f;
-
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	float NormalThickness = .5f;
+	bool IsOn = false;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float Blurriness = 1.f;
@@ -43,13 +44,16 @@ public:
 	float FineResponsiveness = .2f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FLinearColor BackColor = HSR(.62f, .333f, .333f);
+	FLinearColor BackColor = HSR(.62f, .333f, .4f);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FLinearColor ForeColor = HSR(.62f, .667f, .5f);
+	FLinearColor ForeColor = HSR(.62f, .667f, .6f);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UMaterialInterface* Material;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UTexture2D* AlphaMask;
 
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
@@ -57,22 +61,23 @@ protected:
 	virtual void SynchronizeProperties() override;
 	virtual const FText GetPaletteCategory() override;
 
-
 private:
 	bool          bIsDragging = false;
-	FSizeChanged  SizeChanged;
-	FValueChanged ValueChanged;
+
+	FSizeChanged        SizeChanged;
+	FToggleStateChanged ToggleStateChanged;
+	FValueChanged       ValueChanged;
+
 	FVector2D     LastSize;
 	FVector2D     LastMousePos;
 	FVector2D     PresstimeMousePos;
 	FSlateBrush   Brush;
 
-	TSharedPtr<SKnobWidget> KnobWidget;
+	TSharedPtr<SToggleNavelWidget> NavelWidget;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* BrushMID;
 
+	void OnToggleStateRequested();
 	void OnValueDeltaRequested(float ValueDelta);
 };
-
-

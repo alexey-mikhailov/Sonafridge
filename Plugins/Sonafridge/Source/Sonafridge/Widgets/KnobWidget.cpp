@@ -9,6 +9,7 @@
 #include "Components/Widget.h"
 #include "Widgets/Images/SImage.h"
 
+#define LOCTEXT_NAMESPACE "Sonafridge"
 
 UKnobWidget::UKnobWidget(const FObjectInitializer& ObjectInitializer)
 	: UWidget(ObjectInitializer)
@@ -63,6 +64,11 @@ void UKnobWidget::SynchronizeProperties()
 	KnobWidget->UpdateMaterial();
 }
 
+const FText UKnobWidget::GetPaletteCategory()
+{
+	return LOCTEXT("Sonafridge", "Sonafridge");
+}
+
 void UKnobWidget::OnValueDeltaRequested(float ValueDelta)
 {
 	float OldValue = Value;
@@ -77,4 +83,4 @@ void UKnobWidget::OnValueDeltaRequested(float ValueDelta)
 	ValueChanged.Broadcast(OldValue, Value);
 }
 
-
+#undef LOCTEXT_NAMESPACE
