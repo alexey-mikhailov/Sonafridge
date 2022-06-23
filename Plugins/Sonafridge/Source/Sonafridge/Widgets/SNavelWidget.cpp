@@ -1,19 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "SKnobWidget.h"
+#include "SNavelWidget.h"
 
 #include "SlateMaterialBrush.h"
 #include "Widgets/Images/SImage.h"
 
-void SKnobWidget::Construct(const FArguments& InArgs)
+void SNavelWidget::Construct(const FArguments& InArgs)
 {
 	IsLockedAttribute = InArgs._Locked;
 	WheelStepAttribute = InArgs._WheelStep;
 	MouseFastSpeedAttribute = InArgs._MouseFastSpeed;
 	MouseFineSpeedAttribute = InArgs._MouseFineSpeed;
-	ValueAttribute = InArgs._Value;
-	ThicknessAttribute = InArgs._Thickness;
+	IsOnAttribute = InArgs._IsOn;
 	BlurrinessAttribute = InArgs._Blurriness;
 	BackColorAttribute = InArgs._BackColor;
 	ForeColorAttribute = InArgs._ForeColor;
@@ -23,11 +22,12 @@ void SKnobWidget::Construct(const FArguments& InArgs)
 	MouseCaptureStarted = InArgs._MouseCaptureStarted;
 	MouseCaptureFinished = InArgs._MouseCaptureFinished;
 	ValueDeltaRequested = InArgs._ValueDeltaRequested;
+	ToggleStateRequested = InArgs._ToggleStateRequested;
 
 	Image = SNew(SImage);
 }
 
-void SKnobWidget::SetBrush(const FSlateBrush& InBrush)
+void SNavelWidget::SetBrush(const FSlateBrush& InBrush)
 {
 	Brush = InBrush;
 	Image->SetImage(&Brush);
@@ -37,29 +37,27 @@ void SKnobWidget::SetBrush(const FSlateBrush& InBrush)
 
 	if (IsValid(BrushMID))
 	{
-		BrushMID->SetScalarParameterValue("Value", ValueAttribute.Get());
-		BrushMID->SetScalarParameterValue("Thickness", ThicknessAttribute.Get());
+		BrushMID->SetScalarParameterValue("IsOn", IsOnAttribute.Get());
 		BrushMID->SetScalarParameterValue("Blurriness", BlurrinessAttribute.Get());
-		BrushMID->SetVectorParameterValue("Back Color", BackColorAttribute.Get());
-		BrushMID->SetVectorParameterValue("Fore Color", ForeColorAttribute.Get());
+		BrushMID->SetVectorParameterValue("BackColor", BackColorAttribute.Get());
+		BrushMID->SetVectorParameterValue("ForeColor", ForeColorAttribute.Get());
 	}
 }
 
-void SKnobWidget::UpdateMaterial()
+void SNavelWidget::UpdateMaterial()
 {
 	UMaterialInstanceDynamic* BrushMID = GetMaterial();
 
 	if (IsValid(BrushMID))
 	{
-		BrushMID->SetScalarParameterValue("Value", ValueAttribute.Get());
-		BrushMID->SetScalarParameterValue("Thickness", ThicknessAttribute.Get());
+		BrushMID->SetScalarParameterValue("IsOn", IsOnAttribute.Get());
 		BrushMID->SetScalarParameterValue("Blurriness", BlurrinessAttribute.Get());
-		BrushMID->SetVectorParameterValue("Back Color", BackColorAttribute.Get());
-		BrushMID->SetVectorParameterValue("Fore Color", ForeColorAttribute.Get());
+		BrushMID->SetVectorParameterValue("BackColor", BackColorAttribute.Get());
+		BrushMID->SetVectorParameterValue("ForeColor", ForeColorAttribute.Get());
 	}
 }
 
-void SKnobWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+void SNavelWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	SLeafWidget::OnMouseEnter(InGeometry, InMouseEvent);
 
@@ -75,7 +73,7 @@ void SKnobWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent&
 	MouseEntered.ExecuteIfBound();
 }
 
-void SKnobWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
+void SNavelWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
 {
 	SLeafWidget::OnMouseLeave(InMouseEvent);
 
@@ -91,7 +89,7 @@ void SKnobWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
 	MouseLeaved.ExecuteIfBound();
 }
 
-FReply SKnobWidget::OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SNavelWidget::OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseWheel(InGeometry, InMouseEvent);
 	
@@ -100,12 +98,12 @@ FReply SKnobWidget::OnMouseWheel(const FGeometry& InGeometry, const FPointerEven
 	return Reply;
 }
 
-FReply SKnobWidget::OnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SNavelWidget::OnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseButtonDown(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
 
-	if (IsInsideRing(MousePos))
+	if (IsInsideCircle(MousePos))
 	{
 		Reply = Reply.CaptureMouse(AsShared());
 		MouseCaptureStarted.ExecuteIfBound();
@@ -122,9 +120,10 @@ FReply SKnobWidget::OnMouseButtonDown(const FGeometry& InGeometry, const FPointe
 	return Reply;
 }
 
-FReply SKnobWidget::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SNavelWidget::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseButtonUp(InGeometry, InMouseEvent);
+	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
 
 	if (bIsDragging)
 	{
@@ -133,16 +132,22 @@ FReply SKnobWidget::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerE
 		bIsDragging = false;
 	}
 
+	if (MousePos == PresstimeMousePos)
+	{
+		ToggleStateRequested.ExecuteIfBound();
+	}
+
 	UMaterialInstanceDynamic* BrushMID = GetMaterial();
 	if (IsValid(BrushMID))
 	{
 		BrushMID->SetScalarParameterValue("Is Pressed", false);
+		BrushMID->SetScalarParameterValue("Is On", IsOnAttribute.Get());
 	}
-
+	
 	return Reply;
 }
 
-FReply SKnobWidget::OnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SNavelWidget::OnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseMove(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
@@ -156,7 +161,7 @@ FReply SKnobWidget::OnMouseMove(const FGeometry& InGeometry, const FPointerEvent
 	return Reply;
 }
 
-void SKnobWidget::OnMouseDrag(FReply&              InOutReply,
+void SNavelWidget::OnMouseDrag(FReply&              InOutReply,
                               const FGeometry&     InGeometry,
                               const FPointerEvent& InMouseEvent,
                               const FVector2D&     InMousePos)
@@ -175,22 +180,22 @@ void SKnobWidget::OnMouseDrag(FReply&              InOutReply,
 	ValueDeltaRequested.ExecuteIfBound(ValueDelta);
 }
 
-void SKnobWidget::OnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent)
+void SNavelWidget::OnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent)
 {
 	SLeafWidget::OnMouseCaptureLost(CaptureLostEvent);
 	bIsDragging = false;
 }
 
-int32 SKnobWidget::OnPaint(const FPaintArgs&        Args,
-                           const FGeometry&         AllottedGeometry,
-                           const FSlateRect&        MyCullingRect,
-                           FSlateWindowElementList& OutDrawElements,
-                           int32                    LayerId,
-                           const FWidgetStyle&      InWidgetStyle,
-                           bool                     bParentEnabled) const
+int32 SNavelWidget::OnPaint(const FPaintArgs&        Args,
+                            const FGeometry&         AllottedGeometry,
+                            const FSlateRect&        MyCullingRect,
+                            FSlateWindowElementList& OutDrawElements,
+                            int32                    LayerId,
+                            const FWidgetStyle&      InWidgetStyle,
+                            bool                     bParentEnabled) const
 {
     int32        Result = LayerId;
-    SKnobWidget* MutableThis = const_cast<SKnobWidget*>(this);
+    SNavelWidget* MutableThis = const_cast<SNavelWidget*>(this);
 
     FVector2D Size = AllottedGeometry.GetLocalSize();
 
@@ -225,17 +230,16 @@ int32 SKnobWidget::OnPaint(const FPaintArgs&        Args,
     return Result;
 }
 
-FVector2D SKnobWidget::ComputeDesiredSize(float) const
+FVector2D SNavelWidget::ComputeDesiredSize(float) const
 {
 	return FVector2D::ZeroVector;
 }
 
-bool SKnobWidget::IsInsideRing(const FVector2D& InMousePos) const
+bool SNavelWidget::IsInsideCircle(const FVector2D& InMousePos) const
 {
 	FVector2D Center = LastSize / 2.f;
 	float DistanceToMouse = (InMousePos - Center).Size();
 	float OuterRadius = FMath::Min(Center.X, Center.Y);
-	float InnerRadius = OuterRadius * (1.f - ThicknessAttribute.Get());
 
-	return DistanceToMouse >= InnerRadius && DistanceToMouse <= OuterRadius;
+	return DistanceToMouse <= OuterRadius;
 }
