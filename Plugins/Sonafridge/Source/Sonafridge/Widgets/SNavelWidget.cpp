@@ -16,6 +16,7 @@ void SNavelWidget::Construct(const FArguments& InArgs)
 	BlurrinessAttribute = InArgs._Blurriness;
 	BackColorAttribute = InArgs._BackColor;
 	ForeColorAttribute = InArgs._ForeColor;
+	AlphaMaskAttribute = InArgs._AlphaMask;
 
 	MouseEntered = InArgs._MouseEntered;
 	MouseLeaved = InArgs._MouseLeaved;
@@ -37,10 +38,11 @@ void SNavelWidget::SetBrush(const FSlateBrush& InBrush)
 
 	if (IsValid(BrushMID))
 	{
-		BrushMID->SetScalarParameterValue("IsOn", IsOnAttribute.Get());
+		BrushMID->SetScalarParameterValue("Is On", IsOnAttribute.Get());
 		BrushMID->SetScalarParameterValue("Blurriness", BlurrinessAttribute.Get());
-		BrushMID->SetVectorParameterValue("BackColor", BackColorAttribute.Get());
-		BrushMID->SetVectorParameterValue("ForeColor", ForeColorAttribute.Get());
+		BrushMID->SetVectorParameterValue("Back Color", BackColorAttribute.Get());
+		BrushMID->SetVectorParameterValue("Fore Color", ForeColorAttribute.Get());
+		BrushMID->SetTextureParameterValue("Alpha Mask", AlphaMaskAttribute.Get());
 	}
 }
 
@@ -50,10 +52,11 @@ void SNavelWidget::UpdateMaterial()
 
 	if (IsValid(BrushMID))
 	{
-		BrushMID->SetScalarParameterValue("IsOn", IsOnAttribute.Get());
+		BrushMID->SetScalarParameterValue("Is On", IsOnAttribute.Get());
 		BrushMID->SetScalarParameterValue("Blurriness", BlurrinessAttribute.Get());
-		BrushMID->SetVectorParameterValue("BackColor", BackColorAttribute.Get());
-		BrushMID->SetVectorParameterValue("ForeColor", ForeColorAttribute.Get());
+		BrushMID->SetVectorParameterValue("Back Color", BackColorAttribute.Get());
+		BrushMID->SetVectorParameterValue("Fore Color", ForeColorAttribute.Get());
+		BrushMID->SetTextureParameterValue("Alpha Mask", AlphaMaskAttribute.Get());
 	}
 }
 

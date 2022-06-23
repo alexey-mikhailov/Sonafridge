@@ -52,6 +52,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UMaterialInterface* Material;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UTexture2D* AlphaMask;
+
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;

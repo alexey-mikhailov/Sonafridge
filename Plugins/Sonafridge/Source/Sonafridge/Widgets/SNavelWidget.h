@@ -30,6 +30,7 @@ public:
 		SLATE_ATTRIBUTE(float, Blurriness)
 		SLATE_ATTRIBUTE(FLinearColor, BackColor)
 		SLATE_ATTRIBUTE(FLinearColor, ForeColor)
+		SLATE_ATTRIBUTE(UTexture*, AlphaMask)
 
 		SLATE_EVENT(FSimpleDelegate, MouseEntered)
 		SLATE_EVENT(FSimpleDelegate, MouseLeaved)
@@ -80,6 +81,7 @@ private:
 	TAttribute<float>        BlurrinessAttribute;
 	TAttribute<FLinearColor> BackColorAttribute;
 	TAttribute<FLinearColor> ForeColorAttribute;
+	TAttribute<UTexture*>    AlphaMaskAttribute;
 
 	FSimpleDelegate      MouseEntered;
 	FSimpleDelegate      MouseLeaved;

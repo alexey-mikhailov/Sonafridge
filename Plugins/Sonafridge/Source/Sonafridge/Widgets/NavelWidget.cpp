@@ -29,6 +29,7 @@ TSharedRef<SWidget> UNavelWidget::RebuildWidget()
 		.Blurriness_Lambda([this] { return Blurriness; })
 		.BackColor_Lambda([this] { return BackColor; })
 		.ForeColor_Lambda([this] { return ForeColor; })
+		.AlphaMask_Lambda([this] { return AlphaMask; })
 		.ToggleStateRequested_UObject(this, &UNavelWidget::OnToggleStateRequested)
 		.ValueDeltaRequested_UObject(this, &UNavelWidget::OnValueDeltaRequested);
 
