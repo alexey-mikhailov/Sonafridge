@@ -43,9 +43,12 @@ public:
 	void SetBrush(const FSlateBrush& InBrush);
 	UMaterialInstanceDynamic* GetMaterial() const { return Cast<UMaterialInstanceDynamic>(Brush.GetResourceObject()); }
 
-	void  UpdateMaterial();
+	void UpdateMaterial();
 
+protected:
+	void           OnMouseEnter();
 	virtual void   OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	void           OnMouseLeave();
 	virtual void   OnMouseLeave(const FPointerEvent& InMouseEvent) override;
 	virtual FReply OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual FReply OnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
@@ -58,7 +61,6 @@ public:
 
 	virtual void OnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent) override;
 
-protected:
 	virtual int32 OnPaint(const FPaintArgs&        Args,
 	                      const FGeometry&         AllottedGeometry,
 	                      const FSlateRect&        MyCullingRect,
@@ -91,5 +93,6 @@ private:
 	FVector2D          LastMousePos;
 	FVector2D          PresstimeMousePos;
 
+	bool bWasInsideCircle = false;
 	bool bIsDragging = false;
 };

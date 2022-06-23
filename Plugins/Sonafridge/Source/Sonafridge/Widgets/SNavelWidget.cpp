@@ -56,10 +56,8 @@ void SNavelWidget::UpdateMaterial()
 	}
 }
 
-void SNavelWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+void SNavelWidget::OnMouseEnter()
 {
-	SLeafWidget::OnMouseEnter(InGeometry, InMouseEvent);
-
 	if (!bIsDragging)
 	{
 		UMaterialInstanceDynamic* BrushMID = GetMaterial();
@@ -72,10 +70,19 @@ void SNavelWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent
 	MouseEntered.ExecuteIfBound();
 }
 
-void SNavelWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
+void SNavelWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	SLeafWidget::OnMouseLeave(InMouseEvent);
+	SLeafWidget::OnMouseEnter(InGeometry, InMouseEvent);
+	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
+	
+	if (IsInsideCircle(MousePos))
+	{
+		OnMouseEnter();
+	}
+}
 
+void SNavelWidget::OnMouseLeave()
+{
 	if (!bIsDragging)
 	{
 		UMaterialInstanceDynamic* BrushMID = GetMaterial();
@@ -86,6 +93,12 @@ void SNavelWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
 	}
 
 	MouseLeaved.ExecuteIfBound();
+}
+
+void SNavelWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
+{
+	SLeafWidget::OnMouseLeave(InMouseEvent);
+	OnMouseLeave();
 }
 
 FReply SNavelWidget::OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -144,13 +157,26 @@ FReply SNavelWidget::OnMouseMove(const FGeometry& InGeometry, const FPointerEven
 {
 	FReply Reply = SLeafWidget::OnMouseMove(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
+	bool bIsInsideCircle = IsInsideCircle(MousePos);
 
 	if (bIsDragging)
 	{
 		OnMouseDrag(Reply, InGeometry, InMouseEvent, MousePos);
 	}
+	else
+	{
+		if (!bWasInsideCircle && bIsInsideCircle)
+		{
+			OnMouseEnter();
+		}
+		else if (bWasInsideCircle && !bIsInsideCircle)
+		{
+			OnMouseLeave();
+		}
+	}
 
 	LastMousePos = MousePos;
+	bWasInsideCircle = bIsInsideCircle;
 	return Reply;
 }
 

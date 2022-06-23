@@ -59,10 +59,8 @@ void SKnobWidget::UpdateMaterial()
 	}
 }
 
-void SKnobWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+void SKnobWidget::OnMouseEnter()
 {
-	SLeafWidget::OnMouseEnter(InGeometry, InMouseEvent);
-
 	if (!bIsDragging)
 	{
 		UMaterialInstanceDynamic* BrushMID = GetMaterial();
@@ -75,10 +73,19 @@ void SKnobWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent&
 	MouseEntered.ExecuteIfBound();
 }
 
-void SKnobWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
+void SKnobWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	SLeafWidget::OnMouseLeave(InMouseEvent);
+	SLeafWidget::OnMouseEnter(InGeometry, InMouseEvent);
+	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
 
+	if (IsInsideRing(MousePos))
+	{
+		OnMouseEnter();
+	}
+}
+
+void SKnobWidget::OnMouseLeave()
+{
 	if (!bIsDragging)
 	{
 		UMaterialInstanceDynamic* BrushMID = GetMaterial();
@@ -89,6 +96,12 @@ void SKnobWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
 	}
 
 	MouseLeaved.ExecuteIfBound();
+}
+
+void SKnobWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
+{
+	SLeafWidget::OnMouseLeave(InMouseEvent);
+	OnMouseLeave();
 }
 
 FReply SKnobWidget::OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -146,13 +159,26 @@ FReply SKnobWidget::OnMouseMove(const FGeometry& InGeometry, const FPointerEvent
 {
 	FReply Reply = SLeafWidget::OnMouseMove(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
+	bool bIsInsideRing = IsInsideRing(MousePos);
 
 	if (bIsDragging)
 	{
 		OnMouseDrag(Reply, InGeometry, InMouseEvent, MousePos);
 	}
+	else
+	{
+		if (!bWasInsideRing && bIsInsideRing)
+		{
+			OnMouseEnter();
+		}
+		else if (bWasInsideRing && !bIsInsideRing)
+		{
+			OnMouseLeave();
+		}
+	}
 
 	LastMousePos = MousePos;
+	bWasInsideRing = bIsInsideRing;
 	return Reply;
 }
 

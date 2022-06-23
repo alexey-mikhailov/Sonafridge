@@ -60,10 +60,8 @@ void SToggleNavelWidget::UpdateMaterial()
 	}
 }
 
-void SToggleNavelWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+void SToggleNavelWidget::OnMouseEnter()
 {
-	SLeafWidget::OnMouseEnter(InGeometry, InMouseEvent);
-
 	if (!bIsDragging)
 	{
 		UMaterialInstanceDynamic* BrushMID = GetMaterial();
@@ -76,10 +74,19 @@ void SToggleNavelWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointe
 	MouseEntered.ExecuteIfBound();
 }
 
-void SToggleNavelWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
+void SToggleNavelWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-	SLeafWidget::OnMouseLeave(InMouseEvent);
+	SLeafWidget::OnMouseEnter(InGeometry, InMouseEvent);
+	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
+	
+	if (IsInsideCircle(MousePos))
+	{
+		OnMouseEnter();
+	}
+}
 
+void SToggleNavelWidget::OnMouseLeave()
+{
 	if (!bIsDragging)
 	{
 		UMaterialInstanceDynamic* BrushMID = GetMaterial();
@@ -90,6 +97,12 @@ void SToggleNavelWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
 	}
 
 	MouseLeaved.ExecuteIfBound();
+}
+
+void SToggleNavelWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
+{
+	SLeafWidget::OnMouseLeave(InMouseEvent);
+	OnMouseLeave();
 }
 
 FReply SToggleNavelWidget::OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -154,13 +167,26 @@ FReply SToggleNavelWidget::OnMouseMove(const FGeometry& InGeometry, const FPoint
 {
 	FReply Reply = SLeafWidget::OnMouseMove(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
+	bool bIsInsideCircle = IsInsideCircle(MousePos);
 
 	if (bIsDragging)
 	{
 		OnMouseDrag(Reply, InGeometry, InMouseEvent, MousePos);
 	}
+	else
+	{
+		if (!bWasInsideCircle && bIsInsideCircle)
+		{
+			OnMouseEnter();
+		}
+		else if (bWasInsideCircle && !bIsInsideCircle)
+		{
+			OnMouseLeave();
+		}
+	}
 
 	LastMousePos = MousePos;
+	bWasInsideCircle = bIsInsideCircle;
 	return Reply;
 }
 
