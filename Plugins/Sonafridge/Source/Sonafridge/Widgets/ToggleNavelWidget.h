@@ -28,6 +28,12 @@ public:
 	DECLARE_EVENT_TwoParams(UToggleNavelWidget, FToggleStateChanged, bool Oldvalue, bool NewValue)
 	FToggleStateChanged GetEvent_ToggleStateChanged() const { return ToggleStateChanged; }
 
+	DECLARE_EVENT(UToggleNavelWidget, FMouseCaptureStarted)
+	FMouseCaptureStarted GetEvent_MouseCaptureStarted() const { return MouseCaptureStarted; }
+
+	DECLARE_EVENT(UToggleNavelWidget, FMouseCaptureFinished)
+	FMouseCaptureFinished GetEvent_MouseCaptureFinished() const { return MouseCaptureFinished; }
+
 	DECLARE_EVENT_OneParam(UToggleNavelWidget, FValueChanged, float ValueDelta)
 	FValueChanged GetEvent_ValueChanged() const { return ValueChanged; }
 
@@ -62,22 +68,25 @@ protected:
 	virtual const FText GetPaletteCategory() override;
 
 private:
-	bool          bIsDragging = false;
+	FSizeChanged          SizeChanged;
+	FToggleStateChanged   ToggleStateChanged;
+	FMouseCaptureStarted  MouseCaptureStarted;
+	FMouseCaptureFinished MouseCaptureFinished;
+	FValueChanged         ValueChanged;
 
-	FSizeChanged        SizeChanged;
-	FToggleStateChanged ToggleStateChanged;
-	FValueChanged       ValueChanged;
-
+	TSharedPtr<SToggleNavelWidget> NavelWidget;
 	FVector2D     LastSize;
 	FVector2D     LastMousePos;
 	FVector2D     PresstimeMousePos;
 	FSlateBrush   Brush;
 
-	TSharedPtr<SToggleNavelWidget> NavelWidget;
+	bool          bIsDragging = false;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* BrushMID;
 
 	void OnToggleStateRequested();
+	void OnMouseCaptureStarted();
+	void OnMouseCaptureFinished();
 	void OnValueDeltaRequested(float ValueDelta);
 };

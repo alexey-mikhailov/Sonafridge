@@ -33,6 +33,8 @@ TSharedRef<SWidget> UToggleNavelWidget::RebuildWidget()
 		.ForeColor_Lambda([this] { return ForeColor; })
 		.AlphaMask_Lambda([this] { return AlphaMask; })
 		.ToggleStateRequested_UObject(this, &UToggleNavelWidget::OnToggleStateRequested)
+		.MouseCaptureStarted_UObject(this, &UToggleNavelWidget::OnMouseCaptureStarted)
+		.MouseCaptureFinished_UObject(this, &UToggleNavelWidget::OnMouseCaptureFinished)
 		.ValueDeltaRequested_UObject(this, &UToggleNavelWidget::OnValueDeltaRequested);
 
 	if (Material)
@@ -75,6 +77,16 @@ void UToggleNavelWidget::OnToggleStateRequested()
 {
 	IsOn = !IsOn;
 	ToggleStateChanged.Broadcast(!IsOn, IsOn);
+}
+
+void UToggleNavelWidget::OnMouseCaptureStarted()
+{
+	MouseCaptureStarted.Broadcast();
+}
+
+void UToggleNavelWidget::OnMouseCaptureFinished()
+{
+	MouseCaptureFinished.Broadcast();
 }
 
 void UToggleNavelWidget::OnValueDeltaRequested(float ValueDelta)

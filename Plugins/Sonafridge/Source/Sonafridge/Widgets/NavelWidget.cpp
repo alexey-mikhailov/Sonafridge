@@ -31,6 +31,8 @@ TSharedRef<SWidget> UNavelWidget::RebuildWidget()
 		.BackColor_Lambda([this] { return BackColor; })
 		.ForeColor_Lambda([this] { return ForeColor; })
 		.AlphaMask_Lambda([this] { return AlphaMask; })
+		.MouseCaptureStarted(this, &UNavelWidget::OnMouseCaptureStarted)
+		.MouseCaptureFinished(this, &UNavelWidget::OnMouseCaptureFinished)
 		.ValueDeltaRequested_UObject(this, &UNavelWidget::OnValueDeltaRequested);
 
 	if (Material)
@@ -67,6 +69,16 @@ void UNavelWidget::SynchronizeProperties()
 const FText UNavelWidget::GetPaletteCategory()
 {
 	return LOCTEXT("Sonafridge", "Sonafridge");
+}
+
+void UNavelWidget::OnMouseCaptureStarted()
+{
+	MouseCaptureStarted.Broadcast();
+}
+
+void UNavelWidget::OnMouseCaptureFinished()
+{
+	MouseCaptureFinished.Broadcast();
 }
 
 void UNavelWidget::OnValueDeltaRequested(float ValueDelta)

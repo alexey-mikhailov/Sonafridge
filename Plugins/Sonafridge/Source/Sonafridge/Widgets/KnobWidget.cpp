@@ -31,6 +31,8 @@ TSharedRef<SWidget> UKnobWidget::RebuildWidget()
 		.Blurriness_Lambda([this] { return Blurriness; })
 		.BackColor_Lambda([this] { return BackColor; })
 		.ForeColor_Lambda([this] { return ForeColor; })
+		.MouseCaptureStarted(this, &UKnobWidget::OnMouseCaptureStarted)
+		.MouseCaptureFinished(this, &UKnobWidget::OnMouseCaptureFinished)
 		.ValueDeltaRequested_UObject(this, &UKnobWidget::OnValueDeltaRequested);
 
 	if (Material)
@@ -67,6 +69,16 @@ void UKnobWidget::SynchronizeProperties()
 const FText UKnobWidget::GetPaletteCategory()
 {
 	return LOCTEXT("Sonafridge", "Sonafridge");
+}
+
+void UKnobWidget::OnMouseCaptureStarted()
+{
+	MouseCaptureStarted.Broadcast();
+}
+
+void UKnobWidget::OnMouseCaptureFinished()
+{
+	MouseCaptureFinished.Broadcast();
 }
 
 void UKnobWidget::OnValueDeltaRequested(float ValueDelta)

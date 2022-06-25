@@ -25,6 +25,12 @@ public:
 	DECLARE_EVENT_TwoParams(UNavelWidget, FSizeChanged, const FVector2D& OldSize, const FVector2D& NewSize)
 	FSizeChanged GetEvent_SizeChanged() const { return SizeChanged; }
 
+	DECLARE_EVENT(UNavelWidget, FMouseCaptureStarted)
+	FMouseCaptureStarted GetEvent_MouseCaptureStarted() const { return MouseCaptureStarted; }
+
+	DECLARE_EVENT(UNavelWidget, FMouseCaptureFinished)
+	FMouseCaptureFinished GetEvent_MouseCaptureFinished() const { return MouseCaptureFinished; }
+
 	DECLARE_EVENT_OneParam(UNavelWidget, FValueChanged, float ValueDelta)
 	FValueChanged GetEvent_ValueChanged() const { return ValueChanged; }
 
@@ -56,9 +62,12 @@ protected:
 	virtual const FText GetPaletteCategory() override;
 
 private:
-	FSizeChanged        SizeChanged;
-	FValueChanged       ValueChanged;
+	FSizeChanged          SizeChanged;
+	FMouseCaptureStarted  MouseCaptureStarted;
+	FMouseCaptureFinished MouseCaptureFinished;
+	FValueChanged         ValueChanged;
 
+	TSharedPtr<SNavelWidget> NavelWidget;
 	FSlateBrush   Brush;
 	FVector2D     LastSize;
 	FVector2D     LastMousePos;
@@ -66,10 +75,10 @@ private:
 
 	bool bIsDragging = false;
 
-	TSharedPtr<SNavelWidget> NavelWidget;
-
 	UPROPERTY()
 	UMaterialInstanceDynamic* BrushMID;
 
+	void OnMouseCaptureStarted();
+	void OnMouseCaptureFinished();
 	void OnValueDeltaRequested(float ValueDelta);
 };

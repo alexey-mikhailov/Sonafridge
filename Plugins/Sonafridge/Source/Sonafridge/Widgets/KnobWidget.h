@@ -24,6 +24,12 @@ public:
 	DECLARE_EVENT_TwoParams(UKnobWidget, FSizeChanged, const FVector2D& OldSize, const FVector2D& NewSize)
 	FSizeChanged GetEvent_SizeChanged() const { return SizeChanged; }
 
+	DECLARE_EVENT(UKnobWidget, FMouseCaptureStarted)
+	FMouseCaptureStarted GetEvent_MouseCaptureStarted() const { return MouseCaptureStarted; }
+
+	DECLARE_EVENT(UKnobWidget, FMouseCaptureFinished)
+	FMouseCaptureFinished GetEvent_MouseCaptureFinished() const { return MouseCaptureFinished; }
+
 	DECLARE_EVENT_TwoParams(UKnobWidget, FValueChanged, float OldValue, float NewValue)
 	FValueChanged GetEvent_ValueChanged() const { return ValueChanged; }
 
@@ -53,25 +59,29 @@ public:
 
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
-	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
-	virtual void SynchronizeProperties() override;
-	virtual const FText GetPaletteCategory() override;
-
+	virtual void                ReleaseSlateResources(bool bReleaseChildren) override;
+	virtual void                SynchronizeProperties() override;
+	virtual const FText         GetPaletteCategory() override;
 
 private:
-	bool          bIsDragging = false;
-	FSizeChanged  SizeChanged;
-	FValueChanged ValueChanged;
-	FVector2D     LastSize;
-	FVector2D     LastMousePos;
-	FVector2D     PresstimeMousePos;
-	FSlateBrush   Brush;
+	FSizeChanged          SizeChanged;
+	FMouseCaptureStarted  MouseCaptureStarted;
+	FMouseCaptureFinished MouseCaptureFinished;
+	FValueChanged         ValueChanged;
 
 	TSharedPtr<SKnobWidget> KnobWidget;
+	FVector2D   LastSize;
+	FVector2D   LastMousePos;
+	FVector2D   PresstimeMousePos;
+	FSlateBrush Brush;
+
+	bool bIsDragging = false;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* BrushMID;
 
+	void OnMouseCaptureStarted();
+	void OnMouseCaptureFinished();
 	void OnValueDeltaRequested(float ValueDelta);
 };
 
