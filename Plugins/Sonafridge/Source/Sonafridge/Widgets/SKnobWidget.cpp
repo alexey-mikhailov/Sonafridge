@@ -196,8 +196,6 @@ void SKnobWidget::OnMouseDrag(FReply&              InOutReply,
 	                   ? ValueDelta = MouseFineSpeedAttribute.Get() * MouseDelta.Y * ScreensPerPxApprox
 	                   : ValueDelta = MouseFastSpeedAttribute.Get() * MouseDelta.Y * ScreensPerPxApprox;
 
-	UE_LOG(LogTemp, Log, TEXT("Value delta is %f"), ValueDelta);
-
 	ValueDeltaRequested.ExecuteIfBound(ValueDelta);
 }
 
@@ -261,7 +259,7 @@ bool SKnobWidget::IsInsideRing(const FVector2D& InMousePos) const
 	FVector2D Center = LastSize / 2.f;
 	float DistanceToMouse = (InMousePos - Center).Size();
 	float OuterRadius = FMath::Min(Center.X, Center.Y);
-	float InnerRadius = OuterRadius * (1.f - ThicknessAttribute.Get());
+	float InnerRadius = OuterRadius * ThicknessAttribute.Get();
 
 	return DistanceToMouse >= InnerRadius && DistanceToMouse <= OuterRadius;
 }
