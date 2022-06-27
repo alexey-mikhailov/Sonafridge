@@ -4,7 +4,7 @@
 #include "EQBand.generated.h"
 
 UENUM()
-enum class EBandType
+enum class EBandType : uint8
 {
 	None,
 	Lowpass,
@@ -17,6 +17,7 @@ enum class EBandType
 	Bandcut,
 	Notch,
 	AllPass,
+	NUM UMETA(Hidden)
 };
 
 USTRUCT(BlueprintType)
@@ -28,6 +29,7 @@ struct SONAFRIDGE_API FEQBand
 	virtual ~FEQBand() = default;
 
 	void Init(float InSampleRate);
+	void SetType(EBandType Value);
 	void SetIsEnabled(bool bInValue);
 	void SetFrequency(float Value);
 	void SetQuality(float Value);
@@ -71,15 +73,3 @@ private:
 		}
 	}
 };
-
-USTRUCT(BlueprintType)
-struct SONAFRIDGE_API FEQBand_BandCut : public FEQBand
-{
-	GENERATED_BODY()
-
-	FEQBand_BandCut();
-
-	virtual void Recalculate() override;
-};
-
-

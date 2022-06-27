@@ -31,8 +31,8 @@ TSharedRef<SWidget> UNavelWidget::RebuildWidget()
 		.BackColor_Lambda([this] { return BackColor; })
 		.ForeColor_Lambda([this] { return ForeColor; })
 		.AlphaMask_Lambda([this] { return AlphaMask; })
-		.MouseCaptureStarted(this, &UNavelWidget::OnMouseCaptureStarted)
-		.MouseCaptureFinished(this, &UNavelWidget::OnMouseCaptureFinished)
+		.MouseCaptureStarted_UObject(this, &UNavelWidget::OnMouseCaptureStarted)
+		.MouseCaptureFinished_UObject(this, &UNavelWidget::OnMouseCaptureFinished)
 		.ValueDeltaRequested_UObject(this, &UNavelWidget::OnValueDeltaRequested);
 
 	if (Material)

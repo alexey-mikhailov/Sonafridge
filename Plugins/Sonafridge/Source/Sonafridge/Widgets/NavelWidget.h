@@ -23,16 +23,16 @@ public:
 	UNavelWidget(const FObjectInitializer& ObjectInitializer);
 
 	DECLARE_EVENT_TwoParams(UNavelWidget, FSizeChanged, const FVector2D& OldSize, const FVector2D& NewSize)
-	FSizeChanged GetEvent_SizeChanged() const { return SizeChanged; }
+	FSizeChanged& GetEvent_SizeChanged() { return SizeChanged; }
 
 	DECLARE_EVENT(UNavelWidget, FMouseCaptureStarted)
-	FMouseCaptureStarted GetEvent_MouseCaptureStarted() const { return MouseCaptureStarted; }
+	FMouseCaptureStarted& GetEvent_MouseCaptureStarted() { return MouseCaptureStarted; }
 
 	DECLARE_EVENT(UNavelWidget, FMouseCaptureFinished)
-	FMouseCaptureFinished GetEvent_MouseCaptureFinished() const { return MouseCaptureFinished; }
+	FMouseCaptureFinished& GetEvent_MouseCaptureFinished() { return MouseCaptureFinished; }
 
 	DECLARE_EVENT_OneParam(UNavelWidget, FValueChanged, float ValueDelta)
-	FValueChanged GetEvent_ValueChanged() const { return ValueChanged; }
+	FValueChanged& GetEvent_ValueChanged() { return ValueChanged; }
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float Blurriness = 1.f;

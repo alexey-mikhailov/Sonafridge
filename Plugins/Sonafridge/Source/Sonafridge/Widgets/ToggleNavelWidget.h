@@ -23,19 +23,19 @@ public:
 	UToggleNavelWidget(const FObjectInitializer& ObjectInitializer);
 
 	DECLARE_EVENT_TwoParams(UToggleNavelWidget, FSizeChanged, const FVector2D& OldSize, const FVector2D& NewSize)
-	FSizeChanged GetEvent_SizeChanged() const { return SizeChanged; }
+	FSizeChanged& GetEvent_SizeChanged() { return SizeChanged; }
 
 	DECLARE_EVENT_TwoParams(UToggleNavelWidget, FToggleStateChanged, bool Oldvalue, bool NewValue)
-	FToggleStateChanged GetEvent_ToggleStateChanged() const { return ToggleStateChanged; }
+	FToggleStateChanged& GetEvent_ToggleStateChanged() { return ToggleStateChanged; }
 
 	DECLARE_EVENT(UToggleNavelWidget, FMouseCaptureStarted)
-	FMouseCaptureStarted GetEvent_MouseCaptureStarted() const { return MouseCaptureStarted; }
+	FMouseCaptureStarted& GetEvent_MouseCaptureStarted() { return MouseCaptureStarted; }
 
 	DECLARE_EVENT(UToggleNavelWidget, FMouseCaptureFinished)
-	FMouseCaptureFinished GetEvent_MouseCaptureFinished() const { return MouseCaptureFinished; }
+	FMouseCaptureFinished& GetEvent_MouseCaptureFinished() { return MouseCaptureFinished; }
 
 	DECLARE_EVENT_OneParam(UToggleNavelWidget, FValueChanged, float ValueDelta)
-	FValueChanged GetEvent_ValueChanged() const { return ValueChanged; }
+	FValueChanged& GetEvent_ValueChanged() { return ValueChanged; }
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	bool IsOn = false;

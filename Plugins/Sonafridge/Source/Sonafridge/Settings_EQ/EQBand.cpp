@@ -8,6 +8,13 @@ void FEQBand::Init(float InSampleRate)
 	bIsInitialized = true;
 }
 
+void FEQBand::SetType(EBandType Value)
+{
+	LogIfUninitialized();
+	Type = Value;
+	Recalculate();
+}
+
 void FEQBand::SetIsEnabled(bool bInValue)
 {
 	LogIfUninitialized();
@@ -103,27 +110,44 @@ float FEQBand::GetLoudCompDb() const
 void FEQBand::Recalculate()
 {
 	Omega = 2.f * PI * Frequency / SampleRate;
-}
 
-FEQBand_BandCut::FEQBand_BandCut()
-{
-	Type = EBandType::Bandcut;
-}
+	if (Type == EBandType::Lowpass)
+	{
+		
+	}
+	else if (Type == EBandType::Highpass)
+	{
+		
+	}
+	else if (Type == EBandType::LowShelf)
+	{
+		
+	}
+	else if (Type == EBandType::HighShelf)
+	{
+		
+	}
+	else if (Type == EBandType::Bandpass)
+	{
+		
+	}
+	else if (Type == EBandType::Bandcut)
+	{
+		float Sn = FMath::Sin(Omega);
+		float Cs = FMath::Cos(Omega);
+		Alpha = .5f * Sn / Quality;
+		float GainSqrt = FMath::Pow(10, AmountDb / 40.f);
 
-void FEQBand_BandCut::Recalculate()
-{
-	FEQBand::Recalculate();
+		A0 = 1.f + Alpha / GainSqrt;
+		A1 = -2.f * Cs;
+		A2 = 1.f - Alpha / GainSqrt;
+		B0 = 1.f + Alpha * GainSqrt;
+		B1 = -2 * Cs;
+		B2 = 1 - Alpha * GainSqrt;
+	}
+	else if (Type == EBandType::Notch)
+	{
 
-	float Sn = FMath::Sin(Omega);
-	float Cs = FMath::Cos(Omega);
-	Alpha = .5f * Sn / Quality;
-	float GainSqrt = FMath::Pow(10, AmountDb / 40.f);
-
-	A0 = 1.f + Alpha / GainSqrt;
-	A1 = -2.f * Cs;
-	A2 = 1.f - Alpha / GainSqrt;
-	B0 = 1.f + Alpha * GainSqrt;
-	B1 = -2 * Cs;
-	B2 = 1 - Alpha * GainSqrt;
+	}
 }
 

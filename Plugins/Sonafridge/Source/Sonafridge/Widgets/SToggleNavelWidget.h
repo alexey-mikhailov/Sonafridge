@@ -98,6 +98,6 @@ private:
 	FVector2D          LastMousePos;
 	FVector2D          PresstimeMousePos;
 
-	bool bWasInsideCircle;
+	bool bWasInsideCircle = false;
 	bool bIsDragging = false;
 };

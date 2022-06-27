@@ -22,22 +22,22 @@ public:
 	UKnobWidget(const FObjectInitializer& ObjectInitializer);
 
 	DECLARE_EVENT_TwoParams(UKnobWidget, FSizeChanged, const FVector2D& OldSize, const FVector2D& NewSize)
-	FSizeChanged GetEvent_SizeChanged() const { return SizeChanged; }
+	FSizeChanged& GetEvent_SizeChanged() { return SizeChanged; }
 
 	DECLARE_EVENT(UKnobWidget, FMouseCaptureStarted)
-	FMouseCaptureStarted GetEvent_MouseCaptureStarted() const { return MouseCaptureStarted; }
+	FMouseCaptureStarted& GetEvent_MouseCaptureStarted() { return MouseCaptureStarted; }
 
 	DECLARE_EVENT(UKnobWidget, FMouseCaptureFinished)
-	FMouseCaptureFinished GetEvent_MouseCaptureFinished() const { return MouseCaptureFinished; }
+	FMouseCaptureFinished& GetEvent_MouseCaptureFinished() { return MouseCaptureFinished; }
 
 	DECLARE_EVENT_TwoParams(UKnobWidget, FValueChanged, float OldValue, float NewValue)
-	FValueChanged GetEvent_ValueChanged() const { return ValueChanged; }
+	FValueChanged& GetEvent_ValueChanged() { return ValueChanged; }
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (UIMin = 0.f, UIMax = 1.f))
-	float Value = 0.f;
+	float Value01 = 0.f;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	float NormalThickness = .5f;
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (UIMin = 0.f, UIMax = 1.f))
+	float Thickness01 = .5f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float Blurriness = 1.f;
@@ -56,6 +56,10 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UMaterialInterface* Material;
+
+	void SetValue01(float InValue01);
+	void SetThickness01(float InThickness01);
+	void RefreshVisual();
 
 protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;

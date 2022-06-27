@@ -74,7 +74,8 @@ void SToggleNavelWidget::OnMouseEnter()
 	MouseEntered.ExecuteIfBound();
 }
 
-void SToggleNavelWidget::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+void SToggleNavelWidget::OnMouseEnter(const FGeometry& InGeometry, 
+									  const FPointerEvent& InMouseEvent)
 {
 	SLeafWidget::OnMouseEnter(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
@@ -105,7 +106,8 @@ void SToggleNavelWidget::OnMouseLeave(const FPointerEvent& InMouseEvent)
 	OnMouseLeave();
 }
 
-FReply SToggleNavelWidget::OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SToggleNavelWidget::OnMouseWheel(const FGeometry& InGeometry, 
+										const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseWheel(InGeometry, InMouseEvent);
 	
@@ -114,7 +116,8 @@ FReply SToggleNavelWidget::OnMouseWheel(const FGeometry& InGeometry, const FPoin
 	return Reply;
 }
 
-FReply SToggleNavelWidget::OnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SToggleNavelWidget::OnMouseButtonDown(const FGeometry& InGeometry, 
+											 const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseButtonDown(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
@@ -136,7 +139,8 @@ FReply SToggleNavelWidget::OnMouseButtonDown(const FGeometry& InGeometry, const 
 	return Reply;
 }
 
-FReply SToggleNavelWidget::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SToggleNavelWidget::OnMouseButtonUp(const FGeometry& InGeometry, 
+										   const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseButtonUp(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
@@ -163,7 +167,8 @@ FReply SToggleNavelWidget::OnMouseButtonUp(const FGeometry& InGeometry, const FP
 	return Reply;
 }
 
-FReply SToggleNavelWidget::OnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SToggleNavelWidget::OnMouseMove(const FGeometry& InGeometry, 
+									   const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseMove(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
@@ -191,9 +196,9 @@ FReply SToggleNavelWidget::OnMouseMove(const FGeometry& InGeometry, const FPoint
 }
 
 void SToggleNavelWidget::OnMouseDrag(FReply&              InOutReply,
-                              const FGeometry&     InGeometry,
-                              const FPointerEvent& InMouseEvent,
-                              const FVector2D&     InMousePos)
+                                     const FGeometry&     InGeometry,
+                                     const FPointerEvent& InMouseEvent,
+                                     const FVector2D&     InMousePos)
 {
 	FVector2D MouseDelta = InMousePos - LastMousePos;
 
@@ -214,14 +219,14 @@ void SToggleNavelWidget::OnMouseCaptureLost(const FCaptureLostEvent& CaptureLost
 }
 
 int32 SToggleNavelWidget::OnPaint(const FPaintArgs&        Args,
-                            const FGeometry&         AllottedGeometry,
-                            const FSlateRect&        MyCullingRect,
-                            FSlateWindowElementList& OutDrawElements,
-                            int32                    LayerId,
-                            const FWidgetStyle&      InWidgetStyle,
-                            bool                     bParentEnabled) const
+                                  const FGeometry&         AllottedGeometry,
+                                  const FSlateRect&        MyCullingRect,
+                                  FSlateWindowElementList& OutDrawElements,
+                                  int32                    LayerId,
+                                  const FWidgetStyle&      InWidgetStyle,
+                                  bool                     bParentEnabled) const
 {
-    int32        Result = LayerId;
+    int32 Result = LayerId;
     SToggleNavelWidget* MutableThis = const_cast<SToggleNavelWidget*>(this);
 
     FVector2D Size = AllottedGeometry.GetLocalSize();
