@@ -19,24 +19,28 @@
 			"Name": "Sonafridge",
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
-			"WhitelistPlatforms":
-			[
-				"Win32", "Win64"
+			"WhitelistPlatforms": [
+				"Win32",
+				"Win64"
 			]
 		},
 		{
 			"Name": "SonafridgeEditor",
 			"Type": "Editor",
 			"LoadingPhase": "PostEngineInit",
-			"WhitelistPlatforms":
-			[
-				"Win32", "Win64"
+			"WhitelistPlatforms": [
+				"Win32",
+				"Win64"
 			]
 		}
 	],
 	"Plugins": [
 		{
 			"Name": "FunctionalTestingEditor",
+			"Enabled": true
+		},
+		{
+			"Name": "Synthesis",
 			"Enabled": true
 		}
 	]
