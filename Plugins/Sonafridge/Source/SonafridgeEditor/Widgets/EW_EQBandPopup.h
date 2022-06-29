@@ -5,9 +5,8 @@
 #include "CoreMinimal.h"
 #include "EW_EQBandPopup.generated.h"
 
-class UKnobWidget;
-class UNavelWidget;
-class UToggleNavelWidget;
+class UNaveledKnob;
+class UToggleKnob;
 
 
 UCLASS()
@@ -17,28 +16,16 @@ class SONAFRIDGEEDITOR_API UEW_EQBandPopup : public UEditorUtilityWidget
 
 public:
 	UPROPERTY(meta = (BindWidget))
-	UKnobWidget* KnobFrequency;
+	UNaveledKnob* NaveledKnobFrequency;
 
 	UPROPERTY(meta = (BindWidget))
-	UNavelWidget* NavelListen;
+	UNaveledKnob* NaveledKnobAmount;
 
 	UPROPERTY(meta = (BindWidget))
-	UKnobWidget* KnobAmount;
+	UToggleKnob* ToggleKnobQuality;
 
 	UPROPERTY(meta = (BindWidget))
-	UNavelWidget* NavelBandType;
-
-	UPROPERTY(meta = (BindWidget))
-	UKnobWidget* KnobQuality;
-
-	UPROPERTY(meta = (BindWidget))
-	UToggleNavelWidget* ToggleNavelRemove;
-
-	UPROPERTY(meta = (BindWidget))
-	UKnobWidget* KnobMakeupGain;
-
-	UPROPERTY(meta = (BindWidget))
-	UToggleNavelWidget* ToggleNavelOnOff;
+	UToggleKnob* ToggleKnobMakeupGain;
 
 protected:
 	virtual void NativeConstruct() override;

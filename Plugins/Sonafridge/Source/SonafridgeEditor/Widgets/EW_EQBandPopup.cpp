@@ -4,8 +4,8 @@
 #include "EW_EQBandPopup.h"
 
 #include "Sonafridge/Widgets/ToggleNavelWidget.h"
-#include "Sonafridge/Widgets/KnobWidget.h"
-#include "Sonafridge/Widgets/NavelWidget.h"
+#include "Sonafridge/Widgets/NaveledKnob.h"
+#include "Sonafridge/Widgets/ToggleKnob.h"
 #include "Sonafridge/MathTools.h"
 #include "AudioDevice.h"
 
@@ -30,25 +30,25 @@ void UEW_EQBandPopup::NativeConstruct()
 	const float Quality01 = MathLogTool::ThousandsToHexabel(Band->GetQuality());
 	const float MakeupGain01 = (Band->GetLoudCompDb() + 48.f) / 96.f;
 
-	KnobFrequency->SetValue01(Frequency01);
-	KnobAmount->SetValue01(Amount01);
-	KnobQuality->SetValue01(Quality01);
-	KnobMakeupGain->SetValue01(MakeupGain01);
+	NaveledKnobFrequency->SetValue01(Frequency01);
+	NaveledKnobAmount->SetValue01(Amount01);
+	ToggleKnobQuality->SetValue01(Quality01);
+	ToggleKnobMakeupGain->SetValue01(MakeupGain01);
 
-	KnobFrequency->GetEvent_ValueChanged().AddUObject(this, &UEW_EQBandPopup::OnFrequencyChanged);
-	KnobAmount->GetEvent_ValueChanged().AddUObject(this, &UEW_EQBandPopup::OnAmountChanged);
-	KnobQuality->GetEvent_ValueChanged().AddUObject(this, &UEW_EQBandPopup::OnQualityChanged);
-	KnobMakeupGain->GetEvent_ValueChanged().AddUObject(this, &UEW_EQBandPopup::OnMakeupGainChanged);
+	NaveledKnobFrequency->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnFrequencyChanged);
+	NaveledKnobAmount->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnAmountChanged);
+	ToggleKnobQuality->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnQualityChanged);
+	ToggleKnobMakeupGain->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnMakeupGainChanged);
 
-	NavelListen->GetEvent_MouseCaptureStarted().AddUObject(this, &UEW_EQBandPopup::OnListenStarted);
-	NavelListen->GetEvent_MouseCaptureFinished().AddUObject(this, &UEW_EQBandPopup::OnListenFinished);
-	NavelListen->GetEvent_ValueChanged().AddUObject(this, &UEW_EQBandPopup::OnListenDelta);
-	NavelBandType->GetEvent_ValueChanged().AddUObject(this, &UEW_EQBandPopup::OnBandTypeChanged);
+	NaveledKnobFrequency->GetEvent_NavelCaptureStarted().AddUObject(this, &UEW_EQBandPopup::OnListenStarted);
+	NaveledKnobFrequency->GetEvent_NavelCaptureFinished().AddUObject(this, &UEW_EQBandPopup::OnListenFinished);
+	NaveledKnobFrequency->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnListenDelta);
+	NaveledKnobAmount->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnBandTypeChanged);
 
-	ToggleNavelRemove->GetEvent_ToggleStateChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelRemoveStateChanged);
-	ToggleNavelRemove->GetEvent_ValueChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelRemoveValueChanged);
-	ToggleNavelOnOff->GetEvent_ToggleStateChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelOnOffStateChanged);
-	ToggleNavelOnOff->GetEvent_ValueChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelOnOffValueChanged);
+	ToggleKnobQuality->GetEvent_ToggleStateChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelRemoveStateChanged);
+	ToggleKnobQuality->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelRemoveValueChanged);
+	ToggleKnobMakeupGain->GetEvent_ToggleStateChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelOnOffStateChanged);
+	ToggleKnobMakeupGain->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelOnOffValueChanged);
 }
 
 void UEW_EQBandPopup::OnFrequencyChanged(float OldFrequency01, float NewFrequency01)
@@ -85,7 +85,7 @@ void UEW_EQBandPopup::OnListenDelta(float FrequencyDelta)
 {
 	float OldFrequency01 = MathLogTool::TwentiethsToTribel(Band->GetFrequency());
 	float NewFrequency01 = OldFrequency01 + FrequencyDelta;
-	KnobFrequency->SetValue01(NewFrequency01);
+	NaveledKnobFrequency->SetValue01(NewFrequency01);
 
 	float NewFrequency = MathLogTool::TribelToTwentieths(NewFrequency01);
 	Band->SetFrequency(NewFrequency);
@@ -116,7 +116,7 @@ void UEW_EQBandPopup::OnToggleNavelRemoveValueChanged(float QualityDelta01)
 {
 	float OldQuality01 = MathLogTool::ThousandsToHexabel(Band->GetQuality());
 	float NewQuality01 = OldQuality01 + QualityDelta01;
-	KnobQuality->SetValue01(NewQuality01);
+	ToggleKnobQuality->SetValue01(NewQuality01);
 
 	float NewQuality = MathLogTool::HexabelToThousands(NewQuality01);
 	Band->SetQuality(NewQuality);
@@ -131,7 +131,7 @@ void UEW_EQBandPopup::OnToggleNavelOnOffValueChanged(float MakeupGainDelta01)
 {
 	float OldMakeupGain01 = (Band->GetLoudCompDb() + 48.f) / 96.f;
 	float NewMakeupGain01 = OldMakeupGain01 + MakeupGainDelta01;
-	KnobMakeupGain->SetValue01(NewMakeupGain01);
+	ToggleKnobMakeupGain->SetValue01(NewMakeupGain01);
 
 	float NewMakeupGain = NewMakeupGain01 * 96.f - 48.f;
 	Band->SetLoudCompDb(NewMakeupGain);

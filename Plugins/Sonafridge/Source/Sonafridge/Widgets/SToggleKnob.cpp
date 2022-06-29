@@ -1,17 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "SNaveledKnob.h"
+#include "SToggleKnob.h"
 
 #include "SlateMaterialBrush.h"
 #include "Widgets/Images/SImage.h"
 
-void SNaveledKnob::Construct(const FArguments& InArgs)
+void SToggleKnob::Construct(const FArguments& InArgs)
 {
 	IsLockedAttribute = InArgs._Locked;
 	WheelStepAttribute = InArgs._WheelStep;
 	MouseFastSpeedAttribute = InArgs._MouseFastSpeed;
 	MouseFineSpeedAttribute = InArgs._MouseFineSpeed;
+	IsOnAttribute = InArgs._IsOn;
 	ValueAttribute = InArgs._Value;
 	KnobNavelThreshold = InArgs._KnobNavelThreshold;
 	BlurrinessAttribute = InArgs._Blurriness;
@@ -28,11 +29,12 @@ void SNaveledKnob::Construct(const FArguments& InArgs)
 	NavelCaptureFinished = InArgs._NavelCaptureFinished;
 	KnobDeltaRequested = InArgs._KnobDeltaRequested;
 	NavelDeltaRequested = InArgs._NavelDeltaRequested;
+	ToggleStateRequested = InArgs._ToggleStateRequested;
 
 	Image = SNew(SImage);
 }
 
-void SNaveledKnob::SetBrush(const FSlateBrush& InBrush)
+void SToggleKnob::SetBrush(const FSlateBrush& InBrush)
 {
 	Brush = InBrush;
 	Image->SetImage(&Brush);
@@ -47,12 +49,13 @@ void SNaveledKnob::SetBrush(const FSlateBrush& InBrush)
 	}
 }
 
-void SNaveledKnob::UpdateMaterial()
+void SToggleKnob::UpdateMaterial()
 {
 	UMaterialInstanceDynamic* BrushMID = GetMaterial();
 
 	if (IsValid(BrushMID))
 	{
+		BrushMID->SetScalarParameterValue("Is On", IsOnAttribute.Get());
 		BrushMID->SetScalarParameterValue("Value", ValueAttribute.Get());
 		BrushMID->SetScalarParameterValue("Knob Navel Threshold", KnobNavelThreshold.Get());
 		BrushMID->SetScalarParameterValue("Blurriness", BlurrinessAttribute.Get());
@@ -65,7 +68,7 @@ void SNaveledKnob::UpdateMaterial()
 	}
 }
 
-void SNaveledKnob::OnKnobEnter()
+void SToggleKnob::OnKnobEnter()
 {
 	if (!bIsDraggingKnob)
 	{
@@ -77,7 +80,7 @@ void SNaveledKnob::OnKnobEnter()
 	}
 }
 
-void SNaveledKnob::OnNavelEnter()
+void SToggleKnob::OnNavelEnter()
 {
 	if (!bIsDraggingKnob)
 	{
@@ -89,7 +92,7 @@ void SNaveledKnob::OnNavelEnter()
 	}
 }
 
-void SNaveledKnob::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+void SToggleKnob::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	SLeafWidget::OnMouseEnter(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
@@ -104,7 +107,7 @@ void SNaveledKnob::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent
 	}
 }
 
-void SNaveledKnob::OnKnobLeave()
+void SToggleKnob::OnKnobLeave()
 {
 	if (!bIsDraggingKnob)
 	{
@@ -116,7 +119,7 @@ void SNaveledKnob::OnKnobLeave()
 	}
 }
 
-void SNaveledKnob::OnNavelLeave()
+void SToggleKnob::OnNavelLeave()
 {
 	if (!bIsDraggingNavel)
 	{
@@ -128,14 +131,14 @@ void SNaveledKnob::OnNavelLeave()
 	}
 }
 
-void SNaveledKnob::OnMouseLeave(const FPointerEvent& InMouseEvent)
+void SToggleKnob::OnMouseLeave(const FPointerEvent& InMouseEvent)
 {
 	SLeafWidget::OnMouseLeave(InMouseEvent);
 	OnKnobLeave();
 	OnNavelLeave();
 }
 
-FReply SNaveledKnob::OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SToggleKnob::OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseWheel(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
@@ -152,7 +155,7 @@ FReply SNaveledKnob::OnMouseWheel(const FGeometry& InGeometry, const FPointerEve
 	return Reply;
 }
 
-FReply SNaveledKnob::OnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SToggleKnob::OnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseButtonDown(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
@@ -187,9 +190,10 @@ FReply SNaveledKnob::OnMouseButtonDown(const FGeometry& InGeometry, const FPoint
 	return Reply;
 }
 
-FReply SNaveledKnob::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SToggleKnob::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseButtonUp(InGeometry, InMouseEvent);
+	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
 
 	if (bIsDraggingKnob)
 	{
@@ -204,9 +208,15 @@ FReply SNaveledKnob::OnMouseButtonUp(const FGeometry& InGeometry, const FPointer
 		bIsDraggingNavel = false;
 	}
 
+	if (MousePos == PresstimeMousePos)
+	{
+		ToggleStateRequested.ExecuteIfBound();
+	}
+
 	UMaterialInstanceDynamic* BrushMID = GetMaterial();
 	if (IsValid(BrushMID))
 	{
+		BrushMID->SetScalarParameterValue("Is On", IsOnAttribute.Get());
 		BrushMID->SetScalarParameterValue("Is Knob Taken", false);
 		BrushMID->SetScalarParameterValue("Is Navel Taken", false);
 	}
@@ -214,7 +224,7 @@ FReply SNaveledKnob::OnMouseButtonUp(const FGeometry& InGeometry, const FPointer
 	return Reply;
 }
 
-FReply SNaveledKnob::OnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply SToggleKnob::OnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply    Reply = SLeafWidget::OnMouseMove(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
@@ -256,10 +266,10 @@ FReply SNaveledKnob::OnMouseMove(const FGeometry& InGeometry, const FPointerEven
 	return Reply;
 }
 
-void SNaveledKnob::OnKnobDrag(FReply&              InOutReply,
-                              const FGeometry&     InGeometry,
-                              const FPointerEvent& InMouseEvent,
-                              const FVector2D&     InMousePos)
+void SToggleKnob::OnKnobDrag(FReply&              InOutReply,
+                             const FGeometry&     InGeometry,
+                             const FPointerEvent& InMouseEvent,
+                             const FVector2D&     InMousePos)
 {
 	FVector2D MouseDelta = InMousePos - LastMousePos;
 
@@ -273,10 +283,10 @@ void SNaveledKnob::OnKnobDrag(FReply&              InOutReply,
 	KnobDeltaRequested.ExecuteIfBound(ValueDelta);
 }
 
-void SNaveledKnob::OnNavelDrag(FReply&              InOutReply,
-                               const FGeometry&     InGeometry,
-                               const FPointerEvent& InMouseEvent,
-                               const FVector2D&     InMousePos)
+void SToggleKnob::OnNavelDrag(FReply&              InOutReply,
+                              const FGeometry&     InGeometry,
+                              const FPointerEvent& InMouseEvent,
+                              const FVector2D&     InMousePos)
 {
 	FVector2D MouseDelta = InMousePos - LastMousePos;
 
@@ -290,7 +300,7 @@ void SNaveledKnob::OnNavelDrag(FReply&              InOutReply,
 	NavelDeltaRequested.ExecuteIfBound(ValueDelta);
 }
 
-void SNaveledKnob::OnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent)
+void SToggleKnob::OnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent)
 {
 	SLeafWidget::OnMouseCaptureLost(CaptureLostEvent);
 
@@ -315,16 +325,16 @@ void SNaveledKnob::OnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent)
 	}
 }
 
-int32 SNaveledKnob::OnPaint(const FPaintArgs&        Args,
-                            const FGeometry&         AllottedGeometry,
-                            const FSlateRect&        MyCullingRect,
-                            FSlateWindowElementList& OutDrawElements,
-                            int32                    LayerId,
-                            const FWidgetStyle&      InWidgetStyle,
-                            bool                     bParentEnabled) const
+int32 SToggleKnob::OnPaint(const FPaintArgs&        Args,
+                           const FGeometry&         AllottedGeometry,
+                           const FSlateRect&        MyCullingRect,
+                           FSlateWindowElementList& OutDrawElements,
+                           int32                    LayerId,
+                           const FWidgetStyle&      InWidgetStyle,
+                           bool                     bParentEnabled) const
 {
     int32 Result = LayerId;
-    SNaveledKnob* MutableThis = const_cast<SNaveledKnob*>(this);
+    SToggleKnob* MutableThis = const_cast<SToggleKnob*>(this);
 
     FVector2D Size = AllottedGeometry.GetLocalSize();
 
@@ -359,12 +369,12 @@ int32 SNaveledKnob::OnPaint(const FPaintArgs&        Args,
     return Result;
 }
 
-FVector2D SNaveledKnob::ComputeDesiredSize(float) const
+FVector2D SToggleKnob::ComputeDesiredSize(float) const
 {
 	return FVector2D::ZeroVector;
 }
 
-bool SNaveledKnob::IsInsideKnob(const FVector2D& InMousePos) const
+bool SToggleKnob::IsInsideKnob(const FVector2D& InMousePos) const
 {
 	FVector2D Center = LastSize / 2.f;
 	float DistanceToMouse = (InMousePos - Center).Size();
@@ -374,7 +384,7 @@ bool SNaveledKnob::IsInsideKnob(const FVector2D& InMousePos) const
 	return DistanceToMouse >= InnerRadius && DistanceToMouse <= OuterRadius;
 }
 
-bool SNaveledKnob::IsInsideNavel(const FVector2D& InMousePos) const
+bool SToggleKnob::IsInsideNavel(const FVector2D& InMousePos) const
 {
 	FVector2D Center = LastSize / 2.f;
 	float DistanceToMouse = (InMousePos - Center).Size();

@@ -1,9 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "NaveledKnob.h"
+#include "ToggleKnob.h"
 
-#include "SNaveledKnob.h"
+#include "SToggleKnob.h"
+#include "ToggleNavelWidget.h"
 #include "Components/RetainerBox.h"
 #include "Components/ScaleBox.h"
 #include "Components/Widget.h"
@@ -11,7 +12,7 @@
 
 #define LOCTEXT_NAMESPACE "Sonafridge"
 
-UNaveledKnob::UNaveledKnob(const FObjectInitializer& ObjectInitializer)
+UToggleKnob::UToggleKnob(const FObjectInitializer& ObjectInitializer)
 	: UWidget(ObjectInitializer)
 {
 	Material = LoadObject<UMaterialInterface>
@@ -21,28 +22,29 @@ UNaveledKnob::UNaveledKnob(const FObjectInitializer& ObjectInitializer)
 	);
 }
 
-void UNaveledKnob::SetValue01(float InKnobValue01)
+void UToggleKnob::SetValue01(float InKnobValue01)
 {
 	Value01 = InKnobValue01;
 	SWidget->UpdateMaterial();
 }
 
-void UNaveledKnob::SetKnobNavelThreshold01(float InKnobNavelThreshold01)
+void UToggleKnob::SetKnobNavelThreshold01(float InKnobNavelThreshold01)
 {
 	KnobNavelThreshold01 = InKnobNavelThreshold01;
 	SWidget->UpdateMaterial();
 }
 
-void UNaveledKnob::RefreshVisual()
+void UToggleKnob::RefreshVisual()
 {
 	SWidget->UpdateMaterial();
 }
 
-TSharedRef<SWidget> UNaveledKnob::RebuildWidget()
+TSharedRef<SWidget> UToggleKnob::RebuildWidget()
 {
-	SWidget = SNew(SNaveledKnob)
+	SWidget = SNew(SToggleKnob)
 		.MouseFastSpeed_Lambda([this] { return FastResponsiveness; })
 		.MouseFineSpeed_Lambda([this] { return FineResponsiveness; })
+		.IsOn_Lambda([this] { return bIsOn; })
 		.Value_Lambda([this] { return Value01; })
 		.KnobNavelThreshold_Lambda([this] { return KnobNavelThreshold01; })
 		.Blurriness_Lambda([this] { return Blurriness; })
@@ -52,12 +54,13 @@ TSharedRef<SWidget> UNaveledKnob::RebuildWidget()
 		.Navel1Color_Lambda([this] { return Navel1Color; })
 		.Icon_Lambda([this] { return Icon; })
 		.IconScale_Lambda([this] { return IconScale; })
-		.KnobCaptureStarted_UObject(this, &UNaveledKnob::OnKnobCaptureStarted)
-		.KnobCaptureFinished_UObject(this, &UNaveledKnob::OnKnobCaptureFinished)
-		.NavelCaptureStarted_UObject(this, &UNaveledKnob::OnNavelCaptureStarted)
-		.NavelCaptureFinished_UObject(this, &UNaveledKnob::OnNavelCaptureFinished)
-		.KnobDeltaRequested_UObject(this, &UNaveledKnob::OnKnobDeltaRequested)
-		.NavelDeltaRequested_UObject(this, &UNaveledKnob::OnNavelDeltaRequested);
+		.KnobCaptureStarted_UObject(this, &UToggleKnob::OnKnobCaptureStarted)
+		.KnobCaptureFinished_UObject(this, &UToggleKnob::OnKnobCaptureFinished)
+		.NavelCaptureStarted_UObject(this, &UToggleKnob::OnNavelCaptureStarted)
+		.NavelCaptureFinished_UObject(this, &UToggleKnob::OnNavelCaptureFinished)
+		.ToggleStateRequested_UObject(this, &UToggleKnob::OnToggleStateRequested)
+		.KnobDeltaRequested_UObject(this, &UToggleKnob::OnKnobDeltaRequested)
+		.NavelDeltaRequested_UObject(this, &UToggleKnob::OnNavelDeltaRequested);
 
 	if (Material)
 	{
@@ -76,44 +79,50 @@ TSharedRef<SWidget> UNaveledKnob::RebuildWidget()
 	return SWidget.ToSharedRef();
 }
 
-void UNaveledKnob::ReleaseSlateResources(bool bReleaseChildren)
+void UToggleKnob::ReleaseSlateResources(bool bReleaseChildren)
 {
 	Super::ReleaseSlateResources(bReleaseChildren);
 	SWidget.Reset();
 }
 
-void UNaveledKnob::SynchronizeProperties()
+void UToggleKnob::SynchronizeProperties()
 {
 	Super::SynchronizeProperties();
 	SWidget->UpdateMaterial();
 }
 
-const FText UNaveledKnob::GetPaletteCategory()
+const FText UToggleKnob::GetPaletteCategory()
 {
 	return LOCTEXT("Sonafridge", "Sonafridge");
 }
 
-void UNaveledKnob::OnKnobCaptureStarted()
+void UToggleKnob::OnKnobCaptureStarted()
 {
 	KnobCaptureStarted.Broadcast();
 }
 
-void UNaveledKnob::OnKnobCaptureFinished()
+void UToggleKnob::OnKnobCaptureFinished()
 {
 	KnobCaptureFinished.Broadcast();
 }
 
-void UNaveledKnob::OnNavelCaptureStarted()
+void UToggleKnob::OnNavelCaptureStarted()
 {
 	NavelCaptureStarted.Broadcast();
 }
 
-void UNaveledKnob::OnNavelCaptureFinished()
+void UToggleKnob::OnNavelCaptureFinished()
 {
 	NavelCaptureFinished.Broadcast();
 }
 
-void UNaveledKnob::OnKnobDeltaRequested(float ValueDelta)
+void UToggleKnob::OnToggleStateRequested()
+{
+	bIsOn = !bIsOn;
+	ToggleStateChanged.Broadcast(!bIsOn, bIsOn);
+}
+
+void UToggleKnob::OnKnobDeltaRequested(float ValueDelta)
 {
 	float OldValue01 = Value01;
 	Value01 += ValueDelta;
@@ -127,7 +136,7 @@ void UNaveledKnob::OnKnobDeltaRequested(float ValueDelta)
 	KnobValueChanged.Broadcast(OldValue01, Value01);
 }
 
-void UNaveledKnob::OnNavelDeltaRequested(float ValueDelta)
+void UToggleKnob::OnNavelDeltaRequested(float ValueDelta)
 {
 	NavelValueChanged.Broadcast(ValueDelta);
 }

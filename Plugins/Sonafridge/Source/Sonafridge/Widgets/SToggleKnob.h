@@ -6,14 +6,15 @@
 #include "SlateMaterialBrush.h"
 
 
-class SONAFRIDGE_API SNaveledKnob final : public SLeafWidget
+class SONAFRIDGE_API SToggleKnob final : public SLeafWidget
 {
 public:
-	SLATE_BEGIN_ARGS(SNaveledKnob)
+	SLATE_BEGIN_ARGS(SToggleKnob)
 		: _Locked(false)
 		, _WheelStep(0.01f)
 		, _MouseFastSpeed(1.0f)
 		, _MouseFineSpeed(0.2f)
+		, _IsOn(false)
 		, _Value(0.0f)
 		, _KnobNavelThreshold(0.f)
 		, _Blurriness(0.f)
@@ -29,6 +30,7 @@ public:
 		SLATE_ATTRIBUTE(float, WheelStep)
 		SLATE_ATTRIBUTE(float, MouseFastSpeed)
 		SLATE_ATTRIBUTE(float, MouseFineSpeed)
+		SLATE_ATTRIBUTE(bool, IsOn)
 		SLATE_ATTRIBUTE(float, Value)
 		SLATE_ATTRIBUTE(float, KnobNavelThreshold)
 		SLATE_ATTRIBUTE(float, Blurriness)
@@ -43,6 +45,7 @@ public:
 		SLATE_EVENT(FSimpleDelegate, KnobCaptureFinished)
 		SLATE_EVENT(FSimpleDelegate, NavelCaptureStarted)
 		SLATE_EVENT(FSimpleDelegate, NavelCaptureFinished)
+		SLATE_EVENT(FSimpleDelegate, ToggleStateRequested)
 		SLATE_EVENT(FOnFloatValueChanged, KnobDeltaRequested)
 		SLATE_EVENT(FOnFloatValueChanged, NavelDeltaRequested)
 
@@ -95,6 +98,7 @@ private:
 	TAttribute<float>        WheelStepAttribute;
 	TAttribute<float>        MouseFastSpeedAttribute;
 	TAttribute<float>        MouseFineSpeedAttribute;
+	TAttribute<bool>         IsOnAttribute;
 	TAttribute<float>        ValueAttribute;
 	TAttribute<float>        KnobNavelThreshold;
 	TAttribute<float>        BlurrinessAttribute;
@@ -111,6 +115,7 @@ private:
 	FSimpleDelegate      NavelCaptureFinished;
 	FOnFloatValueChanged KnobDeltaRequested;
 	FOnFloatValueChanged NavelDeltaRequested;
+	FSimpleDelegate      ToggleStateRequested;
 
 	TSharedPtr<SImage> Image;
 	FSlateBrush        Brush;
