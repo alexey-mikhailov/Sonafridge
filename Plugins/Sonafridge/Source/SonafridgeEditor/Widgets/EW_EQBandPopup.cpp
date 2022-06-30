@@ -199,6 +199,7 @@ void UEW_EQBandPopup::OnListenDelta(float FrequencyDelta)
 {
 	float OldFrequency01 = MathLogTool::TwentiethsToTribel(Band->GetFrequency());
 	float NewFrequency01 = OldFrequency01 + FrequencyDelta;
+	NewFrequency01 = FMath::Clamp(NewFrequency01, 0.f, 1.f);
 	NaveledKnobFrequency->SetValue01(NewFrequency01);
 
 	float NewFrequency = MathLogTool::TribelToTwentieths(NewFrequency01);
@@ -246,6 +247,7 @@ void UEW_EQBandPopup::OnToggleNavelRemoveValueChanged(float QualityDelta01)
 	float OldQuality01 = MathLogTool::ThousandsToHexabel(Band->GetQuality());
 	float NewQuality01 = OldQuality01 + QualityDelta01;
 	ToggleKnobQuality->SetValue01(NewQuality01);
+	NewQuality01 = FMath::Clamp(NewQuality01, 0.f, 1.f);
 
 	float NewQuality = MathLogTool::HexabelToThousands(NewQuality01);
 	Band->SetQuality(NewQuality);
@@ -261,6 +263,7 @@ void UEW_EQBandPopup::OnToggleNavelOnOffValueChanged(float MakeupGainDelta01)
 {
 	float OldMakeupGain01 = (Band->GetLoudCompDb() + 48.f) / 96.f;
 	float NewMakeupGain01 = OldMakeupGain01 + MakeupGainDelta01;
+	NewMakeupGain01 = FMath::Clamp(NewMakeupGain01, 0.f, 1.f);
 	ToggleKnobMakeupGain->SetValue01(NewMakeupGain01);
 
 	float NewMakeupGainDb = NewMakeupGain01 * 96.f - 48.f;
