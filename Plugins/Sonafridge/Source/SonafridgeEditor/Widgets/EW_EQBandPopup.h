@@ -20,6 +20,16 @@ enum class EBandPopupFocusMode : uint8
 	Makeup
 };
 
+UENUM()
+enum class EBandPopupType : uint8
+{
+	LowCut,
+	HighCut,
+	LowShelf,
+	HighShelf,
+	BandCut,
+	Notch,
+};
 
 UCLASS()
 class SONAFRIDGEEDITOR_API UEW_EQBandPopup : public UEditorUtilityWidget
@@ -44,6 +54,24 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UEditableTextBox* TextBoxValue;
+
+	UPROPERTY(EditDefaultsOnly)
+	UTexture* IconLowCut;
+
+	UPROPERTY(EditDefaultsOnly)
+	UTexture* IconHighCut;
+
+	UPROPERTY(EditDefaultsOnly)
+	UTexture* IconLowShelf;
+
+	UPROPERTY(EditDefaultsOnly)
+	UTexture* IconHighShelf;
+
+	UPROPERTY(EditDefaultsOnly)
+	UTexture* IconBandCut;
+
+	UPROPERTY(EditDefaultsOnly)
+	UTexture* IconNotch;
 
 protected:
 	UFUNCTION()
@@ -81,6 +109,9 @@ protected:
 	void OnTextCommitted(const FText& Text, ETextCommit::Type CommitType);
 
 private:
+	static EBandType GetBandTypeByPopupType(EBandPopupType InBandPopupType);
+	UTexture* GetBandIconByType(EBandPopupType InBandPopup);
+
 	TSharedPtr<FEQBand> Band;
 	EBandType           BandTypeBeforeListenTime = EBandType::BandCut;
 	EBandPopupFocusMode FocusMode = EBandPopupFocusMode::None;

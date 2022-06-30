@@ -214,20 +214,21 @@ void UEW_EQBandPopup::OnListenFinished()
 
 void UEW_EQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat)
 {
-	UEnum* BandTypeEnum = StaticEnum<EBandType>();
-	if (BandTypeEnum)
+	UEnum* BandPopupTypeEnum = StaticEnum<EBandPopupType>();
+	if (BandPopupTypeEnum)
 	{
 		BandTypeFloat += 10.f * BandTypeDeltaAsFloat;
 
 		BandTypeFloat = FMath::Clamp(BandTypeFloat,
-		                             static_cast<float>(EBandType::None) + 1.f,
-		                             static_cast<float>(BandTypeEnum->GetMaxEnumValue()) - 1.f);
+		                             static_cast<float>(EBandPopupType::LowCut),
+		                             static_cast<float>(BandPopupTypeEnum->GetMaxEnumValue()) - 1.f);
 
-		EBandType BandType = static_cast<EBandType>(BandTypeFloat);
+		EBandPopupType BandPopupType = static_cast<EBandPopupType>(BandTypeFloat);
+		Band->SetType(GetBandTypeByPopupType(BandPopupType));
+		NaveledKnobAmount->HoverIcon = GetBandIconByType(BandPopupType);
+		NaveledKnobAmount->RefreshVisual();
 
-		Band->SetType(BandType);
-
-		FText EnumText = BandTypeEnum->GetDisplayNameTextByValue(static_cast<int64>(BandType));
+		FText EnumText = BandPopupTypeEnum->GetDisplayNameTextByValue(static_cast<int64>(BandPopupType));
 		if (!EnumText.IsEmpty())
 		{
 			TextBoxValue->SetText(EnumText);
@@ -309,6 +310,36 @@ void UEW_EQBandPopup::OnTextCommitted(const FText& Text, ETextCommit::Type Commi
 			const float NewMakeupGain01 = (NewMakeupGainDb + 48.f) / 96.f;
 			ToggleKnobMakeupGain->SetValue01(NewMakeupGain01);
 		}
+	}
+}
+
+EBandType UEW_EQBandPopup::GetBandTypeByPopupType(EBandPopupType InBandPopupType)
+{
+	UEnum* BandPopupEnum = StaticEnum<EBandPopupType>();
+	UEnum* BandEnum = StaticEnum<EBandType>();
+
+	if (BandEnum && BandPopupEnum)
+	{
+		FName Name = BandPopupEnum->GetNameByValue(static_cast<int64>(InBandPopupType));
+		return static_cast<EBandType>(BandEnum->GetValueByName(Name));
+	}
+	else
+	{
+		return EBandType::None;
+	}
+}
+
+UTexture* UEW_EQBandPopup::GetBandIconByType(EBandPopupType InBandPopup)
+{
+	switch (InBandPopup)
+	{
+		case EBandPopupType::LowCut: return IconLowCut;
+		case EBandPopupType::HighCut: return IconHighCut;
+		case EBandPopupType::LowShelf: return IconLowShelf;
+		case EBandPopupType::HighShelf: return IconHighShelf;
+		case EBandPopupType::BandCut: return IconBandCut;
+		case EBandPopupType::Notch: return IconNotch;
+		default: return nullptr;
 	}
 }
 

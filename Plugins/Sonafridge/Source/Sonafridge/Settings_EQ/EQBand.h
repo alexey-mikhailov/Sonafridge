@@ -7,8 +7,8 @@ UENUM()
 enum class EBandType : uint8
 {
 	None,
-	LowPass,
-	HighPass,
+	LowCut,
+	HighCut,
 	LowShelf,
 	HighShelf,
 	BandPass,

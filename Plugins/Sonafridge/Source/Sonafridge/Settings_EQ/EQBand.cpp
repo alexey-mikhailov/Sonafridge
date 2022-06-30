@@ -111,11 +111,11 @@ void FEQBand::Recalculate()
 {
 	Omega = 2.f * PI * Frequency / SampleRate;
 
-	if (Type == EBandType::LowPass)
+	if (Type == EBandType::HighCut)
 	{
 		
 	}
-	else if (Type == EBandType::HighPass)
+	else if (Type == EBandType::LowCut)
 	{
 		
 	}
