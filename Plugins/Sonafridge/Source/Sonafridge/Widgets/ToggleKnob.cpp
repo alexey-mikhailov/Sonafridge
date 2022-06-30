@@ -4,7 +4,6 @@
 #include "ToggleKnob.h"
 
 #include "SToggleKnob.h"
-#include "ToggleNavelWidget.h"
 #include "Components/RetainerBox.h"
 #include "Components/ScaleBox.h"
 #include "Components/Widget.h"

@@ -111,11 +111,11 @@ void FEQBand::Recalculate()
 {
 	Omega = 2.f * PI * Frequency / SampleRate;
 
-	if (Type == EBandType::Lowpass)
+	if (Type == EBandType::LowPass)
 	{
 		
 	}
-	else if (Type == EBandType::Highpass)
+	else if (Type == EBandType::HighPass)
 	{
 		
 	}
@@ -127,11 +127,11 @@ void FEQBand::Recalculate()
 	{
 		
 	}
-	else if (Type == EBandType::Bandpass)
+	else if (Type == EBandType::BandPass)
 	{
 		
 	}
-	else if (Type == EBandType::Bandcut)
+	else if (Type == EBandType::BandCut)
 	{
 		float Sn = FMath::Sin(Omega);
 		float Cs = FMath::Cos(Omega);

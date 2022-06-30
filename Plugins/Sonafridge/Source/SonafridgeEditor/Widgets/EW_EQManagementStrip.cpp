@@ -36,7 +36,7 @@ void UEW_EQManagementStrip::OnAddBand()
 {
 	auto Band = MakeShared<FEQBand>();
 	Band->Init(Settings->GetSampleRate());
-	Band->SetType(EBandType::Bandcut);
+	Band->SetType(EBandType::BandCut);
 	Band->SetFrequency(1000.f);
 	Band->SetQuality(10.f);
 	Band->SetAmountDb(-6.f);

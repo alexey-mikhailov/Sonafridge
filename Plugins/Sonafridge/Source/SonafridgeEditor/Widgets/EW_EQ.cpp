@@ -75,7 +75,7 @@ void UEW_EQ::NativeConstruct()
 		TArray<TSharedPtr<FEQBand>> Bands;
 		auto Band_BC = MakeShared<FEQBand>();
 		Band_BC->Init(SampleRate);
-		Band_BC->SetType(EBandType::Bandcut);
+		Band_BC->SetType(EBandType::BandCut);
 		Band_BC->SetFrequency(1000.f);
 		Band_BC->SetQuality(10.f);
 		Band_BC->SetAmountDb(-6.f);

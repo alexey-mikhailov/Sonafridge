@@ -7,6 +7,18 @@
 
 class UNaveledKnob;
 class UToggleKnob;
+class UTextBlock;
+class UEditableTextBox;
+
+UENUM()
+enum class EBandPopupFocusMode : uint8
+{
+	None,
+	Frequency,
+	Amount,
+	Quality,
+	Makeup
+};
 
 
 UCLASS()
@@ -27,7 +39,14 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UToggleKnob* ToggleKnobMakeupGain;
 
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* TextBlockKey;
+
+	UPROPERTY(meta = (BindWidget))
+	UEditableTextBox* TextBoxValue;
+
 protected:
+	UFUNCTION()
 	virtual void NativeConstruct() override;
 
 	void OnFrequencyChanged(float OldFrequency01, float NewFrequency01);
@@ -37,13 +56,18 @@ protected:
 	void OnListenStarted();
 	void OnListenDelta(float FrequencyDelta);
 	void OnListenFinished();
-	void OnBandTypeChanged(float BandTypeAsFloat);
+	void OnBandTypeChanged(float BandTypeDeltaAsFloat);
 	void OnToggleNavelRemoveStateChanged(bool bOldValue, bool bNewValue);
 	void OnToggleNavelRemoveValueChanged(float QualityDelta01);
 	void OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNewValue);
 	void OnToggleNavelOnOffValueChanged(float MakeupGainDelta01);
 
+	UFUNCTION()
+	void OnTextCommitted(const FText& Text, ETextCommit::Type CommitType);
+
 private:
 	TSharedPtr<FEQBand> Band;
-	EBandType BandTypeBeforeListenTime;
+	EBandType           BandTypeBeforeListenTime = EBandType::BandCut;
+	EBandPopupFocusMode FocusMode = EBandPopupFocusMode::None;
+	float               BandTypeFloat = 0.f;
 };

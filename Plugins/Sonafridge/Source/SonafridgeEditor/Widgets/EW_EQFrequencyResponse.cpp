@@ -299,7 +299,7 @@ void UEW_EQFrequencyResponse::BakeResponse()
 	int32 Index = 0;
 	for (const auto& Band : Settings->GetBands())
 	{
-		if (Band->GetType() == EBandType::Bandcut)
+		if (Band->GetType() == EBandType::BandCut)
 		{
 			float F = Band->GetFrequency();
 			float X = MathLogTool::TwentiethsToTribel(F);

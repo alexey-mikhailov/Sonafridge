@@ -7,17 +7,14 @@ UENUM()
 enum class EBandType : uint8
 {
 	None,
-	Lowpass,
-	LowPass_Butterworth,
-	Highpass,
-	HighPass_Butterworth,
+	LowPass,
+	HighPass,
 	LowShelf,
 	HighShelf,
-	Bandpass,
-	Bandcut,
+	BandPass,
+	BandCut,
 	Notch,
 	AllPass,
-	NUM UMETA(Hidden)
 };
 
 USTRUCT(BlueprintType)
