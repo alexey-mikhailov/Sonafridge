@@ -1,3 +1,5 @@
+// Sonafridge 2022
+
 #pragma once
 
 #include "EditorUtilityWidget.h"

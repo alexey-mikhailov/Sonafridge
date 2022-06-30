@@ -1,3 +1,5 @@
+// Sonafridge 2022
+
 #include "EW_EQManagementStrip.h"
 #include "EW_EQ.h"
 #include "Components/Button.h"

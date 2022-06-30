@@ -1,3 +1,5 @@
+// Sonafridge 2022
+
 #include "EW_EQ.h"
 #include "EW_EQFrequencyResponse.h"
 #include "AudioDevice.h"

@@ -1,3 +1,5 @@
+// Sonafridge 2022
+
 #include "EW_EQBandList.h"
 #include "EW_EQBand.h"
 #include "EW_EQ.h"

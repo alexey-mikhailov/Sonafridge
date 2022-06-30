@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Sonafridge 2022
 
 #include "SonafridgeStyle.h"
 #include "Styling/SlateStyleRegistry.h"

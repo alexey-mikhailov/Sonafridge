@@ -1,3 +1,5 @@
+// Sonafridge 2022
+
 #include "EQSettingsMock.h"
 #include "AudioDevice.h"
 #include "Sonafridge/MathTools.h"

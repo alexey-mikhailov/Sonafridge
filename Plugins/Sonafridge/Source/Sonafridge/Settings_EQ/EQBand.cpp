@@ -1,3 +1,5 @@
+// Sonafridge 2022
+
 #include "EQBand.h"
 
 #include "Sonafridge/MathTools.h"
