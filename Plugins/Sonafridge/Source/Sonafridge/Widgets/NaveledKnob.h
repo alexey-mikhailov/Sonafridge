@@ -48,6 +48,9 @@ public:
 	DECLARE_EVENT(UNaveledKnob, FNavelCaptureFinished)
 	FNavelCaptureFinished& GetEvent_NavelCaptureFinished() { return NavelCaptureFinished; }
 
+	DECLARE_EVENT(UNaveledKnob, FNavelClick)
+	FNavelClick& GetEvent_NavelClick() { return NavelClick; }
+
 	DECLARE_EVENT_TwoParams(UNaveledKnob, FKnobValueChanged, float OldValue, float NewValue)
 	FKnobValueChanged& GetEvent_KnobValueChanged() { return KnobValueChanged; }
 
@@ -110,6 +113,7 @@ private:
 	FKnobCaptureFinished  KnobCaptureFinished;
 	FNavelCaptureStarted  NavelCaptureStarted;
 	FNavelCaptureFinished NavelCaptureFinished;
+	FNavelClick           NavelClick;
 	FKnobValueChanged     KnobValueChanged;
 	FNavelValueChanged    NavelValueChanged;
 
@@ -132,6 +136,7 @@ private:
 	void OnKnobCaptureFinished();
 	void OnNavelCaptureStarted();
 	void OnNavelCaptureFinished();
+	void OnNavelClick();
 	void OnKnobDeltaRequested(float ValueDelta);
 	void OnNavelDeltaRequested(float ValueDelta);
 };

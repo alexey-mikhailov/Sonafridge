@@ -20,6 +20,12 @@ UToggleKnob::UToggleKnob(const FObjectInitializer& ObjectInitializer)
 	);
 }
 
+void UToggleKnob::SetIsOn(bool bInIsOn)
+{
+	bIsOn = bInIsOn;
+	SWidget->UpdateMaterial();
+}
+
 void UToggleKnob::SetValue01(float InKnobValue01)
 {
 	Value01 = InKnobValue01;

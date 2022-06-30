@@ -35,27 +35,28 @@ void UEW_EQBandPopup::NativeConstruct()
 
 	NaveledKnobFrequency->SetValue01(Frequency01);
 	NaveledKnobAmount->SetValue01(Amount01);
-	ToggleKnobQuality->SetValue01(Quality01);
+	NaveledKnobQuality->SetValue01(Quality01);
 	ToggleKnobMakeupGain->SetValue01(MakeupGain01);
+	ToggleKnobMakeupGain->SetIsOn(Band->GetIsEnabled());
 
 	NaveledKnobFrequency->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnFrequencyEntrance);
 	NaveledKnobAmount->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnAmountEntrance);
-	ToggleKnobQuality->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnQualityEntrance);
+	NaveledKnobQuality->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnQualityEntrance);
 	ToggleKnobMakeupGain->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnMakeupGainEntrance);
 
 	NaveledKnobFrequency->GetEvent_NavelEntrance().AddUObject(this, &UEW_EQBandPopup::OnListenEntrance);
 	NaveledKnobAmount->GetEvent_NavelEntrance().AddUObject(this, &UEW_EQBandPopup::OnBandTypeEntrance);
-	ToggleKnobQuality->GetEvent_NavelEntrance().AddUObject(this, &UEW_EQBandPopup::OnButtonRemoveEntrance);
+	NaveledKnobQuality->GetEvent_NavelEntrance().AddUObject(this, &UEW_EQBandPopup::OnButtonRemoveEntrance);
 	ToggleKnobMakeupGain->GetEvent_NavelEntrance().AddUObject(this, &UEW_EQBandPopup::OnToggleOnOffEntrance);
 
 	NaveledKnobFrequency->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnListenExit);
 	NaveledKnobAmount->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnBandTypeExit);
-	ToggleKnobQuality->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnButtonRemoveExit);
+	NaveledKnobQuality->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnButtonRemoveExit);
 	ToggleKnobMakeupGain->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnToggleOnOffExit);
 
 	NaveledKnobFrequency->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnFrequencyChanged);
 	NaveledKnobAmount->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnAmountChanged);
-	ToggleKnobQuality->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnQualityChanged);
+	NaveledKnobQuality->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnQualityChanged);
 	ToggleKnobMakeupGain->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnMakeupGainChanged);
 
 	NaveledKnobFrequency->GetEvent_NavelCaptureStarted().AddUObject(this, &UEW_EQBandPopup::OnListenStarted);
@@ -63,8 +64,8 @@ void UEW_EQBandPopup::NativeConstruct()
 	NaveledKnobFrequency->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnListenDelta);
 	NaveledKnobAmount->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnBandTypeChanged);
 
-	ToggleKnobQuality->GetEvent_ToggleStateChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelRemoveStateChanged);
-	ToggleKnobQuality->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelRemoveValueChanged);
+	NaveledKnobQuality->GetEvent_NavelClick().AddUObject(this, &UEW_EQBandPopup::OnRemoveClick);
+	NaveledKnobQuality->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelRemoveValueChanged);
 	ToggleKnobMakeupGain->GetEvent_ToggleStateChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelOnOffStateChanged);
 	ToggleKnobMakeupGain->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelOnOffValueChanged);
 
@@ -92,7 +93,7 @@ void UEW_EQBandPopup::OnQualityEntrance()
 	FocusMode = EBandPopupFocusMode::Quality;
 	TextBlockKey->SetText(FText::FromString(TEXT("Quality")));
 	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetQuality(), HalfFromZero, false, false, 1, 324, 3, 3));
-	ToggleKnobQuality->RefreshVisual();
+	NaveledKnobQuality->RefreshVisual();
 }
 
 void UEW_EQBandPopup::OnMakeupGainEntrance()
@@ -134,7 +135,7 @@ void UEW_EQBandPopup::OnButtonRemoveEntrance()
 	FocusMode = EBandPopupFocusMode::Quality;
 	TextBlockKey->SetText(FText::FromString(TEXT("Quality")));
 	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetQuality(), HalfFromZero, false, false, 1, 324, 3, 3));
-	ToggleKnobQuality->RefreshVisual();
+	NaveledKnobQuality->RefreshVisual();
 }
 
 void UEW_EQBandPopup::OnToggleOnOffEntrance()
@@ -236,7 +237,7 @@ void UEW_EQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat)
 	}
 }
 
-void UEW_EQBandPopup::OnToggleNavelRemoveStateChanged(bool bOldValue, bool bNewValue)
+void UEW_EQBandPopup::OnRemoveClick()
 {
 	// TODO: Inject IEQSettings, remove band in there.
 	UE_LOG(LogTemp, Log, TEXT("Remove band stub. "));
@@ -246,8 +247,8 @@ void UEW_EQBandPopup::OnToggleNavelRemoveValueChanged(float QualityDelta01)
 {
 	float OldQuality01 = MathLogTool::ThousandsToHexabel(Band->GetQuality());
 	float NewQuality01 = OldQuality01 + QualityDelta01;
-	ToggleKnobQuality->SetValue01(NewQuality01);
 	NewQuality01 = FMath::Clamp(NewQuality01, 0.f, 1.f);
+	NaveledKnobQuality->SetValue01(NewQuality01);
 
 	float NewQuality = MathLogTool::HexabelToThousands(NewQuality01);
 	Band->SetQuality(NewQuality);
@@ -300,7 +301,7 @@ void UEW_EQBandPopup::OnTextCommitted(const FText& Text, ETextCommit::Type Commi
 		{
 			Band->SetQuality(NewQuality);
 			const float NewQuality01 = MathLogTool::ThousandsToHexabel(NewQuality);
-			ToggleKnobQuality->SetValue01(NewQuality01);
+			NaveledKnobQuality->SetValue01(NewQuality01);
 		}
 	}
 	else if (FocusMode == EBandPopupFocusMode::Makeup)

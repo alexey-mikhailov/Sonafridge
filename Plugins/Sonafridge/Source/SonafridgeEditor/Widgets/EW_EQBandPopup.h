@@ -46,7 +46,7 @@ public:
 	UNaveledKnob* NaveledKnobAmount;
 
 	UPROPERTY(meta = (BindWidget))
-	UToggleKnob* ToggleKnobQuality;
+	UNaveledKnob* NaveledKnobQuality;
 
 	UPROPERTY(meta = (BindWidget))
 	UToggleKnob* ToggleKnobMakeupGain;
@@ -102,7 +102,7 @@ protected:
 	void OnListenDelta(float FrequencyDelta);
 	void OnListenFinished();
 	void OnBandTypeChanged(float BandTypeDeltaAsFloat);
-	void OnToggleNavelRemoveStateChanged(bool bOldValue, bool bNewValue);
+	void OnRemoveClick();
 	void OnToggleNavelRemoveValueChanged(float QualityDelta01);
 	void OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNewValue);
 	void OnToggleNavelOnOffValueChanged(float MakeupGainDelta01);

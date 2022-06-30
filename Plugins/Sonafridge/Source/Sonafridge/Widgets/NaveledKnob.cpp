@@ -59,6 +59,7 @@ TSharedRef<SWidget> UNaveledKnob::RebuildWidget()
 		.KnobCaptureFinished_UObject(this, &UNaveledKnob::OnKnobCaptureFinished)
 		.NavelCaptureStarted_UObject(this, &UNaveledKnob::OnNavelCaptureStarted)
 		.NavelCaptureFinished_UObject(this, &UNaveledKnob::OnNavelCaptureFinished)
+		.NavelClick_UObject(this, &UNaveledKnob::OnNavelClick)
 		.KnobDeltaRequested_UObject(this, &UNaveledKnob::OnKnobDeltaRequested)
 		.NavelDeltaRequested_UObject(this, &UNaveledKnob::OnNavelDeltaRequested);
 
@@ -134,6 +135,11 @@ void UNaveledKnob::OnNavelCaptureStarted()
 void UNaveledKnob::OnNavelCaptureFinished()
 {
 	NavelCaptureFinished.Broadcast();
+}
+
+void UNaveledKnob::OnNavelClick()
+{
+	NavelClick.Broadcast();
 }
 
 void UNaveledKnob::OnKnobDeltaRequested(float ValueDelta)

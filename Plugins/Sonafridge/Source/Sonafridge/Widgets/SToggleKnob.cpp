@@ -80,6 +80,7 @@ void SToggleKnob::OnKnobEntrance()
 	if (IsValid(BrushMID))
 	{
 		BrushMID->SetScalarParameterValue("Is Over Knob", true);
+		BrushMID->SetScalarParameterValue("Is Over Navel", false);
 		BrushMID->SetTextureParameterValue("Icon", IdleIconAttribute.Get());
 	}
 
@@ -93,6 +94,7 @@ void SToggleKnob::OnNavelEntrance()
 	UMaterialInstanceDynamic* BrushMID = GetMaterial();
 	if (IsValid(BrushMID))
 	{
+		BrushMID->SetScalarParameterValue("Is Over Knob", false);
 		BrushMID->SetScalarParameterValue("Is Over Navel", true);
 		BrushMID->SetTextureParameterValue("Icon", HoverIconAttribute.Get());
 	}
@@ -231,7 +233,7 @@ FReply SToggleKnob::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerE
 		bIsDraggingNavel = false;
 	}
 
-	if (MousePos == PresstimeMousePos)
+	if (MousePos == PresstimeMousePos && IsInsideNavel(MousePos))
 	{
 		ToggleStateRequested.ExecuteIfBound();
 	}

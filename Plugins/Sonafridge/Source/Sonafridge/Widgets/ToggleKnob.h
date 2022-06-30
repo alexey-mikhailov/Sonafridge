@@ -99,6 +99,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float IconScale = 1.f;
 
+	void SetIsOn(bool bInIsOn);
 	void SetValue01(float InKnobValue01);
 	void SetKnobNavelThreshold01(float InKnobNavelThreshold01);
 	void RefreshVisual();

@@ -31,6 +31,7 @@ void SNaveledKnob::Construct(const FArguments& InArgs)
 	NavelCaptureFinished = InArgs._NavelCaptureFinished;
 	KnobDeltaRequested = InArgs._KnobDeltaRequested;
 	NavelDeltaRequested = InArgs._NavelDeltaRequested;
+	NavelClick = InArgs._NavelClick;
 
 	Image = SNew(SImage);
 }
@@ -213,6 +214,7 @@ FReply SNaveledKnob::OnMouseButtonDown(const FGeometry& InGeometry, const FPoint
 FReply SNaveledKnob::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = SLeafWidget::OnMouseButtonUp(InGeometry, InMouseEvent);
+	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
 
 	if (bIsDraggingKnob)
 	{
@@ -225,6 +227,11 @@ FReply SNaveledKnob::OnMouseButtonUp(const FGeometry& InGeometry, const FPointer
 		Reply = Reply.ReleaseMouseCapture();
 		NavelCaptureFinished.ExecuteIfBound();
 		bIsDraggingNavel = false;
+	}
+
+	if (MousePos == PresstimeMousePos && IsInsideNavel(MousePos))
+	{
+		NavelClick.ExecuteIfBound();
 	}
 
 	UMaterialInstanceDynamic* BrushMID = GetMaterial();
