@@ -17,7 +17,7 @@ UToggleKnob::UToggleKnob(const FObjectInitializer& ObjectInitializer)
 	Material = LoadObject<UMaterialInterface>
 	(
 		nullptr,
-		TEXT("/Sonafridge/UI/Materials/M_NaveledKnob.M_NaveledKnob")
+		TEXT("/Sonafridge/UI/Materials/M_ToggleKnob.M_ToggleKnob")
 	);
 }
 
@@ -51,8 +51,13 @@ TSharedRef<SWidget> UToggleKnob::RebuildWidget()
 		.Knob1Color_Lambda([this] { return Knob1Color; })
 		.Navel0Color_Lambda([this] { return Navel0Color; })
 		.Navel1Color_Lambda([this] { return Navel1Color; })
-		.Icon_Lambda([this] { return Icon; })
+		.IdleIcon_Lambda([this] { return IdleIcon; })
+		.HoverIcon_Lambda([this] { return HoverIcon; })
 		.IconScale_Lambda([this] { return IconScale; })
+		.KnobEntrance_UObject(this, &UToggleKnob::OnKnobEntrance)
+		.NavelEntrance_UObject(this, &UToggleKnob::OnNavelEntrance)
+		.KnobExit_UObject(this, &UToggleKnob::OnKnobExit)
+		.NavelExit_UObject(this, &UToggleKnob::OnNavelExit)
 		.KnobCaptureStarted_UObject(this, &UToggleKnob::OnKnobCaptureStarted)
 		.KnobCaptureFinished_UObject(this, &UToggleKnob::OnKnobCaptureFinished)
 		.NavelCaptureStarted_UObject(this, &UToggleKnob::OnNavelCaptureStarted)
@@ -93,6 +98,26 @@ void UToggleKnob::SynchronizeProperties()
 const FText UToggleKnob::GetPaletteCategory()
 {
 	return LOCTEXT("Sonafridge", "Sonafridge");
+}
+
+void UToggleKnob::OnKnobEntrance() const
+{
+	KnobEntrance.Broadcast();
+}
+
+void UToggleKnob::OnNavelEntrance() const
+{
+	NavelEntrance.Broadcast();
+}
+
+void UToggleKnob::OnKnobExit() const
+{
+	KnobExit.Broadcast();
+}
+
+void UToggleKnob::OnNavelExit() const
+{
+	KnobExit.Broadcast();
 }
 
 void UToggleKnob::OnKnobCaptureStarted()

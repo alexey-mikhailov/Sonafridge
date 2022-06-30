@@ -17,11 +17,15 @@ void SNaveledKnob::Construct(const FArguments& InArgs)
 	BlurrinessAttribute = InArgs._Blurriness;
 	Knob0ColorAttribute = InArgs._Knob0Color;
 	Knob1ColorAttribute = InArgs._Knob1Color;
-	Navel0ColorAttribute = InArgs._Navel0Color;
-	Navel1ColorAttribute = InArgs._Navel1Color;
-	IconAttribute = InArgs._Icon;
+	NavelColorAttribute = InArgs._NavelColor;
+	IdleIconAttribute = InArgs._IdleIcon;
+	HoverIconAttribute = InArgs._HoverIcon;
 	IconScaleAttribute = InArgs._IconScale;
 
+	KnobEntrance = InArgs._KnobEntrance;
+	NavelEntrance = InArgs._NavelEntrance;
+	KnobExit = InArgs._KnobExit;
+	NavelExit = InArgs._NavelExit;
 	KnobCaptureStarted = InArgs._KnobCaptureStarted;
 	KnobCaptureFinished = InArgs._KnobCaptureFinished;
 	NavelCaptureStarted = InArgs._NavelCaptureStarted;
@@ -42,7 +46,8 @@ void SNaveledKnob::SetBrush(const FSlateBrush& InBrush)
 
 	if (IsValid(BrushMID))
 	{
-		BrushMID->SetTextureParameterValue("Icon", IconAttribute.Get());
+		UTexture* Icon = bWasInsideNavel ? HoverIconAttribute.Get() : IdleIconAttribute.Get();
+		BrushMID->SetTextureParameterValue("Icon", Icon);
 		BrushMID->SetScalarParameterValue("Icon Scale", IconScaleAttribute.Get());
 	}
 }
@@ -58,35 +63,41 @@ void SNaveledKnob::UpdateMaterial()
 		BrushMID->SetScalarParameterValue("Blurriness", BlurrinessAttribute.Get());
 		BrushMID->SetVectorParameterValue("Knob 0 Color", Knob0ColorAttribute.Get());
 		BrushMID->SetVectorParameterValue("Knob 1 Color", Knob1ColorAttribute.Get());
-		BrushMID->SetVectorParameterValue("Navel 0 Color", Navel0ColorAttribute.Get());
-		BrushMID->SetVectorParameterValue("Navel 1 Color", Navel1ColorAttribute.Get());
-		BrushMID->SetTextureParameterValue("Icon", IconAttribute.Get());
+		BrushMID->SetVectorParameterValue("Navel Color", NavelColorAttribute.Get());
+		UTexture* Icon = bWasInsideNavel ? HoverIconAttribute.Get() : IdleIconAttribute.Get();
+		BrushMID->SetTextureParameterValue("Icon", Icon);
 		BrushMID->SetScalarParameterValue("Icon Scale", IconScaleAttribute.Get());
 	}
 }
 
-void SNaveledKnob::OnKnobEnter()
+void SNaveledKnob::OnKnobEntrance()
 {
-	if (!bIsDraggingKnob)
+	UMaterialInstanceDynamic* BrushMID = GetMaterial();
+	if (IsValid(BrushMID))
 	{
-		UMaterialInstanceDynamic* BrushMID = GetMaterial();
-		if (IsValid(BrushMID))
-		{
-			BrushMID->SetScalarParameterValue("Is Over Knob", true);
-		}
+		BrushMID->SetScalarParameterValue("Is Over Knob", true);
+		BrushMID->SetScalarParameterValue("Is Over Navel", false);
+		BrushMID->SetTextureParameterValue("Icon", IdleIconAttribute.Get());
 	}
+
+	bWasInsideKnob = true;
+	bWasInsideNavel = false;
+	KnobEntrance.ExecuteIfBound();
 }
 
-void SNaveledKnob::OnNavelEnter()
+void SNaveledKnob::OnNavelEntrance()
 {
-	if (!bIsDraggingKnob)
+	UMaterialInstanceDynamic* BrushMID = GetMaterial();
+	if (IsValid(BrushMID))
 	{
-		UMaterialInstanceDynamic* BrushMID = GetMaterial();
-		if (IsValid(BrushMID))
-		{
-			BrushMID->SetScalarParameterValue("Is Over Navel", true);
-		}
+		BrushMID->SetScalarParameterValue("Is Over Knob", false);
+		BrushMID->SetScalarParameterValue("Is Over Navel", true);
+		BrushMID->SetTextureParameterValue("Icon", HoverIconAttribute.Get());
 	}
+
+	bWasInsideNavel = true;
+	bWasInsideKnob = false;
+	NavelEntrance.ExecuteIfBound();
 }
 
 void SNaveledKnob::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -94,45 +105,58 @@ void SNaveledKnob::OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent
 	SLeafWidget::OnMouseEnter(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
 
-	if (IsInsideKnob(MousePos))
+	if (!bIsDraggingKnob && 
+		!bIsDraggingNavel && 
+		IsInsideKnob(MousePos))
 	{
-		OnKnobEnter();
+		OnKnobEntrance();
 	}
-	else if (IsInsideNavel(MousePos))
+	else if (!bIsDraggingKnob && 
+			 !bIsDraggingNavel && 
+			 IsInsideNavel(MousePos))
 	{
-		OnNavelEnter();
-	}
-}
-
-void SNaveledKnob::OnKnobLeave()
-{
-	if (!bIsDraggingKnob)
-	{
-		UMaterialInstanceDynamic* BrushMID = GetMaterial();
-		if (IsValid(BrushMID))
-		{
-			BrushMID->SetScalarParameterValue("Is Over Knob", false);
-		}
+		OnNavelEntrance();
 	}
 }
 
-void SNaveledKnob::OnNavelLeave()
+void SNaveledKnob::OnKnobExit()
 {
-	if (!bIsDraggingNavel)
+	UMaterialInstanceDynamic* BrushMID = GetMaterial();
+	if (IsValid(BrushMID))
 	{
-		UMaterialInstanceDynamic* BrushMID = GetMaterial();
-		if (IsValid(BrushMID))
-		{
-			BrushMID->SetScalarParameterValue("Is Over Navel", false);
-		}
+		BrushMID->SetScalarParameterValue("Is Over Knob", false);
 	}
+
+	bWasInsideKnob = false;
+	KnobExit.ExecuteIfBound();
+}
+
+void SNaveledKnob::OnNavelExit()
+{
+	UMaterialInstanceDynamic* BrushMID = GetMaterial();
+	if (IsValid(BrushMID))
+	{
+		BrushMID->SetScalarParameterValue("Is Over Navel", false);
+		BrushMID->SetTextureParameterValue("Icon", IdleIconAttribute.Get());
+	}
+
+	bWasInsideNavel = false;
+	NavelExit.ExecuteIfBound();
 }
 
 void SNaveledKnob::OnMouseLeave(const FPointerEvent& InMouseEvent)
 {
 	SLeafWidget::OnMouseLeave(InMouseEvent);
-	OnKnobLeave();
-	OnNavelLeave();
+
+	if (!bIsDraggingKnob)
+	{
+		OnKnobExit();
+	}
+
+	if (!bIsDraggingNavel)
+	{
+		OnNavelExit();
+	}
 }
 
 FReply SNaveledKnob::OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
@@ -233,26 +257,24 @@ FReply SNaveledKnob::OnMouseMove(const FGeometry& InGeometry, const FPointerEven
 	{
 		if (!bWasInsideKnob && bIsInsideKnob)
 		{
-			OnKnobEnter();
+			OnKnobEntrance();
 		}
 		else if (bWasInsideKnob && !bIsInsideKnob)
 		{
-			OnKnobLeave();
+			OnKnobExit();
 		}
 
 		if (!bWasInsideNavel && bIsInsideNavel)
 		{
-			OnNavelEnter();
+			OnNavelEntrance();
 		}
 		else if (bWasInsideNavel && !bIsInsideNavel)
 		{
-			OnNavelLeave();
+			OnNavelExit();
 		}
 	}
 
 	LastMousePos = MousePos;
-	bWasInsideKnob = bIsInsideKnob;
-	bWasInsideNavel = bIsInsideNavel;
 	return Reply;
 }
 

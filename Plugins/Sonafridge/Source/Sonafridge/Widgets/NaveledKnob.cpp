@@ -48,10 +48,14 @@ TSharedRef<SWidget> UNaveledKnob::RebuildWidget()
 		.Blurriness_Lambda([this] { return Blurriness; })
 		.Knob0Color_Lambda([this] { return Knob0Color; })
 		.Knob1Color_Lambda([this] { return Knob1Color; })
-		.Navel0Color_Lambda([this] { return Navel0Color; })
-		.Navel1Color_Lambda([this] { return Navel1Color; })
-		.Icon_Lambda([this] { return Icon; })
+		.NavelColor_Lambda([this] { return NavelColor; })
+		.IdleIcon_Lambda([this] { return IdleIcon; })
+		.HoverIcon_Lambda([this] { return HoverIcon; })
 		.IconScale_Lambda([this] { return IconScale; })
+		.KnobEntrance_UObject(this, &UNaveledKnob::OnKnobEntrance)
+		.NavelEntrance_UObject(this, &UNaveledKnob::OnNavelEntrance)
+		.KnobExit_UObject(this, &UNaveledKnob::OnKnobExit)
+		.NavelExit_UObject(this, &UNaveledKnob::OnNavelExit)
 		.KnobCaptureStarted_UObject(this, &UNaveledKnob::OnKnobCaptureStarted)
 		.KnobCaptureFinished_UObject(this, &UNaveledKnob::OnKnobCaptureFinished)
 		.NavelCaptureStarted_UObject(this, &UNaveledKnob::OnNavelCaptureStarted)
@@ -91,6 +95,26 @@ void UNaveledKnob::SynchronizeProperties()
 const FText UNaveledKnob::GetPaletteCategory()
 {
 	return LOCTEXT("Sonafridge", "Sonafridge");
+}
+
+void UNaveledKnob::OnKnobEntrance() const
+{
+	KnobEntrance.Broadcast();
+}
+
+void UNaveledKnob::OnNavelEntrance() const
+{
+	NavelEntrance.Broadcast();
+}
+
+void UNaveledKnob::OnKnobExit() const
+{
+	KnobExit.Broadcast();
+}
+
+void UNaveledKnob::OnNavelExit() const
+{
+	KnobExit.Broadcast();
 }
 
 void UNaveledKnob::OnKnobCaptureStarted()

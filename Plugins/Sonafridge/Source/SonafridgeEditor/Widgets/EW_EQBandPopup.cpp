@@ -39,6 +39,21 @@ void UEW_EQBandPopup::NativeConstruct()
 	ToggleKnobQuality->SetValue01(Quality01);
 	ToggleKnobMakeupGain->SetValue01(MakeupGain01);
 
+	NaveledKnobFrequency->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnFrequencyEntrance);
+	NaveledKnobAmount->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnAmountEntrance);
+	ToggleKnobQuality->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnQualityEntrance);
+	ToggleKnobMakeupGain->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnMakeupGainEntrance);
+
+	NaveledKnobFrequency->GetEvent_NavelEntrance().AddUObject(this, &UEW_EQBandPopup::OnListenEntrance);
+	NaveledKnobAmount->GetEvent_NavelEntrance().AddUObject(this, &UEW_EQBandPopup::OnBandTypeEntrance);
+	ToggleKnobQuality->GetEvent_NavelEntrance().AddUObject(this, &UEW_EQBandPopup::OnButtonRemoveEntrance);
+	ToggleKnobMakeupGain->GetEvent_NavelEntrance().AddUObject(this, &UEW_EQBandPopup::OnToggleOnOffEntrance);
+
+	NaveledKnobFrequency->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnListenExit);
+	NaveledKnobAmount->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnBandTypeExit);
+	ToggleKnobQuality->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnButtonRemoveExit);
+	ToggleKnobMakeupGain->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnToggleOnOffExit);
+
 	NaveledKnobFrequency->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnFrequencyChanged);
 	NaveledKnobAmount->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnAmountChanged);
 	ToggleKnobQuality->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnQualityChanged);
@@ -57,13 +72,100 @@ void UEW_EQBandPopup::NativeConstruct()
 	TextBoxValue->OnTextCommitted.AddDynamic(this, &UEW_EQBandPopup::OnTextCommitted);
 }
 
+void UEW_EQBandPopup::OnFrequencyEntrance()
+{
+	FocusMode = EBandPopupFocusMode::Frequency;
+	TextBlockKey->SetText(FText::FromString(TEXT("Frequency")));
+	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetFrequency(), HalfFromZero, false, false, 1, 324, 1, 1));
+	NaveledKnobFrequency->RefreshVisual();
+}
+
+void UEW_EQBandPopup::OnAmountEntrance()
+{
+	FocusMode = EBandPopupFocusMode::Amount;
+	TextBlockKey->SetText(FText::FromString(TEXT("Amount")));
+	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetAmountDb(), HalfFromZero, true, false, 1, 324, 2, 2));
+	NaveledKnobAmount->RefreshVisual();
+}
+
+void UEW_EQBandPopup::OnQualityEntrance()
+{
+	FocusMode = EBandPopupFocusMode::Quality;
+	TextBlockKey->SetText(FText::FromString(TEXT("Quality")));
+	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetQuality(), HalfFromZero, false, false, 1, 324, 3, 3));
+	ToggleKnobQuality->RefreshVisual();
+}
+
+void UEW_EQBandPopup::OnMakeupGainEntrance()
+{
+	FocusMode = EBandPopupFocusMode::Makeup;
+	TextBlockKey->SetText(FText::FromString(TEXT("Makeup Gain")));
+	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetLoudCompDb(), HalfFromZero, true, false, 1, 324, 2, 2));
+	ToggleKnobMakeupGain->RefreshVisual();
+}
+
+void UEW_EQBandPopup::OnListenEntrance()
+{
+	FocusMode = EBandPopupFocusMode::Frequency;
+	TextBlockKey->SetText(FText::FromString(TEXT("Frequency")));
+	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetFrequency(), HalfFromZero, false, false, 1, 324, 1, 1));
+	NaveledKnobFrequency->RefreshVisual();
+}
+
+void UEW_EQBandPopup::OnBandTypeEntrance()
+{
+	UEnum* BandTypeEnum = StaticEnum<EBandType>();
+	if (BandTypeEnum)
+	{
+		FocusMode = EBandPopupFocusMode::None;
+		TextBlockKey->SetText(FText::FromString(TEXT("Band Type")));
+
+		FText EnumText = BandTypeEnum->GetDisplayNameTextByValue(static_cast<int64>(Band->GetType()));
+		if (!EnumText.IsEmpty())
+		{
+			TextBoxValue->SetText(EnumText);
+		}			
+	}
+
+	NaveledKnobAmount->RefreshVisual();
+}
+
+void UEW_EQBandPopup::OnButtonRemoveEntrance()
+{
+	FocusMode = EBandPopupFocusMode::Quality;
+	TextBlockKey->SetText(FText::FromString(TEXT("Quality")));
+	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetQuality(), HalfFromZero, false, false, 1, 324, 3, 3));
+	ToggleKnobQuality->RefreshVisual();
+}
+
+void UEW_EQBandPopup::OnToggleOnOffEntrance()
+{
+	FocusMode = EBandPopupFocusMode::Makeup;
+	TextBlockKey->SetText(FText::FromString(TEXT("Makeup Gain")));
+	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetLoudCompDb(), HalfFromZero, true, false, 1, 324, 2, 2));
+	ToggleKnobMakeupGain->RefreshVisual();
+}
+
+void UEW_EQBandPopup::OnListenExit()
+{
+}
+
+void UEW_EQBandPopup::OnBandTypeExit()
+{
+}
+
+void UEW_EQBandPopup::OnButtonRemoveExit()
+{
+}
+
+void UEW_EQBandPopup::OnToggleOnOffExit()
+{
+}
+
 void UEW_EQBandPopup::OnFrequencyChanged(float OldFrequency01, float NewFrequency01)
 {
 	float NewFrequency = MathLogTool::TribelToTwentieths(NewFrequency01);
 	Band->SetFrequency(NewFrequency);
-
-	FocusMode = EBandPopupFocusMode::Frequency;
-	TextBlockKey->SetText(FText::FromString(TEXT("Frequency")));
 	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(NewFrequency, HalfFromZero, false, false, 1, 324, 1, 1));
 }
 
@@ -71,9 +173,6 @@ void UEW_EQBandPopup::OnAmountChanged(float OldAmount01, float NewAmount01)
 {
 	float NewAmountDb = NewAmount01 * 96.f - 48.f;
 	Band->SetAmountDb(NewAmountDb);
-
-	FocusMode = EBandPopupFocusMode::Amount;
-	TextBlockKey->SetText(FText::FromString(TEXT("Amount")));
 	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(NewAmountDb, HalfFromZero, true, false, 1, 324, 2, 2));
 }
 
@@ -81,9 +180,6 @@ void UEW_EQBandPopup::OnQualityChanged(float OldQuality01, float NewQuality01)
 {
 	float NewQuality = MathLogTool::HexabelToThousands(NewQuality01);
 	Band->SetQuality(NewQuality);
-
-	FocusMode = EBandPopupFocusMode::Quality;
-	TextBlockKey->SetText(FText::FromString(TEXT("Quality")));
 	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(NewQuality, HalfFromZero, false, false, 1, 324, 3, 3));
 }
 
@@ -91,9 +187,6 @@ void UEW_EQBandPopup::OnMakeupGainChanged(float OldMakeupGain01, float NewMakeup
 {
 	float NewMakeupGainDb = NewMakeupGain01 * 96.f - 48.f;
 	Band->SetLoudCompDb(NewMakeupGainDb);
-
-	FocusMode = EBandPopupFocusMode::Makeup;
-	TextBlockKey->SetText(FText::FromString(TEXT("Makeup Gain")));
 	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(NewMakeupGainDb, HalfFromZero, true, false, 1, 324, 2, 2));
 }
 
@@ -111,9 +204,6 @@ void UEW_EQBandPopup::OnListenDelta(float FrequencyDelta)
 
 	float NewFrequency = MathLogTool::TribelToTwentieths(NewFrequency01);
 	Band->SetFrequency(NewFrequency);
-
-	FocusMode = EBandPopupFocusMode::Frequency;
-	TextBlockKey->SetText(FText::FromString(TEXT("Frequency")));
 	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(NewFrequency, HalfFromZero, false, false, 1, 324, 1, 1));
 }
 
@@ -137,9 +227,6 @@ void UEW_EQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat)
 
 		Band->SetType(BandType);
 
-		FocusMode = EBandPopupFocusMode::None;
-		TextBlockKey->SetText(FText::FromString(TEXT("Band Type")));
-
 		FText EnumText = BandTypeEnum->GetDisplayNameTextByValue(static_cast<int64>(BandType));
 		if (!EnumText.IsEmpty())
 		{
@@ -162,9 +249,6 @@ void UEW_EQBandPopup::OnToggleNavelRemoveValueChanged(float QualityDelta01)
 
 	float NewQuality = MathLogTool::HexabelToThousands(NewQuality01);
 	Band->SetQuality(NewQuality);
-
-	FocusMode = EBandPopupFocusMode::Quality;
-	TextBlockKey->SetText(FText::FromString(TEXT("Quality")));
 	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(NewQuality, HalfFromZero, false, false, 1, 324, 3, 3));
 }
 
@@ -181,9 +265,6 @@ void UEW_EQBandPopup::OnToggleNavelOnOffValueChanged(float MakeupGainDelta01)
 
 	float NewMakeupGainDb = NewMakeupGain01 * 96.f - 48.f;
 	Band->SetLoudCompDb(NewMakeupGainDb);
-
-	FocusMode = EBandPopupFocusMode::Makeup;
-	TextBlockKey->SetText(FText::FromString(TEXT("Makeup Gain")));
 	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(NewMakeupGainDb, HalfFromZero, true, false, 1, 324, 2, 2));
 }
 

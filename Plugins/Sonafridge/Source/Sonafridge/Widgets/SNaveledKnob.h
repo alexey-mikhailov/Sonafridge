@@ -19,9 +19,9 @@ public:
 		, _Blurriness(0.f)
 		, _Knob0Color(FLinearColor::Gray)
 		, _Knob1Color(FLinearColor::White)
-		, _Navel0Color(FLinearColor::White)
-		, _Navel1Color(FLinearColor::White)
-		, _Icon(nullptr)
+		, _NavelColor(FLinearColor::White)
+		, _IdleIcon(nullptr)
+		, _HoverIcon(nullptr)
 		, _IconScale(1.f)
 		{}
 
@@ -34,11 +34,15 @@ public:
 		SLATE_ATTRIBUTE(float, Blurriness)
 		SLATE_ATTRIBUTE(FLinearColor, Knob0Color)
 		SLATE_ATTRIBUTE(FLinearColor, Knob1Color)
-		SLATE_ATTRIBUTE(FLinearColor, Navel0Color)
-		SLATE_ATTRIBUTE(FLinearColor, Navel1Color)
-		SLATE_ATTRIBUTE(UTexture*, Icon)
+		SLATE_ATTRIBUTE(FLinearColor, NavelColor)
+		SLATE_ATTRIBUTE(UTexture*, IdleIcon)
+		SLATE_ATTRIBUTE(UTexture*, HoverIcon)
 		SLATE_ATTRIBUTE(float, IconScale)
 
+		SLATE_EVENT(FSimpleDelegate, KnobEntrance)
+		SLATE_EVENT(FSimpleDelegate, NavelEntrance)
+		SLATE_EVENT(FSimpleDelegate, KnobExit)
+		SLATE_EVENT(FSimpleDelegate, NavelExit)
 		SLATE_EVENT(FSimpleDelegate, KnobCaptureStarted)
 		SLATE_EVENT(FSimpleDelegate, KnobCaptureFinished)
 		SLATE_EVENT(FSimpleDelegate, NavelCaptureStarted)
@@ -56,11 +60,11 @@ public:
 	void UpdateMaterial();
 
 protected:
-	void           OnKnobEnter();
-	void           OnNavelEnter();
+	void           OnKnobEntrance();
+	void           OnNavelEntrance();
 	virtual void   OnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
-	void           OnKnobLeave();
-	void           OnNavelLeave();
+	void           OnKnobExit();
+	void           OnNavelExit();
 	virtual void   OnMouseLeave(const FPointerEvent& InMouseEvent) override;
 	virtual FReply OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual FReply OnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
@@ -100,11 +104,15 @@ private:
 	TAttribute<float>        BlurrinessAttribute;
 	TAttribute<FLinearColor> Knob0ColorAttribute;
 	TAttribute<FLinearColor> Knob1ColorAttribute;
-	TAttribute<FLinearColor> Navel0ColorAttribute;
-	TAttribute<FLinearColor> Navel1ColorAttribute;
-	TAttribute<UTexture*>    IconAttribute;
+	TAttribute<FLinearColor> NavelColorAttribute;
+	TAttribute<UTexture*>    IdleIconAttribute;
+	TAttribute<UTexture*>    HoverIconAttribute;
 	TAttribute<float>        IconScaleAttribute;
 
+	FSimpleDelegate      KnobEntrance;
+	FSimpleDelegate      NavelEntrance;
+	FSimpleDelegate      KnobExit;
+	FSimpleDelegate      NavelExit;
 	FSimpleDelegate      KnobCaptureStarted;
 	FSimpleDelegate      KnobCaptureFinished;
 	FSimpleDelegate      NavelCaptureStarted;

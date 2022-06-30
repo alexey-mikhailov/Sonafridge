@@ -49,6 +49,21 @@ protected:
 	UFUNCTION()
 	virtual void NativeConstruct() override;
 
+	void OnFrequencyEntrance();
+	void OnAmountEntrance();
+	void OnQualityEntrance();
+	void OnMakeupGainEntrance();
+
+	void OnListenEntrance();
+	void OnBandTypeEntrance();
+	void OnButtonRemoveEntrance();
+	void OnToggleOnOffEntrance();
+
+	void OnListenExit();
+	void OnBandTypeExit();
+	void OnButtonRemoveExit();
+	void OnToggleOnOffExit();
+	
 	void OnFrequencyChanged(float OldFrequency01, float NewFrequency01);
 	void OnAmountChanged(float OldAmount01, float NewAmount01);
 	void OnQualityChanged(float OldQuality01, float NewQuality01);

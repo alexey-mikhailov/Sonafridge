@@ -24,6 +24,18 @@ public:
 	DECLARE_EVENT_TwoParams(UNaveledKnob, FSizeChanged, const FVector2D& OldSize, const FVector2D& NewSize)
 	FSizeChanged& GetEvent_SizeChanged() { return SizeChanged; }
 
+	DECLARE_EVENT(UNaveledKnob, FKnobEntrance)
+	FKnobEntrance& GetEvent_KnobEntrance() { return KnobEntrance; }
+
+	DECLARE_EVENT(UNaveledKnob, FNavelEntrance)
+	FNavelEntrance& GetEvent_NavelEntrance() { return NavelEntrance; }
+
+	DECLARE_EVENT(UNaveledKnob, FKnobExit)
+	FKnobExit& GetEvent_KnobExit() { return KnobExit; }
+
+	DECLARE_EVENT(UNaveledKnob, FNavelExit)
+	FNavelExit& GetEvent_NavelExit() { return NavelExit; }
+
 	DECLARE_EVENT(UNaveledKnob, FKnobCaptureStarted)
 	FKnobCaptureStarted& GetEvent_KnobCaptureStarted() { return KnobCaptureStarted; }
 
@@ -64,16 +76,16 @@ public:
 	FLinearColor Knob1Color = HSR(.62f, .667f, .5f);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FLinearColor Navel0Color = HSR(.62f, .5f, .417f);
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FLinearColor Navel1Color = HSR(.62f, .5f, .75f);
+	FLinearColor NavelColor = HSR(.62f, .5f, .417f);
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UMaterialInterface* Material;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	UTexture* Icon;
+	UTexture* IdleIcon;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UTexture* HoverIcon;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float IconScale = 1.f;
@@ -90,6 +102,10 @@ protected:
 
 private:
 	FSizeChanged          SizeChanged;
+	FKnobEntrance         KnobEntrance;
+	FNavelEntrance        NavelEntrance;
+	FKnobExit             KnobExit;
+	FNavelExit            NavelExit;
 	FKnobCaptureStarted   KnobCaptureStarted;
 	FKnobCaptureFinished  KnobCaptureFinished;
 	FNavelCaptureStarted  NavelCaptureStarted;
@@ -108,6 +124,10 @@ private:
 	UPROPERTY()
 	UMaterialInstanceDynamic* BrushMID;
 
+	void OnKnobEntrance() const;
+	void OnNavelEntrance() const;
+	void OnKnobExit() const;
+	void OnNavelExit() const;
 	void OnKnobCaptureStarted();
 	void OnKnobCaptureFinished();
 	void OnNavelCaptureStarted();
