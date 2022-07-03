@@ -6,11 +6,35 @@
 #include "Sonafridge/Widgets/ToggleKnob.h"
 #include "Sonafridge/MathTools.h"
 #include "AudioDevice.h"
+#include "Components/CanvasPanelSlot.h"
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
 #include "Kismet/KismetTextLibrary.h"
 #include "Misc/DefaultValueHelper.h"
 
+
+void UEW_EQBandPopup::Move(const FVector2D& InBandWPos, const FVector2D& InParentSize)
+{
+	FVector2D Size = GetDesiredSize();
+	FVector2D Position = InBandWPos;
+	Position.X -= .5f * Size.X;
+	if (InBandWPos.Y > Size.Y && InBandWPos.Y < .5f * InParentSize.Y)
+	{
+		Position.Y -= Size.Y;
+	}
+	if (InBandWPos.Y > InParentSize.Y - Size.Y)
+	{
+		Position.Y -= Size.Y;
+	}
+
+	Position.X = FMath::Clamp(Position.X, 0.f, InParentSize.X - Size.X);
+
+	UCanvasPanelSlot* CanvasSlot = static_cast<UCanvasPanelSlot*>(Slot);
+	if (CanvasSlot)
+	{
+		CanvasSlot->SetPosition(Position);
+	}
+}
 
 void UEW_EQBandPopup::NativeConstruct()
 {

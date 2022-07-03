@@ -39,6 +39,9 @@ class SONAFRIDGEEDITOR_API UEW_EQBandPopup : public UEditorUtilityWidget
 	GENERATED_BODY()
 
 public:
+	void Move(const FVector2D& InBandWPos, const FVector2D& InParentSize);
+
+protected:
 	UPROPERTY(meta = (BindWidget))
 	UNaveledKnob* NaveledKnobFrequency;
 
@@ -75,7 +78,6 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	UTexture* IconNotch;
 
-protected:
 	UFUNCTION()
 	virtual void NativeConstruct() override;
 

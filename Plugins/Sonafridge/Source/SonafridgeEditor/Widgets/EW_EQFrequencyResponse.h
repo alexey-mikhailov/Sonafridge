@@ -27,6 +27,8 @@ protected:
 	                           const FVector2D& OldSize);
 
 	virtual void   NativeConstruct() override;
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual FReply NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual FReply NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual int32  NativePaint(const FPaintArgs&        Args,
 	                           const FGeometry&         AllottedGeometry,
@@ -46,8 +48,6 @@ protected:
 	TArray<FVector2D> BandPoints;
 
 	const int32 Resolution = 1000;
-	const float DynamicMin = -48.f;
-	const float DynamicMax = +48.f;
 	const float ResolutionStep = 1.f / Resolution;
 
 	/// Frequency logarithmic audible minimum. 
@@ -69,8 +69,9 @@ protected:
 	FVector2D LastMousePos;
 
 private:
-	void BakeGrid();
-	void BakeResponse();
+	void      BakeGrid();
+	void      BakeResponse();
+	FVector2D GetBandWPos(TSharedPtr<FEQBand> InBand);
 
 	FSizeChanged SizeChanged;
 	FVector2D    LastSize;

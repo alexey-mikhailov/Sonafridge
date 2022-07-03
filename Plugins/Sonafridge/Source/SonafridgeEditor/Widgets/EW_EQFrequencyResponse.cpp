@@ -35,12 +35,66 @@ void UEW_EQFrequencyResponse::OnSizeChanged(const FVector2D& OldSize,
 	LastSize = NewSize;
 	BakeGrid();
 	BakeResponse();
+
+	RootWidget->RefreshBandPopup();
 }
 
 void UEW_EQFrequencyResponse::NativeConstruct()
 {
 	Super::NativeConstruct();
 	SetClipping(EWidgetClipping::ClipToBoundsAlways);
+}
+
+FReply UEW_EQFrequencyResponse::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	FReply Reply = Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
+
+	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
+	MousePos =
+	{
+		FMath::Clamp(MousePos.X, 0.f, LastSize.X),
+		FMath::Clamp(MousePos.Y, 0.f, LastSize.Y),
+	};
+
+	PossessedBandIndex = -1;
+
+	int32 Index = 0;
+	for (auto Band : Settings->GetBands())
+	{
+		FVector2D       WBandPos = GetBandWPos(Band);
+		constexpr float ScreenSpaceTolerance = 10.f;
+
+		if (FMath::Abs(MousePos.X - WBandPos.X) < ScreenSpaceTolerance && 
+			FMath::Abs(MousePos.Y - WBandPos.Y) < ScreenSpaceTolerance)
+		{
+			PossessedBand = Band;
+			PossessedBandIndex = Index;
+			PresstimeMousePos = MousePos;
+			PresstimeFrequency = Band->GetFrequency();
+			PresstimeNAmountDb = (UEW_EQ::DynamicMax - Band->GetAmountDb())
+			                   / (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin);
+			Reply = Reply.CaptureMouse(TakeWidget());
+			break;
+		}
+
+		++Index;
+	}
+
+	RootWidget->SetSelectedBandIndex(PossessedBandIndex);
+	RootWidget->RefreshBandPopup();
+
+	return Reply;
+}
+
+FReply UEW_EQFrequencyResponse::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	FReply Reply = Super::NativeOnMouseButtonUp(InGeometry, InMouseEvent);
+
+	Reply = Reply.ReleaseMouseCapture();
+	PossessedBand = {};
+	PossessedBandIndex = -1;
+
+	return Reply;
 }
 
 FReply UEW_EQFrequencyResponse::NativeOnMouseMove(const FGeometry& InGeometry, 
@@ -61,40 +115,16 @@ FReply UEW_EQFrequencyResponse::NativeOnMouseMove(const FGeometry& InGeometry,
 	bool bLeft = InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton);
 	bool bCtrl = InMouseEvent.IsControlDown();
 
-	if (bWasLeftMouseButtonPressed && !bLeft)
-	{
-		Reply = Reply.ReleaseMouseCapture();
-		PossessedBand = {};
-		PossessedBandIndex = -1;
-	}
-
 	int32 Index = 0;
 	for (auto Band : Settings->GetBands())
 	{
-		float F = Band->GetFrequency();
-		float NX = MathLogTool::TwentiethsToTribel(F);
-		float NY = (DynamicMax - Settings->DtftDb(F)) / (DynamicMax - DynamicMin);
-		float WX = NX * LastSize.X;
-		float WY = NY * LastSize.Y;
-
+		FVector2D       WBandPos = GetBandWPos(Band);
 		constexpr float ScreenSpaceTolerance = 10.f;
 
-		if (FMath::Abs(MousePos.X - WX) < ScreenSpaceTolerance && 
-			FMath::Abs(MousePos.Y - WY) < ScreenSpaceTolerance)
+		if (FMath::Abs(MousePos.X - WBandPos.X) < ScreenSpaceTolerance && 
+			FMath::Abs(MousePos.Y - WBandPos.Y) < ScreenSpaceTolerance)
 		{
 			HoverBandIndex = Index;
-
-			if (bLeft && !bWasLeftMouseButtonPressed)
-			{
-				PossessedBand = Band;
-				PossessedBandIndex = Index;
-				RootWidget->SetSelectedBandIndex(Index);
-				PresstimeMousePos = MousePos;
-				PresstimeFrequency = F;
-				PresstimeNAmountDb = (DynamicMax - Band->GetAmountDb()) / (DynamicMax - DynamicMin);
-				Reply = Reply.CaptureMouse(TakeWidget());
-			}
-
 			break;
 		}
 
@@ -126,9 +156,11 @@ FReply UEW_EQFrequencyResponse::NativeOnMouseMove(const FGeometry& InGeometry,
 			float NNewY = PresstimeNAmountDb + NDiff.Y;
 
 			PossessedBand->SetFrequency(F);
-			PossessedBand->SetAmountDb(DynamicMax - NNewY * (DynamicMax - DynamicMin));
+			PossessedBand->SetAmountDb(UEW_EQ::DynamicMax - NNewY * (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin));
 			RootWidget->GetEvent_BandChanged().Broadcast(PossessedBand);
 		}
+
+		RootWidget->RefreshBandPopup();
 	}
 
 	bWasLeftMouseButtonPressed = bLeft;
@@ -288,7 +320,10 @@ void UEW_EQFrequencyResponse::BakeResponse()
 	{
 		auto Frequency = FMath::Exp(I * FLS + FLMin);
 		float Response = Settings->DtftDb(Frequency);
-		float Y = (Response - DynamicMin) / (DynamicMax - DynamicMin);
+
+		float Y = (Response           - UEW_EQ::DynamicMin)
+		        / (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin);
+
 		ResponsePoints[I] = 
 		{
 			W * I * ResolutionStep,
@@ -306,7 +341,7 @@ void UEW_EQFrequencyResponse::BakeResponse()
 			float F = Band->GetFrequency();
 			float X = MathLogTool::TwentiethsToTribel(F);
 			float Response = Settings->DtftDb(F);
-			float Y = (Response - DynamicMin) / (DynamicMax - DynamicMin);
+			float Y = (Response - UEW_EQ::DynamicMin) / (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin);
 
 			if (BandPoints.Num() > Index)
 			{
@@ -316,4 +351,20 @@ void UEW_EQFrequencyResponse::BakeResponse()
 			++Index;
 		}
 	}
+}
+
+FVector2D UEW_EQFrequencyResponse::GetBandWPos(TSharedPtr<FEQBand> InBand)
+{
+	if (InBand)
+	{
+		float F = InBand->GetFrequency();
+		float NX = MathLogTool::TwentiethsToTribel(F);
+		float NY = (UEW_EQ::DynamicMax - Settings->DtftDb(F))
+		         / (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin);
+		float WX = NX * LastSize.X;
+		float WY = NY * LastSize.Y;
+		return { WX, WY };
+	}
+
+	return {};
 }

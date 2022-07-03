@@ -8,6 +8,7 @@
 #include "EW_EQ.generated.h"
 
 class UEW_EQBandList;
+class UEW_EQBandPopup;
 class UEW_EQManagementStrip;
 class UEW_EQFrequencyResponse;
 
@@ -17,6 +18,9 @@ class SONAFRIDGEEDITOR_API UEW_EQ : public UEditorUtilityWidget
 	GENERATED_BODY()
 
 public:
+	static constexpr float DynamicMin = -48.f;
+	static constexpr float DynamicMax = +48.f;
+
 	UEW_EQ();
 	void Init(TSharedPtr<IEQSettings> InSettings);
 
@@ -25,6 +29,7 @@ public:
 
 	int32 GetSelectedBandIndex() const { return SelectedBandIndex; }
 	void  SetSelectedBandIndex(int32 InBandIndex);
+	void  RefreshBandPopup();
 
 	DECLARE_EVENT_OneParam(UEW_EQBandList, FBandSelectionChanged, TSharedPtr<FEQBand>)
 
@@ -41,7 +46,14 @@ public:
 	FBandRemoved& GetEvent_BandRemoved() { return BandRemoved; }
 
 protected:
-	virtual void NativeConstruct() override;
+	virtual void  NativeConstruct() override;
+	virtual int32 NativePaint(const FPaintArgs&        Args,
+	                          const FGeometry&         AllottedGeometry,
+	                          const FSlateRect&        MyCullingRect,
+	                          FSlateWindowElementList& OutDrawElements,
+	                          int32                    LayerId,
+	                          const FWidgetStyle&      InWidgetStyle,
+	                          bool                     bParentEnabled) const override;
 
 	float SampleRate = 44100.f;
 	TSharedPtr<IEQSettings> Settings;
@@ -50,18 +62,19 @@ protected:
 	UEW_EQFrequencyResponse* FrequencyResponse;
 
 	UPROPERTY(meta = (BindWidget))
-	UEW_EQManagementStrip* ManagementStrip;
-
-	UPROPERTY(meta = (BindWidget))
-	UEW_EQBandList* BandList;
+	UEW_EQBandPopup* BandPopup;
 
 	TSharedPtr<FEQBand> SelectedBand;
 	int32 SelectedBandIndex = -1;
 
 private:
+	FVector2D GetBandWPos(TSharedPtr<FEQBand> InBand);
+
 	FBandSelectionChanged BandSelectionChanged;
 	FBandChanged BandChanged;
 	FBandAdded BandAdded;
 	FBandRemoved BandRemoved;
+
+	FVector2D LastSize;
 	bool bWasInitialized = false;
 };
