@@ -101,6 +101,25 @@ FReply UEW_EQFrequencyResponse::NativeOnMouseButtonUp(const FGeometry& InGeometr
 	return Reply;
 }
 
+FReply UEW_EQFrequencyResponse::NativeOnMouseButtonDoubleClick(const FGeometry&     InGeometry,
+                                                               const FPointerEvent& InMouseEvent)
+{
+	FReply Reply = Super::NativeOnMouseButtonDoubleClick(InGeometry, InMouseEvent);
+	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
+	float Frequency = MathLogTool::TribelToTwentieths(MousePos.X / LastSize.X);
+
+	TSharedPtr<FEQBand> Band = MakeShared<FEQBand>();
+	Band->Init(SampleRate);
+	Band->SetType(EBandType::BandCut);
+	Band->SetFrequency(Frequency);
+	Band->SetQuality(1.f);
+	Band->SetAmountDb(0.f);
+	Band->SetLoudCompDb(0.f);
+	Settings->AddBand(Band);
+
+	return Reply;
+}
+
 FReply UEW_EQFrequencyResponse::NativeOnMouseMove(const FGeometry& InGeometry, 
                                                   const FPointerEvent& InMouseEvent)
 {
