@@ -295,12 +295,6 @@ void UEW_EQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat)
 	}
 }
 
-void UEW_EQBandPopup::OnRemoveClick()
-{
-	// TODO: Inject IEQSettings, remove band in there.
-	UE_LOG(LogTemp, Log, TEXT("Remove band stub. "));
-}
-
 void UEW_EQBandPopup::OnToggleNavelRemoveValueChanged(float QualityDelta01)
 {
 	float OldQuality01 = MathLogTool::ThousandsToHexabel(Band->GetQuality());
@@ -325,6 +319,15 @@ void UEW_EQBandPopup::OnToggleNavelOnOffValueChanged(float MakeupGainDelta01)
 	Band->SetLoudCompDb(NewMakeupGainDb);
 	TextBoxValue->SetText(FloatToText(NewMakeupGainDb, 2, ESignMode::Always));
 	RootWidget->GetEvent_BandChanging().Broadcast(Band);
+}
+
+void UEW_EQBandPopup::OnRemoveClick()
+{
+	Settings->RemoveBand(Band);
+	RootWidget->SetSelectedBandIndex(-1);
+	RootWidget->GetEvent_BandSelectionChanged().Broadcast(Band);
+	RootWidget->GetEvent_BandRemoved().Broadcast(Band);
+	RootWidget->GetEvent_BandChanged().Broadcast(Band);
 }
 
 void UEW_EQBandPopup::OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNewValue)
