@@ -17,10 +17,16 @@ void UEW_EQFrequencyResponse::Init(UEW_EQ* InRootWidget, TSharedPtr<IEQSettings>
 	RootWidget = InRootWidget;
 	Settings = InSettings;
 	SampleRate = Settings->GetSampleRate();
+	RootWidget->GetEvent_BandChanging().AddUObject(this, &UEW_EQFrequencyResponse::OnBandChanging);
 	RootWidget->GetEvent_BandChanged().AddUObject(this, &UEW_EQFrequencyResponse::OnBandChanged);
 	GridPointPairs.SetNumZeroed((7 + 10 + 10) + ((48.f + 42.f) / 6.f));
 	ResponsePoints.SetNumZeroed(Resolution);
 	BakeGrid();
+	BakeResponse();
+}
+
+void UEW_EQFrequencyResponse::OnBandChanging(TSharedPtr<FEQBand> InBand)
+{
 	BakeResponse();
 }
 
@@ -35,8 +41,6 @@ void UEW_EQFrequencyResponse::OnSizeChanged(const FVector2D& OldSize,
 	LastSize = NewSize;
 	BakeGrid();
 	BakeResponse();
-
-	RootWidget->RefreshBandPopup();
 }
 
 void UEW_EQFrequencyResponse::NativeConstruct()
@@ -81,7 +85,6 @@ FReply UEW_EQFrequencyResponse::NativeOnMouseButtonDown(const FGeometry& InGeome
 	}
 
 	RootWidget->SetSelectedBandIndex(PossessedBandIndex);
-	RootWidget->RefreshBandPopup();
 
 	return Reply;
 }
@@ -93,6 +96,7 @@ FReply UEW_EQFrequencyResponse::NativeOnMouseButtonUp(const FGeometry& InGeometr
 	Reply = Reply.ReleaseMouseCapture();
 	PossessedBand = {};
 	PossessedBandIndex = -1;
+	RootWidget->GetEvent_BandChanging().Broadcast(PossessedBand);
 
 	return Reply;
 }
@@ -159,8 +163,6 @@ FReply UEW_EQFrequencyResponse::NativeOnMouseMove(const FGeometry& InGeometry,
 			PossessedBand->SetAmountDb(UEW_EQ::DynamicMax - NNewY * (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin));
 			RootWidget->GetEvent_BandChanged().Broadcast(PossessedBand);
 		}
-
-		RootWidget->RefreshBandPopup();
 	}
 
 	bWasLeftMouseButtonPressed = bLeft;

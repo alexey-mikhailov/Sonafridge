@@ -7,10 +7,12 @@
 #include "CoreMinimal.h"
 #include "EW_EQBandPopup.generated.h"
 
+struct IEQSettings;
 class UNaveledKnob;
 class UToggleKnob;
 class UTextBlock;
 class UEditableTextBox;
+class UEW_EQ;
 
 UENUM()
 enum class EBandPopupFocusMode : uint8
@@ -39,7 +41,8 @@ class SONAFRIDGEEDITOR_API UEW_EQBandPopup : public UEditorUtilityWidget
 	GENERATED_BODY()
 
 public:
-	void Move(const FVector2D& InBandWPos, const FVector2D& InParentSize);
+	void Init(UEW_EQ* InRootWidget, TSharedPtr<IEQSettings> InSettings);
+	void FollowBand();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -80,6 +83,7 @@ protected:
 
 	UFUNCTION()
 	virtual void NativeConstruct() override;
+	void         OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize);
 
 	void OnFrequencyEntrance();
 	void OnAmountEntrance();
@@ -96,28 +100,49 @@ protected:
 	void OnButtonRemoveExit();
 	void OnToggleOnOffExit();
 	
-	void OnFrequencyChanged(float OldFrequency01, float NewFrequency01);
-	void OnAmountChanged(float OldAmount01, float NewAmount01);
-	void OnQualityChanged(float OldQuality01, float NewQuality01);
-	void OnMakeupGainChanged(float OldMakeupGain01, float NewMakeupGain01);
-	void OnListenStarted();
+	void OnBandSelectionChanged(TSharedPtr<FEQBand> InBand);
+	void OnBandChanging(TSharedPtr<FEQBand> InBand);
+	void OnBandChanged(TSharedPtr<FEQBand> InBand);
+	void OnFrequencyDelta(float OldFrequency01, float NewFrequency01);
+	void OnAmountDelta(float OldAmount01, float NewAmount01);
+	void OnQualityDelta(float OldQuality01, float NewQuality01);
+	void OnMakeupGainDelta(float OldMakeupGain01, float NewMakeupGain01);
 	void OnListenDelta(float FrequencyDelta);
-	void OnListenFinished();
 	void OnBandTypeChanged(float BandTypeDeltaAsFloat);
-	void OnRemoveClick();
 	void OnToggleNavelRemoveValueChanged(float QualityDelta01);
-	void OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNewValue);
 	void OnToggleNavelOnOffValueChanged(float MakeupGainDelta01);
+	void OnRemoveClick();
+	void OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNewValue);
+	void OnFrequencyCommit();
+	void OnAmountCommit();
+	void OnQualityCommit();
+	void OnMakeupGainCommit();
+	void OnListenStarted();
+	void OnListenFinished();
 
 	UFUNCTION()
 	void OnTextCommitted(const FText& Text, ETextCommit::Type CommitType);
 
+	virtual int32 NativePaint(const FPaintArgs&        Args,
+	                          const FGeometry&         AllottedGeometry,
+	                          const FSlateRect&        MyCullingRect,
+	                          FSlateWindowElementList& OutDrawElements,
+	                          int32                    LayerId,
+	                          const FWidgetStyle&      InWidgetStyle,
+	                          bool                     bParentEnabled) const override;
 private:
+	void RefreshVisual();
 	static EBandType GetBandTypeByPopupType(EBandPopupType InBandPopupType);
 	UTexture* GetBandIconByType(EBandPopupType InBandPopup);
+	FVector2D GetBandWPos();
 
-	TSharedPtr<FEQBand> Band;
-	EBandType           BandTypeBeforeListenTime = EBandType::BandCut;
-	EBandPopupFocusMode FocusMode = EBandPopupFocusMode::None;
-	float               BandTypeFloat = 0.f;
+	UPROPERTY()
+	UEW_EQ* RootWidget;
+
+	TSharedPtr<IEQSettings> Settings;
+	TSharedPtr<FEQBand>     Band;
+	FVector2D               LastSize;
+	float                   BandTypeFloat = 0.f;
+	EBandType               BandTypeBeforeListenTime = EBandType::BandCut;
+	EBandPopupFocusMode     FocusMode = EBandPopupFocusMode::Frequency;
 };

@@ -5,29 +5,63 @@
 #include "Sonafridge/Widgets/NaveledKnob.h"
 #include "Sonafridge/Widgets/ToggleKnob.h"
 #include "Sonafridge/MathTools.h"
-#include "AudioDevice.h"
+#include "EW_EQ.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
 #include "Kismet/KismetTextLibrary.h"
 #include "Misc/DefaultValueHelper.h"
+#include "AudioDevice.h"
+
+enum class ESignMode { NegativeOnly, Always };
 
 
-void UEW_EQBandPopup::Move(const FVector2D& InBandWPos, const FVector2D& InParentSize)
+FText FloatToText(float     InValue,
+                  int32     NumDigits,
+                  ESignMode SignMode = ESignMode::NegativeOnly)
 {
+	return UKismetTextLibrary::Conv_FloatToText(InValue,
+	                                            HalfFromZero,
+	                                            SignMode == ESignMode::Always,
+	                                            false,
+	                                            1,
+	                                            324,
+	                                            NumDigits,
+	                                            NumDigits);
+}
+
+void UEW_EQBandPopup::Init(UEW_EQ* InRootWidget, TSharedPtr<IEQSettings> InSettings)
+{
+	RootWidget = InRootWidget;
+	Settings = InSettings;
+	RootWidget->GetEvent_BandChanging().AddUObject(this, &UEW_EQBandPopup::OnBandChanging);
+	RootWidget->GetEvent_BandChanged().AddUObject(this, &UEW_EQBandPopup::OnBandChanged);
+	RootWidget->GetEvent_BandSelectionChanged().AddUObject(this, &UEW_EQBandPopup::OnBandSelectionChanged);
+}
+
+void UEW_EQBandPopup::FollowBand()
+{
+	if (!RootWidget)
+	{
+		return;
+	}
+
+	FVector2D BandWPos = GetBandWPos();
+	FVector2D ParentSize = RootWidget->GetLastSize();
+
 	FVector2D Size = GetDesiredSize();
-	FVector2D Position = InBandWPos;
+	FVector2D Position = BandWPos;
 	Position.X -= .5f * Size.X;
-	if (InBandWPos.Y > Size.Y && InBandWPos.Y < .5f * InParentSize.Y)
+	if (BandWPos.Y > Size.Y && BandWPos.Y < .5f * ParentSize.Y)
 	{
 		Position.Y -= Size.Y;
 	}
-	if (InBandWPos.Y > InParentSize.Y - Size.Y)
+	if (BandWPos.Y > ParentSize.Y - Size.Y)
 	{
 		Position.Y -= Size.Y;
 	}
 
-	Position.X = FMath::Clamp(Position.X, 0.f, InParentSize.X - Size.X);
+	Position.X = FMath::Clamp(Position.X, 0.f, ParentSize.X - Size.X);
 
 	UCanvasPanelSlot* CanvasSlot = static_cast<UCanvasPanelSlot*>(Slot);
 	if (CanvasSlot)
@@ -39,29 +73,6 @@ void UEW_EQBandPopup::Move(const FVector2D& InBandWPos, const FVector2D& InParen
 void UEW_EQBandPopup::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	// TODO: Change to IEQSettings injection. Get SampleRate from there. 
-	float SampleRate = 44100.f;
-	if (auto AudioDevice = GEngine->GetActiveAudioDevice())
-	{
-		SampleRate = AudioDevice->GetSampleRate();
-	}
-
-	Band = MakeShared<FEQBand>();
-	Band->Init(SampleRate);
-	Band->SetType(EBandType::BandCut);
-	BandTypeFloat = static_cast<float>(EBandType::BandCut);
-
-	const float Frequency01 = MathLogTool::TwentiethsToTribel(Band->GetFrequency());
-	const float Amount01 = (Band->GetAmountDb() + 48.f) / 96.f;
-	const float Quality01 = MathLogTool::ThousandsToHexabel(Band->GetQuality());
-	const float MakeupGain01 = (Band->GetLoudCompDb() + 48.f) / 96.f;
-
-	NaveledKnobFrequency->SetValue01(Frequency01);
-	NaveledKnobAmount->SetValue01(Amount01);
-	NaveledKnobQuality->SetValue01(Quality01);
-	ToggleKnobMakeupGain->SetValue01(MakeupGain01);
-	ToggleKnobMakeupGain->SetIsOn(Band->GetIsEnabled());
 
 	NaveledKnobFrequency->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnFrequencyEntrance);
 	NaveledKnobAmount->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnAmountEntrance);
@@ -78,29 +89,39 @@ void UEW_EQBandPopup::NativeConstruct()
 	NaveledKnobQuality->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnButtonRemoveExit);
 	ToggleKnobMakeupGain->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnToggleOnOffExit);
 
-	NaveledKnobFrequency->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnFrequencyChanged);
-	NaveledKnobAmount->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnAmountChanged);
-	NaveledKnobQuality->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnQualityChanged);
-	ToggleKnobMakeupGain->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnMakeupGainChanged);
+	NaveledKnobFrequency->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnFrequencyDelta);
+	NaveledKnobAmount->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnAmountDelta);
+	NaveledKnobQuality->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnQualityDelta);
+	ToggleKnobMakeupGain->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnMakeupGainDelta);
 
-	NaveledKnobFrequency->GetEvent_NavelCaptureStarted().AddUObject(this, &UEW_EQBandPopup::OnListenStarted);
-	NaveledKnobFrequency->GetEvent_NavelCaptureFinished().AddUObject(this, &UEW_EQBandPopup::OnListenFinished);
 	NaveledKnobFrequency->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnListenDelta);
 	NaveledKnobAmount->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnBandTypeChanged);
-
-	NaveledKnobQuality->GetEvent_NavelClick().AddUObject(this, &UEW_EQBandPopup::OnRemoveClick);
 	NaveledKnobQuality->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelRemoveValueChanged);
-	ToggleKnobMakeupGain->GetEvent_ToggleStateChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelOnOffStateChanged);
 	ToggleKnobMakeupGain->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelOnOffValueChanged);
 
+	NaveledKnobQuality->GetEvent_NavelClick().AddUObject(this, &UEW_EQBandPopup::OnRemoveClick);
+	ToggleKnobMakeupGain->GetEvent_ToggleStateChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelOnOffStateChanged);
+
+	NaveledKnobFrequency->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_EQBandPopup::OnFrequencyCommit);
+	NaveledKnobAmount->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_EQBandPopup::OnAmountCommit);
+	NaveledKnobQuality->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_EQBandPopup::OnQualityCommit);
+	ToggleKnobMakeupGain->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_EQBandPopup::OnMakeupGainCommit);
+	NaveledKnobFrequency->GetEvent_NavelCaptureStarted().AddUObject(this, &UEW_EQBandPopup::OnListenStarted);
+	NaveledKnobFrequency->GetEvent_NavelCaptureFinished().AddUObject(this, &UEW_EQBandPopup::OnListenFinished);
+
 	TextBoxValue->OnTextCommitted.AddDynamic(this, &UEW_EQBandPopup::OnTextCommitted);
+}
+
+void UEW_EQBandPopup::OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize)
+{
+	FollowBand();
 }
 
 void UEW_EQBandPopup::OnFrequencyEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Frequency;
 	TextBlockKey->SetText(FText::FromString(TEXT("Frequency")));
-	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetFrequency(), HalfFromZero, false, false, 1, 324, 1, 1));
+	TextBoxValue->SetText(FloatToText(Band->GetFrequency(), 1));
 	NaveledKnobFrequency->RefreshVisual();
 }
 
@@ -108,7 +129,7 @@ void UEW_EQBandPopup::OnAmountEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Amount;
 	TextBlockKey->SetText(FText::FromString(TEXT("Amount")));
-	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetAmountDb(), HalfFromZero, true, false, 1, 324, 2, 2));
+	TextBoxValue->SetText(FloatToText(Band->GetAmountDb(), 2, ESignMode::Always));
 	NaveledKnobAmount->RefreshVisual();
 }
 
@@ -116,7 +137,7 @@ void UEW_EQBandPopup::OnQualityEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Quality;
 	TextBlockKey->SetText(FText::FromString(TEXT("Quality")));
-	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetQuality(), HalfFromZero, false, false, 1, 324, 3, 3));
+	TextBoxValue->SetText(FloatToText(Band->GetQuality(), 3));
 	NaveledKnobQuality->RefreshVisual();
 }
 
@@ -124,7 +145,7 @@ void UEW_EQBandPopup::OnMakeupGainEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Makeup;
 	TextBlockKey->SetText(FText::FromString(TEXT("Makeup Gain")));
-	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetLoudCompDb(), HalfFromZero, true, false, 1, 324, 2, 2));
+	TextBoxValue->SetText(FloatToText(Band->GetLoudCompDb(), 2, ESignMode::Always));
 	ToggleKnobMakeupGain->RefreshVisual();
 }
 
@@ -132,7 +153,7 @@ void UEW_EQBandPopup::OnListenEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Frequency;
 	TextBlockKey->SetText(FText::FromString(TEXT("Frequency")));
-	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetFrequency(), HalfFromZero, false, false, 1, 324, 1, 1));
+	TextBoxValue->SetText(FloatToText(Band->GetFrequency(), 1));
 	NaveledKnobFrequency->RefreshVisual();
 }
 
@@ -158,7 +179,7 @@ void UEW_EQBandPopup::OnButtonRemoveEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Quality;
 	TextBlockKey->SetText(FText::FromString(TEXT("Quality")));
-	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetQuality(), HalfFromZero, false, false, 1, 324, 3, 3));
+	TextBoxValue->SetText(FloatToText(Band->GetQuality(), 3));
 	NaveledKnobQuality->RefreshVisual();
 }
 
@@ -166,7 +187,7 @@ void UEW_EQBandPopup::OnToggleOnOffEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Makeup;
 	TextBlockKey->SetText(FText::FromString(TEXT("Makeup Gain")));
-	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(Band->GetLoudCompDb(), HalfFromZero, true, false, 1, 324, 2, 2));
+	TextBoxValue->SetText(FloatToText(Band->GetLoudCompDb(), 2, ESignMode::Always));
 	ToggleKnobMakeupGain->RefreshVisual();
 }
 
@@ -186,38 +207,55 @@ void UEW_EQBandPopup::OnToggleOnOffExit()
 {
 }
 
-void UEW_EQBandPopup::OnFrequencyChanged(float OldFrequency01, float NewFrequency01)
+void UEW_EQBandPopup::OnBandSelectionChanged(TSharedPtr<FEQBand> InBand)
+{
+	Band = InBand;
+	SetVisibility(Band ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	FollowBand();
+	RefreshVisual();
+}
+
+void UEW_EQBandPopup::OnBandChanging(TSharedPtr<FEQBand> InBand)
+{
+	RefreshVisual();
+}
+
+void UEW_EQBandPopup::OnBandChanged(TSharedPtr<FEQBand> InBand)
+{
+	RefreshVisual();
+	FollowBand();
+}
+
+void UEW_EQBandPopup::OnFrequencyDelta(float OldFrequency01, float NewFrequency01)
 {
 	float NewFrequency = MathLogTool::TribelToTwentieths(NewFrequency01);
 	Band->SetFrequency(NewFrequency);
-	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(NewFrequency, HalfFromZero, false, false, 1, 324, 1, 1));
+	TextBoxValue->SetText(FloatToText(NewFrequency, 1));
+	RootWidget->GetEvent_BandChanging().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnAmountChanged(float OldAmount01, float NewAmount01)
+void UEW_EQBandPopup::OnAmountDelta(float OldAmount01, float NewAmount01)
 {
 	float NewAmountDb = NewAmount01 * 96.f - 48.f;
 	Band->SetAmountDb(NewAmountDb);
-	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(NewAmountDb, HalfFromZero, true, false, 1, 324, 2, 2));
+	TextBoxValue->SetText(FloatToText(NewAmountDb, 2, ESignMode::Always));
+	RootWidget->GetEvent_BandChanging().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnQualityChanged(float OldQuality01, float NewQuality01)
+void UEW_EQBandPopup::OnQualityDelta(float OldQuality01, float NewQuality01)
 {
 	float NewQuality = MathLogTool::HexabelToThousands(NewQuality01);
 	Band->SetQuality(NewQuality);
-	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(NewQuality, HalfFromZero, false, false, 1, 324, 3, 3));
+	TextBoxValue->SetText(FloatToText(NewQuality, 3));
+	RootWidget->GetEvent_BandChanging().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnMakeupGainChanged(float OldMakeupGain01, float NewMakeupGain01)
+void UEW_EQBandPopup::OnMakeupGainDelta(float OldMakeupGain01, float NewMakeupGain01)
 {
 	float NewMakeupGainDb = NewMakeupGain01 * 96.f - 48.f;
 	Band->SetLoudCompDb(NewMakeupGainDb);
-	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(NewMakeupGainDb, HalfFromZero, true, false, 1, 324, 2, 2));
-}
-
-void UEW_EQBandPopup::OnListenStarted()
-{
-	BandTypeBeforeListenTime = Band->GetType();
-	Band->SetType(EBandType::BandPass);
+	TextBoxValue->SetText(FloatToText(NewMakeupGainDb, 2, ESignMode::Always));
+	RootWidget->GetEvent_BandChanging().Broadcast(Band);
 }
 
 void UEW_EQBandPopup::OnListenDelta(float FrequencyDelta)
@@ -229,12 +267,8 @@ void UEW_EQBandPopup::OnListenDelta(float FrequencyDelta)
 
 	float NewFrequency = MathLogTool::TribelToTwentieths(NewFrequency01);
 	Band->SetFrequency(NewFrequency);
-	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(NewFrequency, HalfFromZero, false, false, 1, 324, 1, 1));
-}
-
-void UEW_EQBandPopup::OnListenFinished()
-{
-	Band->SetType(BandTypeBeforeListenTime);
+	TextBoxValue->SetText(FloatToText(NewFrequency, 1));
+	RootWidget->GetEvent_BandChanging().Broadcast(Band);
 }
 
 void UEW_EQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat)
@@ -276,12 +310,8 @@ void UEW_EQBandPopup::OnToggleNavelRemoveValueChanged(float QualityDelta01)
 
 	float NewQuality = MathLogTool::HexabelToThousands(NewQuality01);
 	Band->SetQuality(NewQuality);
-	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(NewQuality, HalfFromZero, false, false, 1, 324, 3, 3));
-}
-
-void UEW_EQBandPopup::OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNewValue)
-{
-	Band->SetIsEnabled(bNewValue);
+	TextBoxValue->SetText(FloatToText(NewQuality, 3));
+	RootWidget->GetEvent_BandChanging().Broadcast(Band);
 }
 
 void UEW_EQBandPopup::OnToggleNavelOnOffValueChanged(float MakeupGainDelta01)
@@ -293,7 +323,45 @@ void UEW_EQBandPopup::OnToggleNavelOnOffValueChanged(float MakeupGainDelta01)
 
 	float NewMakeupGainDb = NewMakeupGain01 * 96.f - 48.f;
 	Band->SetLoudCompDb(NewMakeupGainDb);
-	TextBoxValue->SetText(UKismetTextLibrary::Conv_FloatToText(NewMakeupGainDb, HalfFromZero, true, false, 1, 324, 2, 2));
+	TextBoxValue->SetText(FloatToText(NewMakeupGainDb, 2, ESignMode::Always));
+	RootWidget->GetEvent_BandChanging().Broadcast(Band);
+}
+
+void UEW_EQBandPopup::OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNewValue)
+{
+	Band->SetIsEnabled(bNewValue);
+}
+
+void UEW_EQBandPopup::OnFrequencyCommit()
+{
+	RootWidget->GetEvent_BandChanged().Broadcast(Band);
+}
+
+void UEW_EQBandPopup::OnAmountCommit()
+{
+	RootWidget->GetEvent_BandChanged().Broadcast(Band);
+}
+
+void UEW_EQBandPopup::OnQualityCommit()
+{
+	RootWidget->GetEvent_BandChanged().Broadcast(Band);
+}
+
+void UEW_EQBandPopup::OnMakeupGainCommit()
+{
+	RootWidget->GetEvent_BandChanged().Broadcast(Band);
+}
+
+void UEW_EQBandPopup::OnListenStarted()
+{
+	BandTypeBeforeListenTime = Band->GetType();
+	Band->SetType(EBandType::BandPass);
+}
+
+void UEW_EQBandPopup::OnListenFinished()
+{
+	Band->SetType(BandTypeBeforeListenTime);
+	RootWidget->GetEvent_BandChanged().Broadcast(Band);
 }
 
 void UEW_EQBandPopup::OnTextCommitted(const FText& Text, ETextCommit::Type CommitType)
@@ -338,6 +406,76 @@ void UEW_EQBandPopup::OnTextCommitted(const FText& Text, ETextCommit::Type Commi
 			ToggleKnobMakeupGain->SetValue01(NewMakeupGain01);
 		}
 	}
+
+	RootWidget->GetEvent_BandChanged().Broadcast(Band);
+}
+
+int32 UEW_EQBandPopup::NativePaint(const FPaintArgs&        Args,
+                                   const FGeometry&         AllottedGeometry,
+                                   const FSlateRect&        MyCullingRect,
+                                   FSlateWindowElementList& OutDrawElements,
+                                   int32                    LayerId,
+                                   const FWidgetStyle&      InWidgetStyle,
+                                   bool                     bParentEnabled) const
+{
+	int32 Result = Super::NativePaint(Args,
+	                                  AllottedGeometry,
+	                                  MyCullingRect,
+	                                  OutDrawElements,
+	                                  LayerId,
+	                                  InWidgetStyle,
+	                                  bParentEnabled);
+
+	UEW_EQBandPopup* MutableThis = const_cast<UEW_EQBandPopup*>(this);
+	FVector2D Size = AllottedGeometry.GetLocalSize();
+
+	if (Size != LastSize)
+	{
+		MutableThis->OnSizeChanged(LastSize, Size);
+	}
+
+	MutableThis->LastSize = Size;
+
+
+	return Result;
+}
+
+void UEW_EQBandPopup::RefreshVisual()
+{
+	if (Band)
+	{
+		const float Frequency01 = MathLogTool::TwentiethsToTribel(Band->GetFrequency());
+		const float Amount01 = (Band->GetAmountDb() + 48.f) / 96.f;
+		const float Quality01 = MathLogTool::ThousandsToHexabel(Band->GetQuality());
+		const float MakeupGain01 = (Band->GetLoudCompDb() + 48.f) / 96.f;
+
+		NaveledKnobFrequency->SetValue01(Frequency01);
+		NaveledKnobAmount->SetValue01(Amount01);
+		NaveledKnobQuality->SetValue01(Quality01);
+		ToggleKnobMakeupGain->SetValue01(MakeupGain01);
+		ToggleKnobMakeupGain->SetIsOn(Band->GetIsEnabled());
+
+		if (FocusMode == EBandPopupFocusMode::Frequency)
+		{
+			TextBlockKey->SetText(FText::FromString(TEXT("Frequency")));
+			TextBoxValue->SetText(FloatToText(Band->GetFrequency(), 1));
+		}
+		else if (FocusMode == EBandPopupFocusMode::Amount)
+		{
+			TextBlockKey->SetText(FText::FromString(TEXT("Amount")));
+			TextBoxValue->SetText(FloatToText(Band->GetAmountDb(), 2, ESignMode::Always));
+		}
+		else if (FocusMode == EBandPopupFocusMode::Quality)
+		{
+			TextBlockKey->SetText(FText::FromString(TEXT("Quality")));
+			TextBoxValue->SetText(FloatToText(Band->GetQuality(), 3));
+		}
+		else if (FocusMode == EBandPopupFocusMode::Makeup)
+		{
+			TextBlockKey->SetText(FText::FromString(TEXT("Makeup Gain")));
+			TextBoxValue->SetText(FloatToText(Band->GetLoudCompDb(), 2, ESignMode::Always));
+		}
+	}
 }
 
 EBandType UEW_EQBandPopup::GetBandTypeByPopupType(EBandPopupType InBandPopupType)
@@ -368,5 +506,22 @@ UTexture* UEW_EQBandPopup::GetBandIconByType(EBandPopupType InBandPopup)
 		case EBandPopupType::Notch: return IconNotch;
 		default: return nullptr;
 	}
+}
+
+FVector2D UEW_EQBandPopup::GetBandWPos()
+{
+	if (Band)
+	{
+		float F = Band->GetFrequency();
+		float NX = MathLogTool::TwentiethsToTribel(F);
+		float NY = (UEW_EQ::DynamicMax - Settings->DtftDb(F))
+		         / (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin);
+		float WX = NX * RootWidget->GetLastSize().X;
+		float WY = NY * RootWidget->GetLastSize().Y;
+
+		return { WX, WY };
+	}
+
+	return {};
 }
 

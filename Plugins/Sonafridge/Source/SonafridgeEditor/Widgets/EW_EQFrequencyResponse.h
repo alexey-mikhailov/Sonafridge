@@ -22,6 +22,7 @@ public:
 	FSizeChanged GetEvent_SizeChanged() const { return SizeChanged; }
 
 protected:
+	virtual void OnBandChanging(TSharedPtr<FEQBand> InBand);
 	virtual void OnBandChanged(TSharedPtr<FEQBand> InBand);
 	virtual void OnSizeChanged(const FVector2D& NewSize,
 	                           const FVector2D& OldSize);

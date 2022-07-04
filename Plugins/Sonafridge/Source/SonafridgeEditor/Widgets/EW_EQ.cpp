@@ -5,9 +5,7 @@
 #include "AudioDevice.h"
 #include "EW_EQBandList.h"
 #include "EW_EQBandPopup.h"
-#include "EW_EQManagementStrip.h"
 #include "Components/CanvasPanelSlot.h"
-#include "Sonafridge/MathTools.h"
 
 UEW_EQ::UEW_EQ()
 {
@@ -62,12 +60,6 @@ void UEW_EQ::SetSelectedBandIndex(int32 InBandIndex)
 	BandSelectionChanged.Broadcast(SelectedBand);
 }
 
-void UEW_EQ::RefreshBandPopup()
-{
-	BandPopup->SetVisibility(SelectedBand ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-	BandPopup->Move(GetBandWPos(SelectedBand), LastSize);
-}
-
 void UEW_EQ::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -85,11 +77,28 @@ void UEW_EQ::NativeConstruct()
 		auto Band_BC = MakeShared<FEQBand>();
 		Band_BC->Init(SampleRate);
 		Band_BC->SetType(EBandType::BandCut);
+		Band_BC->SetFrequency(100.f);
+		Band_BC->SetQuality(1.f);
+		Band_BC->SetAmountDb(0.f);
+		Band_BC->SetLoudCompDb(0.f);
+		Bands.Add(Band_BC);
+
+		Band_BC = MakeShared<FEQBand>();
+		Band_BC->Init(SampleRate);
+		Band_BC->SetType(EBandType::BandCut);
 		Band_BC->SetFrequency(1000.f);
-		Band_BC->SetQuality(10.f);
-		Band_BC->SetAmountDb(-6.f);
-		Band_BC->SetLoudCompDb(2.f);
+		Band_BC->SetQuality(1.f);
+		Band_BC->SetAmountDb(0.f);
+		Band_BC->SetLoudCompDb(0.f);
+		Bands.Add(Band_BC);
 		
+		Band_BC = MakeShared<FEQBand>();
+		Band_BC->Init(SampleRate);
+		Band_BC->SetType(EBandType::BandCut);
+		Band_BC->SetFrequency(10000.f);
+		Band_BC->SetQuality(1.f);
+		Band_BC->SetAmountDb(0.f);
+		Band_BC->SetLoudCompDb(0.f);
 		Bands.Add(Band_BC);
 		
 		auto SettingsMock = MakeShared<FEQSettingsMock>();
@@ -99,8 +108,13 @@ void UEW_EQ::NativeConstruct()
 		// Children too
 
 		FrequencyResponse->Init(this, Settings);
+		BandPopup->Init(this, Settings);
 		BandPopup->SetVisibility(ESlateVisibility::Hidden);
 	}
+}
+
+void UEW_EQ::OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize)
+{
 }
 
 int32 UEW_EQ::NativePaint(const FPaintArgs&        Args,
@@ -122,23 +136,12 @@ int32 UEW_EQ::NativePaint(const FPaintArgs&        Args,
 	UEW_EQ*   MutableThis = const_cast<UEW_EQ*>(this);
 	FVector2D Size = AllottedGeometry.GetLocalSize();
 
-	MutableThis->LastSize = Size;
-	return Result;
-}
-
-FVector2D UEW_EQ::GetBandWPos(TSharedPtr<FEQBand> InBand)
-{
-	if (InBand)
+	if (Size != LastSize)
 	{
-		float F = InBand->GetFrequency();
-		float NX = MathLogTool::TwentiethsToTribel(F);
-		float NY = (DynamicMax - Settings->DtftDb(F))
-		         / (DynamicMax - DynamicMin);
-		float WX = NX * LastSize.X;
-		float WY = NY * LastSize.Y;
-		return { WX, WY };
+		MutableThis->OnSizeChanged(LastSize, Size);
 	}
 
-	return {};
+	MutableThis->LastSize = Size;
+	return Result;
 }
 

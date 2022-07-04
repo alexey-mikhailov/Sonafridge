@@ -29,12 +29,14 @@ public:
 
 	int32 GetSelectedBandIndex() const { return SelectedBandIndex; }
 	void  SetSelectedBandIndex(int32 InBandIndex);
-	void  RefreshBandPopup();
+
+	const FVector2D& GetLastSize() const { return LastSize; }
 
 	DECLARE_EVENT_OneParam(UEW_EQBandList, FBandSelectionChanged, TSharedPtr<FEQBand>)
-
-
 	FBandSelectionChanged& GetEvent_BandSelectionChanged() { return BandSelectionChanged; }
+
+	DECLARE_EVENT_OneParam(UEW_EQBandList, FBandChanging, TSharedPtr<FEQBand>);
+	FBandChanging& GetEvent_BandChanging() { return BandChanging; }
 
 	DECLARE_EVENT_OneParam(UEW_EQBandList, FBandChanged, TSharedPtr<FEQBand>);
 	FBandChanged& GetEvent_BandChanged() { return BandChanged; }
@@ -47,6 +49,7 @@ public:
 
 protected:
 	virtual void  NativeConstruct() override;
+	void          OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize);
 	virtual int32 NativePaint(const FPaintArgs&        Args,
 	                          const FGeometry&         AllottedGeometry,
 	                          const FSlateRect&        MyCullingRect,
@@ -68,9 +71,8 @@ protected:
 	int32 SelectedBandIndex = -1;
 
 private:
-	FVector2D GetBandWPos(TSharedPtr<FEQBand> InBand);
-
 	FBandSelectionChanged BandSelectionChanged;
+	FBandChanging BandChanging;
 	FBandChanged BandChanged;
 	FBandAdded BandAdded;
 	FBandRemoved BandRemoved;
