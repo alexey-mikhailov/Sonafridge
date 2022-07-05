@@ -113,43 +113,102 @@ void FEQBand::Recalculate()
 {
 	Omega = 2.f * PI * Frequency / SampleRate;
 
-	if (Type == EBandType::HighCut)
-	{
-		
-	}
-	else if (Type == EBandType::LowCut)
-	{
-		
-	}
-	else if (Type == EBandType::LowShelf)
-	{
-		
-	}
-	else if (Type == EBandType::HighShelf)
-	{
-		
-	}
-	else if (Type == EBandType::BandPass)
-	{
-		
-	}
-	else if (Type == EBandType::BandCut)
+	if (Type == EBandType::LowCut)
 	{
 		float Sn = FMath::Sin(Omega);
 		float Cs = FMath::Cos(Omega);
 		Alpha = .5f * Sn / Quality;
+
+		A0 = 1.f + Alpha;
+		A1 = -2.f * Cs;
+		A2 = 1.f - Alpha;
+		B0 = .5f * (1.f + Cs);
+		B1 = - 1.f - Cs;
+		B2 = .5f * (1.f + Cs);
+	}
+	else if (Type == EBandType::HighCut)
+	{
+		float Sn = FMath::Sin(Omega);
+		float Cs = FMath::Cos(Omega);
+		Alpha = .5f * Sn / Quality;
+
+		A0 = 1.f + Alpha;
+		A1 = -2.f * Cs;
+		A2 = 1.f - Alpha;
+		B0 = .5f * (1.f - Cs);
+		B1 = 1.f - Cs;
+		B2 = .5f * (1.f - Cs);
+	}
+	else if (Type == EBandType::LowShelf)
+	{
 		float GainSqrt = FMath::Pow(10, AmountDb / 40.f);
+		float Sn = FMath::Sin(Omega);
+		float Cs = FMath::Cos(Omega);
+		// Alpha = .5f * Sn * FMath::Sqrt((GainSqrt + 1.f / GainSqrt) * (1.f / Quality - 1.f) + 2.f);
+		Alpha = .5f * Sn / Quality;
+		float DoubleAlphaGain = 2.f * Alpha * FMath::Sqrt(GainSqrt);
+
+		A0 = GainSqrt + 1.f + Cs * (GainSqrt - 1.f) + DoubleAlphaGain;
+		A1 = -2.f * (GainSqrt - 1.f + Cs * (GainSqrt + 1.f));
+		A2 = GainSqrt + 1.f + Cs * (GainSqrt - 1.f) - DoubleAlphaGain;
+		B0 = GainSqrt * (GainSqrt + 1.f - Cs * (GainSqrt - 1.f) + DoubleAlphaGain);
+		B1 = +2.f * GainSqrt * (GainSqrt - 1.f - Cs * (GainSqrt + 1.f));
+		B2 = GainSqrt * (GainSqrt + 1.f - Cs * (GainSqrt - 1.f) - DoubleAlphaGain);
+	}
+	else if (Type == EBandType::HighShelf)
+	{
+		float GainSqrt = FMath::Pow(10, AmountDb / 40.f);
+		float Sn = FMath::Sin(Omega);
+		float Cs = FMath::Cos(Omega);
+		Alpha = .5f * Sn / Quality;
+		float DoubleAlphaGain = 2.f * Alpha * FMath::Sqrt(GainSqrt);
+
+		A0 = GainSqrt + 1.f - Cs * (GainSqrt - 1.f) + DoubleAlphaGain;
+		A1 = +2.f * (GainSqrt - 1.f - Cs * (GainSqrt + 1.f));
+		A2 = GainSqrt + 1.f - Cs * (GainSqrt - 1.f) - DoubleAlphaGain;
+		B0 = GainSqrt * (GainSqrt + 1.f + Cs * (GainSqrt - 1.f) + DoubleAlphaGain);
+		B1 = -2.f * GainSqrt * (GainSqrt - 1.f + Cs * (GainSqrt + 1.f));
+		B2 = GainSqrt * (GainSqrt + 1.f + Cs * (GainSqrt - 1.f) - DoubleAlphaGain);
+	}
+	else if (Type == EBandType::BandPass)
+	{
+		float Sn = FMath::Sin(Omega);
+		float Cs = FMath::Cos(Omega);
+		Alpha = .5f * Sn / Quality;
+
+		A0 = 1.f + Alpha;
+		A1 = -2.f * Cs;
+		A2 = 1.f - Alpha;
+		B0 = +Quality * Alpha;
+		B1 = 0.f;
+		B2 = -Quality * Alpha;
+	}
+	else if (Type == EBandType::BandCut)
+	{
+		float GainSqrt = FMath::Pow(10, AmountDb / 40.f);
+		float Sn = FMath::Sin(Omega);
+		float Cs = FMath::Cos(Omega);
+		Alpha = .5f * Sn / Quality;
 
 		A0 = 1.f + Alpha / GainSqrt;
 		A1 = -2.f * Cs;
 		A2 = 1.f - Alpha / GainSqrt;
 		B0 = 1.f + Alpha * GainSqrt;
-		B1 = -2 * Cs;
-		B2 = 1 - Alpha * GainSqrt;
+		B1 = -2.f * Cs;
+		B2 = 1.f - Alpha * GainSqrt;
 	}
 	else if (Type == EBandType::Notch)
 	{
+		float Sn = FMath::Sin(Omega);
+		float Cs = FMath::Cos(Omega);
+		Alpha = .5f * Sn / Quality;
 
+		A0 = 1.f + Alpha;
+		A1 = -2.f * Cs;
+		A2 = 1.f - Alpha;
+		B0 = 1.f;
+		B1 = -2.f * Cs;
+		B2 = 1.f;
 	}
 }
 

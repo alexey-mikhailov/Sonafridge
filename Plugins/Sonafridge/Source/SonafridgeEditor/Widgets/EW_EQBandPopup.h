@@ -83,7 +83,6 @@ protected:
 
 	UFUNCTION()
 	virtual void NativeConstruct() override;
-	void         OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize);
 
 	void OnFrequencyEntrance();
 	void OnAmountEntrance();
@@ -141,7 +140,6 @@ private:
 
 	TSharedPtr<IEQSettings> Settings;
 	TSharedPtr<FEQBand>     Band;
-	FVector2D               LastSize;
 	float                   BandTypeFloat = 0.f;
 	EBandType               BandTypeBeforeListenTime = EBandType::BandCut;
 	EBandPopupFocusMode     FocusMode = EBandPopupFocusMode::Frequency;

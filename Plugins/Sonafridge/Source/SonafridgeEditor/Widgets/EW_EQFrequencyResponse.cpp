@@ -357,20 +357,17 @@ void UEW_EQFrequencyResponse::BakeResponse()
 	int32 Index = 0;
 	for (const auto& Band : Settings->GetBands())
 	{
-		if (Band->GetType() == EBandType::BandCut)
+		float F = Band->GetFrequency();
+		float X = MathLogTool::TwentiethsToTribel(F);
+		float Response = Settings->DtftDb(F);
+		float Y = (Response - UEW_EQ::DynamicMin) / (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin);
+
+		if (BandPoints.Num() > Index)
 		{
-			float F = Band->GetFrequency();
-			float X = MathLogTool::TwentiethsToTribel(F);
-			float Response = Settings->DtftDb(F);
-			float Y = (Response - UEW_EQ::DynamicMin) / (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin);
-
-			if (BandPoints.Num() > Index)
-			{
-				BandPoints[Index] = { W * X, H * (1.f - Y) };
-			}
-
-			++Index;
+			BandPoints[Index] = { W * X, H * (1.f - Y) };
 		}
+
+		++Index;
 	}
 }
 

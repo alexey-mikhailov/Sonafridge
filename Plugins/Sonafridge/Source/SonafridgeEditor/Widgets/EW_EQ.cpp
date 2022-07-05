@@ -76,9 +76,9 @@ void UEW_EQ::NativeConstruct()
 		TArray<TSharedPtr<FEQBand>> Bands;
 		auto Band_BC = MakeShared<FEQBand>();
 		Band_BC->Init(SampleRate);
-		Band_BC->SetType(EBandType::BandCut);
+		Band_BC->SetType(EBandType::LowShelf);
 		Band_BC->SetFrequency(100.f);
-		Band_BC->SetQuality(1.f);
+		Band_BC->SetQuality(.5f);
 		Band_BC->SetAmountDb(0.f);
 		Band_BC->SetLoudCompDb(0.f);
 		Bands.Add(Band_BC);
@@ -87,16 +87,16 @@ void UEW_EQ::NativeConstruct()
 		Band_BC->Init(SampleRate);
 		Band_BC->SetType(EBandType::BandCut);
 		Band_BC->SetFrequency(1000.f);
-		Band_BC->SetQuality(1.f);
+		Band_BC->SetQuality(.667f);
 		Band_BC->SetAmountDb(0.f);
 		Band_BC->SetLoudCompDb(0.f);
 		Bands.Add(Band_BC);
 		
 		Band_BC = MakeShared<FEQBand>();
 		Band_BC->Init(SampleRate);
-		Band_BC->SetType(EBandType::BandCut);
+		Band_BC->SetType(EBandType::HighShelf);
 		Band_BC->SetFrequency(10000.f);
-		Band_BC->SetQuality(1.f);
+		Band_BC->SetQuality(.5f);
 		Band_BC->SetAmountDb(0.f);
 		Band_BC->SetLoudCompDb(0.f);
 		Bands.Add(Band_BC);
@@ -115,6 +115,7 @@ void UEW_EQ::NativeConstruct()
 
 void UEW_EQ::OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize)
 {
+	BandPopup->FollowBand();
 }
 
 int32 UEW_EQ::NativePaint(const FPaintArgs&        Args,

@@ -52,7 +52,12 @@ void UEW_EQBandPopup::FollowBand()
 	FVector2D Size = GetDesiredSize();
 	FVector2D Position = BandWPos;
 	Position.X -= .5f * Size.X;
-	if (BandWPos.Y > Size.Y && BandWPos.Y < .5f * ParentSize.Y)
+
+	// Do not use 0.5 as half size because
+	// it may cause more frequently widget flickering. 
+	constexpr float HalfSize = .55;
+
+	if (BandWPos.Y > Size.Y && BandWPos.Y < HalfSize * ParentSize.Y)
 	{
 		Position.Y -= Size.Y;
 	}
@@ -110,11 +115,6 @@ void UEW_EQBandPopup::NativeConstruct()
 	NaveledKnobFrequency->GetEvent_NavelCaptureFinished().AddUObject(this, &UEW_EQBandPopup::OnListenFinished);
 
 	TextBoxValue->OnTextCommitted.AddDynamic(this, &UEW_EQBandPopup::OnTextCommitted);
-}
-
-void UEW_EQBandPopup::OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize)
-{
-	FollowBand();
 }
 
 void UEW_EQBandPopup::OnFrequencyEntrance()
@@ -288,10 +288,9 @@ void UEW_EQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat)
 		NaveledKnobAmount->RefreshVisual();
 
 		FText EnumText = BandPopupTypeEnum->GetDisplayNameTextByValue(static_cast<int64>(BandPopupType));
-		if (!EnumText.IsEmpty())
-		{
-			TextBoxValue->SetText(EnumText);
-		}			
+		TextBoxValue->SetText(EnumText);
+
+		RootWidget->GetEvent_BandChanging().Broadcast(Band);
 	}
 }
 
@@ -333,6 +332,7 @@ void UEW_EQBandPopup::OnRemoveClick()
 void UEW_EQBandPopup::OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNewValue)
 {
 	Band->SetIsEnabled(bNewValue);
+	RootWidget->GetEvent_BandChanged().Broadcast(Band);
 }
 
 void UEW_EQBandPopup::OnFrequencyCommit()
@@ -428,17 +428,6 @@ int32 UEW_EQBandPopup::NativePaint(const FPaintArgs&        Args,
 	                                  LayerId,
 	                                  InWidgetStyle,
 	                                  bParentEnabled);
-
-	UEW_EQBandPopup* MutableThis = const_cast<UEW_EQBandPopup*>(this);
-	FVector2D Size = AllottedGeometry.GetLocalSize();
-
-	if (Size != LastSize)
-	{
-		MutableThis->OnSizeChanged(LastSize, Size);
-	}
-
-	MutableThis->LastSize = Size;
-
 
 	return Result;
 }
