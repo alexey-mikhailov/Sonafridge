@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <complex>
-
 struct FEcn;
 
 /// <summary>
