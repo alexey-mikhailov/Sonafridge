@@ -1,11 +1,12 @@
 // Sonafridge 2022
 
 #include "EW_EQFrequencyResponse.h"
-#include "AudioDevice.h"
 #include "EW_EQ.h"
-#include "Sonafridge/MathTools.h"
 #include "Sonafridge/Settings_EQ/EQSettingsMock.h"
+#include "Sonafridge/ColorManagement/HSRColor.h"
+#include "Sonafridge/MathTools.h"
 #include "Input/HittestGrid.h"
+#include "AudioDevice.h"
 
 UEW_EQFrequencyResponse::UEW_EQFrequencyResponse()
 {
@@ -246,27 +247,58 @@ int32 UEW_EQFrequencyResponse::NativePaint(const FPaintArgs&        Args,
 	                             true,
 	                             3.f);
 
-	constexpr FLinearColor BandPointNormalColor = FLinearColor(.25f, .625f, 1.f, 1.f);
-	constexpr FLinearColor BandPointHoveredColor = FLinearColor(1.f, 1.f, 1.f, 1.f);
-	constexpr FLinearColor BandPointSelectedColor = FLinearColor(.75f, .875f, 1.f, 1.f);
-	FLinearColor PointColor = BandPointNormalColor;
+	static const FLinearColor BandPointEnabledHoveredColor = HSR(.617f, 1.f, 1.f);
+	static const FLinearColor BandPointEnabledSelectedColor = HSR(.617f, 1.f, .833f);
+	static const FLinearColor BandPointEnabledNormalColor = HSR(.617f, 1.f, .667f);
+	static const FLinearColor BandPointDisabledHoveredColor = HSR(.617f, 1.f, .5f);
+	static const FLinearColor BandPointDisabledSelectedColor = HSR(.617f, 1.f, .333f);
+	static const FLinearColor BandPointDisabledNormalColor = HSR(.617f, 1.f, .167f);
+
+	FLinearColor PointColor = BandPointEnabledNormalColor;
 
 	for (int32 Index = 0; Index < BandPoints.Num(); ++Index)
 	{
-		auto P1 = BandPoints[Index] + FVector2D(0.f, -1.f);
-		auto P2 = BandPoints[Index] + FVector2D(0.f, +1.f);
+		TSharedPtr<FEQBand> CurrentBand;
+		if (Settings->GetBands().Num() > Index)
+		{
+			CurrentBand = Settings->GetBands()[Index];
+		}
 
-		if (Index == HoverBandIndex)
+		FVector2D P1 = BandPoints[Index] + FVector2D(0.f, -1.f);
+		FVector2D P2 = BandPoints[Index] + FVector2D(0.f, +1.f);
+
+		if (CurrentBand)
 		{
-			PointColor = BandPointHoveredColor;
-		}
-		else if (RootWidget->GetSelectedBandIndex() == Index)
-		{
-			PointColor = BandPointSelectedColor;
-		}
-		else
-		{
-			PointColor = BandPointNormalColor;
+			if (CurrentBand->GetIsEnabled())
+			{
+				if (Index == HoverBandIndex)
+				{
+					PointColor = BandPointEnabledHoveredColor;
+				}
+				else if (RootWidget->GetSelectedBandIndex() == Index)
+				{
+					PointColor = BandPointEnabledSelectedColor;
+				}
+				else
+				{
+					PointColor = BandPointEnabledNormalColor;
+				}
+			}
+			else
+			{
+				if (Index == HoverBandIndex)
+				{
+					PointColor = BandPointDisabledHoveredColor;
+				}
+				else if (RootWidget->GetSelectedBandIndex() == Index)
+				{
+					PointColor = BandPointDisabledSelectedColor;
+				}
+				else
+				{
+					PointColor = BandPointDisabledNormalColor;
+				}
+			}
 		}
 
 		FSlateDrawElement::MakeLines(OutDrawElements,
