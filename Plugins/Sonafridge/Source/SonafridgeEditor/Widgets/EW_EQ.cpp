@@ -3,7 +3,6 @@
 #include "EW_EQ.h"
 #include "EW_EQFrequencyResponse.h"
 #include "AudioDevice.h"
-#include "EW_EQBandList.h"
 #include "EW_EQBandPopup.h"
 #include "Components/CanvasPanelSlot.h"
 
