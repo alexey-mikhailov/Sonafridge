@@ -477,13 +477,20 @@ EBandType UEW_EQBandPopup::GetBandTypeByPopupType(EBandPopupType InBandPopupType
 
 	if (BandEnum && BandPopupEnum)
 	{
+		if (InBandPopupType == EBandPopupType::LowCut)
+		{
+			return EBandType::LowCutButterworth;
+		}
+		if (InBandPopupType == EBandPopupType::HighCut)
+		{
+			return EBandType::HighCutButterworth;
+		}
+
 		FName Name = BandPopupEnum->GetNameByValue(static_cast<int64>(InBandPopupType));
 		return static_cast<EBandType>(BandEnum->GetValueByName(Name));
 	}
-	else
-	{
-		return EBandType::None;
-	}
+
+	return EBandType::None;
 }
 
 UTexture* UEW_EQBandPopup::GetBandIconByType(EBandPopupType InBandPopup)

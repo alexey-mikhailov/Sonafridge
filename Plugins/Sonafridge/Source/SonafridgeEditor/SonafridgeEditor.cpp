@@ -1,17 +1,25 @@
 // Sonafridge 2022
 
 #include "SonafridgeEditor.h"
+
+#include "AssetActions/AssetTypeActions_SonaQ.h"
 #include "SonafridgeStyle.h"
 #include "SonafridgeCommands.h"
-#include "LevelEditor.h"
+#include "Sonafridge/SonafridgeCommon.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
+#include "AssetToolsModule.h"
+#include "LevelEditor.h"
 #include "ToolMenus.h"
+#include "Widgets/EW_EQ.h"
+
+#define LOCTEXT_NAMESPACE "Sonafridge"
+
+DEFINE_LOG_CATEGORY(LogSonafridgeEditor);
 
 static const FName SonafridgeTabName("Sonafridge");
 
-#define LOCTEXT_NAMESPACE "FSonafridgeModule"
 
 void FSonafridgeEditorModule::StartupModule()
 {
@@ -31,9 +39,18 @@ void FSonafridgeEditorModule::StartupModule()
 
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FSonafridgeEditorModule::RegisterMenus));
 	
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SonafridgeTabName, FOnSpawnTab::CreateRaw(this, &FSonafridgeEditorModule::OnSpawnPluginTab))
-		.SetDisplayName(LOCTEXT("FSonafridgeTabTitle", "Sonafridge"))
-		.SetMenuType(ETabSpawnerMenuType::Hidden);
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner
+	(
+		SonafridgeTabName, 
+		FOnSpawnTab::CreateRaw(this, &FSonafridgeEditorModule::OnSpawnPluginTab)
+	)
+	.SetDisplayName(LOCTEXT("FSonafridgeTabTitle", "Sonafridge"))
+	.SetMenuType(ETabSpawnerMenuType::Hidden);
+
+	ContentBrowserMenuExtender.Startup();
+
+	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	AssetTools.RegisterAssetTypeActions(MakeShared<FAssetTypeActions_SonaQ>());
 }
 
 void FSonafridgeEditorModule::ShutdownModule()
@@ -50,15 +67,18 @@ void FSonafridgeEditorModule::ShutdownModule()
 	FSonafridgeCommands::Unregister();
 
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(SonafridgeTabName);
+
+	ContentBrowserMenuExtender.Shutdown();
 }
 
 TSharedRef<SDockTab> FSonafridgeEditorModule::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
-	FText WidgetText = FText::Format(
+	FText WidgetText = FText::Format
+	(
 		LOCTEXT("WindowWidgetText", "Add code to {0} in {1} to override this window's contents"),
 		FText::FromString(TEXT("FSonafridgeModule::OnSpawnPluginTab")),
 		FText::FromString(TEXT("Sonafridge.cpp"))
-		);
+	);
 
 	return SNew(SDockTab)
 		.TabRole(ETabRole::NomadTab)

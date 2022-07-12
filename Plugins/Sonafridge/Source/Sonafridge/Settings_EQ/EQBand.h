@@ -9,8 +9,10 @@ UENUM()
 enum class EBandType : uint8
 {
 	None,
-	LowCut,
-	HighCut,
+	LowCutFast,
+	LowCutButterworth,
+	HighCutFast,
+	HighCutButterworth,
 	LowShelf,
 	HighShelf,
 	BandPass,
@@ -19,13 +21,24 @@ enum class EBandType : uint8
 	AllPass,
 };
 
-USTRUCT(BlueprintType)
-struct SONAFRIDGE_API FEQBand
+class SONAFRIDGE_API FEQBand final
 {
-	GENERATED_BODY()
+	EBandType Type = EBandType::None;
+	float Frequency = 1000.f;
+	float Quality = 1.f;
+	float AmountDb = 0.f;
+	float LoudCompDb = 0.f;
+	float LoudCompCoef = 0.f;
+	
+	bool bIsInitialized = false;
+	bool bIsEnabled = true;
+	float SampleRate = 0.f;
 
+	float A0 = 0.f, A1 = 0.f, A2 = 0.f, B0 = 0.f, B1 = 0.f, B2 = 0.f;
+
+public:
 	FEQBand() {}
-	virtual ~FEQBand() = default;
+	~FEQBand() = default;
 
 	void Init(float InSampleRate);
 	void SetType(EBandType Value);
@@ -45,25 +58,9 @@ struct SONAFRIDGE_API FEQBand
 	float     GetAmountDb() const;
 	float     GetLoudCompDb() const;
 
-protected:
-	virtual void Recalculate();
-
-	EBandType Type = EBandType::None;
-	float Frequency = 1000.f;
-	float Quality = 1.f;
-	float AmountDb = 0.f;
-	float LoudCompDb = 0.f;
-	float LoudCompCoef = 0.f;
-	
-	bool bIsInitialized = false;
-	bool bIsEnabled = true;
-	float SampleRate = 0.f;
-	float Omega = 0.f;
-
-	float Alpha = 0.f;
-	float A0 = 0.f, A1 = 0.f, A2 = 0.f, B0 = 0.f, B1 = 0.f, B2 = 0.f;
-
 private:
+	void Recalculate();
+
 	FORCEINLINE void LogIfUninitialized() const
 	{
 		if (!bIsInitialized)

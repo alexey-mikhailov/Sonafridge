@@ -2,9 +2,10 @@
 
 #include "EW_EQ.h"
 #include "EW_EQFrequencyResponse.h"
-#include "AudioDevice.h"
 #include "EW_EQBandPopup.h"
+#include "Sonafridge/SonafridgeCommon.h"
 #include "Components/CanvasPanelSlot.h"
+#include "AudioDevice.h"
 
 UEW_EQ::UEW_EQ()
 {
@@ -12,10 +13,17 @@ UEW_EQ::UEW_EQ()
 
 void UEW_EQ::Init(TSharedPtr<IEQSettings> InSettings)
 {
-	SampleRate = InSettings->GetSampleRate();
-	Settings = InSettings;
-	FrequencyResponse->Init(this, Settings);
-	bWasInitialized = true;
+	if (InSettings)
+	{
+		SampleRate = InSettings->GetSampleRate();
+		Settings = InSettings;
+		FrequencyResponse->Init(this, Settings);
+		bWasInitialized = true;
+	}
+	else
+	{
+		UE_LOG(LogSonafridgeEditor, Error, TEXT("UEW_EQ::Init: Settings argument is not valid. "));
+	}
 }
 
 void UEW_EQ::SetSelectedBand(TSharedPtr<FEQBand> InBand)
@@ -99,8 +107,8 @@ void UEW_EQ::NativeConstruct()
 		Band_BC->SetAmountDb(0.f);
 		Band_BC->SetLoudCompDb(0.f);
 		Bands.Add(Band_BC);
-		
-		auto SettingsMock = MakeShared<FEQSettingsMock>();
+
+		TSharedPtr<FEQSettingsMock> SettingsMock = MakeShared<FEQSettingsMock>();
 		SettingsMock->Init(Bands);
 		Settings = SettingsMock;
 

@@ -6,7 +6,7 @@
 #include "EW_EQFrequencyResponse.generated.h"
 
 struct IEQSettings;
-struct FEQBand;
+class FEQBand;
 class UEW_EQ;
 
 UCLASS()

@@ -39,6 +39,7 @@ public class SonafridgeEditor : ModuleRules
                 "Projects",
                 "InputCore",
                 "UnrealEd",
+                "EditorStyle",
                 "ToolMenus",
                 "CoreUObject",
                 "Engine",
@@ -48,7 +49,8 @@ public class SonafridgeEditor : ModuleRules
                 "Blutility",
                 "Synthesis",
                 "UMG",
-                "Sonafridge"
+                "UMGEditor",
+                "Sonafridge" 
                 // ... add private dependencies that you statically link with here ...	
             }
         );

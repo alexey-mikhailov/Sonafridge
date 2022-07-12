@@ -3,10 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Modules/ModuleManager.h"
+#include "ContentBrowserMenuExtender.h"
 
 class FToolBarBuilder;
 class FMenuBuilder;
+class FUICommandList;
 
 class FSonafridgeEditorModule : public IModuleInterface
 {
@@ -20,11 +21,9 @@ public:
 	void PluginButtonClicked();
 	
 private:
+	void                 RegisterMenus();
+	TSharedRef<SDockTab> OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs);
 
-	void RegisterMenus();
-
-	TSharedRef<class SDockTab> OnSpawnPluginTab(const class FSpawnTabArgs& SpawnTabArgs);
-
-private:
-	TSharedPtr<class FUICommandList> PluginCommands;
+	TSharedPtr<FUICommandList>            PluginCommands;
+	FSonafridgeContentBrowserMenuExtender ContentBrowserMenuExtender;
 };

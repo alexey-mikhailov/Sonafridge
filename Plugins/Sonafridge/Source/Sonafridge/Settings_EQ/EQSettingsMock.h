@@ -19,8 +19,13 @@ struct SONAFRIDGE_API IEQSettings
 	virtual void Freeze() = 0;
 	virtual void Unfreeze() = 0;
 
+	DECLARE_EVENT(UEW_EQBandList, FChanging);
+	virtual FChanging& GetEvent_Changing() = 0;
+
+	virtual float Dtft(float InFrequency) const = 0;
 	virtual float DtftDb(float InFrequency) const = 0;
 };
+
 
 class SONAFRIDGE_API FEQSettingsMock : public IEQSettings
 {
@@ -44,8 +49,12 @@ public:
 	virtual void Freeze() override;
 	virtual void Unfreeze() override;
 
+	virtual FChanging& GetEvent_Changing() override { return Changing; }
+
+	virtual float Dtft(float InFrequency) const override;
 	virtual float DtftDb(float InFrequency) const override;
+
+private:
+	FChanging Changing;
 };
-
-
 

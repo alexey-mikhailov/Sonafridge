@@ -47,6 +47,17 @@ void FEQSettingsMock::Unfreeze()
 	// TODO: bIsFrozen = false ...
 }
 
+float FEQSettingsMock::Dtft(float InFrequency) const
+{
+	float Result = 1.f;
+	for (TSharedPtr<FEQBand> Band : Bands)
+	{
+		Result *= Band->Dtft(InFrequency);
+	}
+
+	return Result;
+}
+
 float FEQSettingsMock::DtftDb(float InFrequency) const
 {
 	float Result = 1.f;
@@ -57,3 +68,4 @@ float FEQSettingsMock::DtftDb(float InFrequency) const
 
 	return MathLogTool::LinearToVigesibel(Result);
 }
+
