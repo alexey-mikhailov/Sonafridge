@@ -4,7 +4,7 @@
 
 #include "EQBand.h"
 
-struct SONAFRIDGE_API IEQSettings
+struct SONAFRIDGEEDITOR_API IEQSettings
 {
 	virtual                                    ~IEQSettings() = default;
 	virtual bool                               GetIsEnabled() const = 0;
@@ -27,7 +27,7 @@ struct SONAFRIDGE_API IEQSettings
 };
 
 
-class SONAFRIDGE_API FEQSettingsMock : public IEQSettings
+class SONAFRIDGEEDITOR_API FEQSettingsMock : public IEQSettings
 {
 	bool bIsEnabled = true;
 	float SampleRate = 44100.f;

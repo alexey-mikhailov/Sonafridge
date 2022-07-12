@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "EditorUtilityWidget.h"
-#include "Sonafridge/Settings_EQ/EQSettingsMock.h"
+#include "Model/EQSettingsMock.h"
 #include "EW_EQ.generated.h"
 
 class UEW_EQBandList;

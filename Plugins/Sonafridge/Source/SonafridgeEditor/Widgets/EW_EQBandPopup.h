@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Sonafridge/Settings_EQ/EQBand.h"
+#include "Model/EQBand.h"
 #include "EditorUtilityWidget.h"
 #include "CoreMinimal.h"
 #include "EW_EQBandPopup.generated.h"

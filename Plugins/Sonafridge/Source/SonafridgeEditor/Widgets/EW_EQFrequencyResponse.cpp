@@ -2,7 +2,7 @@
 
 #include "EW_EQFrequencyResponse.h"
 #include "EW_EQ.h"
-#include "Sonafridge/Settings_EQ/EQSettingsMock.h"
+#include "Model/EQSettingsMock.h"
 #include "Sonafridge/ColorManagement/HSRColor.h"
 #include "Sonafridge/MathTools.h"
 #include "Input/HittestGrid.h"

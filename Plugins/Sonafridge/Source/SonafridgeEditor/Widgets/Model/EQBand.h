@@ -21,7 +21,7 @@ enum class EBandType : uint8
 	AllPass,
 };
 
-class SONAFRIDGE_API FEQBand final
+class SONAFRIDGEEDITOR_API FEQBand final
 {
 	EBandType Type = EBandType::None;
 	float Frequency = 1000.f;
