@@ -9,7 +9,7 @@
 #include "SonaMacroConvention.h"
 #include "SFX_SonaQ.generated.h"
 
-struct IEQSettings;
+class FVM_SonaQ;
 
 namespace Sonafridge
 {

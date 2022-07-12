@@ -1,51 +1,51 @@
 // Sonafridge 2022
 
-#include "EQBand.h"
+#include "VM_SonaQBand.h"
 
 #include "Sonafridge/MathTools.h"
 
-void FEQBand::Init(float InSampleRate)
+void FVM_SonaQBand::Init(float InSampleRate)
 {
 	SampleRate = InSampleRate;
 	bIsInitialized = true;
 }
 
-void FEQBand::SetType(EBandType Value)
+void FVM_SonaQBand::SetType(EBandType Value)
 {
 	LogIfUninitialized();
 	Type = Value;
 	Recalculate();
 }
 
-void FEQBand::SetIsEnabled(bool bInValue)
+void FVM_SonaQBand::SetIsEnabled(bool bInValue)
 {
 	LogIfUninitialized();
 	bIsEnabled = bInValue;
 	Recalculate();
 }
 
-void FEQBand::SetFrequency(float Value)
+void FVM_SonaQBand::SetFrequency(float Value)
 {
 	LogIfUninitialized();
 	Frequency = Value;
 	Recalculate();
 }
 
-void FEQBand::SetQuality(float Value)
+void FVM_SonaQBand::SetQuality(float Value)
 {
 	LogIfUninitialized();
 	Quality = Value;
 	Recalculate();
 }
 
-void FEQBand::SetAmountDb(float Value)
+void FVM_SonaQBand::SetAmountDb(float Value)
 {
 	LogIfUninitialized();
 	AmountDb = Value;
 	Recalculate();
 }
 
-void FEQBand::SetLoudCompDb(float Value)
+void FVM_SonaQBand::SetLoudCompDb(float Value)
 {
 	LogIfUninitialized();
 	LoudCompDb = Value;
@@ -53,7 +53,7 @@ void FEQBand::SetLoudCompDb(float Value)
 	Recalculate();
 }
 
-float FEQBand::Dtft(float InFrequency) const
+float FVM_SonaQBand::Dtft(float InFrequency) const
 {
 	if (bIsEnabled)
 	{
@@ -73,43 +73,43 @@ float FEQBand::Dtft(float InFrequency) const
 	return 1.f;
 }
 
-EBandType FEQBand::GetType() const
+EBandType FVM_SonaQBand::GetType() const
 {
 	LogIfUninitialized();
 	return Type;
 }
 
-bool FEQBand::GetIsEnabled() const
+bool FVM_SonaQBand::GetIsEnabled() const
 {
 	LogIfUninitialized();
 	return bIsEnabled;
 }
 
-float FEQBand::GetFrequency() const
+float FVM_SonaQBand::GetFrequency() const
 {
 	LogIfUninitialized();
 	return Frequency;
 }
 
-float FEQBand::GetQuality() const
+float FVM_SonaQBand::GetQuality() const
 {
 	LogIfUninitialized();
 	return Quality;
 }
 
-float FEQBand::GetAmountDb() const
+float FVM_SonaQBand::GetAmountDb() const
 {
 	LogIfUninitialized();
 	return AmountDb;
 }
 
-float FEQBand::GetLoudCompDb() const
+float FVM_SonaQBand::GetLoudCompDb() const
 {
 	LogIfUninitialized();
 	return LoudCompDb;
 }
 
-void FEQBand::Recalculate()
+void FVM_SonaQBand::Recalculate()
 {
 	if (Type == EBandType::LowCutFast)
 	{

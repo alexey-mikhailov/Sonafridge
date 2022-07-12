@@ -12,7 +12,7 @@
 #include "AssetToolsModule.h"
 #include "LevelEditor.h"
 #include "ToolMenus.h"
-#include "Widgets/EW_EQ.h"
+#include "Widgets/EW_SonaQ.h"
 
 #define LOCTEXT_NAMESPACE "Sonafridge"
 

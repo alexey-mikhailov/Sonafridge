@@ -3,27 +3,27 @@
 #pragma once
 
 #include "EditorUtilityWidget.h"
-#include "EW_EQFrequencyResponse.generated.h"
+#include "EW_SonaQFrequencyResponse.generated.h"
 
-struct IEQSettings;
-class FEQBand;
-class UEW_EQ;
+class FVM_SonaQ;
+class FVM_SonaQBand;
+class UEW_SonaQ;
 
 UCLASS()
-class SONAFRIDGEEDITOR_API UEW_EQFrequencyResponse : public UEditorUtilityWidget
+class SONAFRIDGEEDITOR_API UEW_SonaQFrequencyResponse : public UEditorUtilityWidget
 {
 	GENERATED_BODY()
 
 public:
-	UEW_EQFrequencyResponse();
-	void Init(UEW_EQ* InRootWidget, TSharedPtr<IEQSettings> InSettings);
+	UEW_SonaQFrequencyResponse();
+	void Init(UEW_SonaQ* InRootWidget, TSharedPtr<FVM_SonaQ> InViewModel);
 
-	DECLARE_EVENT_TwoParams(UEW_EQFrequencyResponse, FSizeChanged, const FVector2D& OldSize, const FVector2D& NewSize)
+	DECLARE_EVENT_TwoParams(UEW_SonaQFrequencyResponse, FSizeChanged, const FVector2D& OldSize, const FVector2D& NewSize)
 	FSizeChanged GetEvent_SizeChanged() const { return SizeChanged; }
 
 protected:
-	virtual void OnBandChanging(TSharedPtr<FEQBand> InBand);
-	virtual void OnBandChanged(TSharedPtr<FEQBand> InBand);
+	virtual void OnBandChanging(TSharedPtr<FVM_SonaQBand> InBand);
+	virtual void OnBandChanged(TSharedPtr<FVM_SonaQBand> InBand);
 	virtual void OnSizeChanged(const FVector2D& NewSize,
 	                           const FVector2D& OldSize);
 
@@ -41,9 +41,9 @@ protected:
 	                           bool                     bParentEnabled) const override;
 
 	UPROPERTY()
-	UEW_EQ* RootWidget;
+	UEW_SonaQ* RootWidget;
 
-	TSharedPtr<IEQSettings> Settings;
+	TSharedPtr<FVM_SonaQ> ViewModel;
 	float SampleRate = 44100.f;
 	TArray<TArray<FVector2D>> GridPointPairs;
 	TArray<FVector2D> ResponsePoints;
@@ -61,7 +61,7 @@ protected:
 	/// Frequency logarithmic step. 
 	const float FLS = (FLMax - FLMin) * ResolutionStep;
 
-	TSharedPtr<FEQBand> PossessedBand;
+	TSharedPtr<FVM_SonaQBand> PossessedBand;
 	int32 PossessedBandIndex = -1;
 	int32 HoverBandIndex = -1;
 	bool bWasLeftMouseButtonPressed = false;
@@ -73,7 +73,7 @@ protected:
 private:
 	void      BakeGrid();
 	void      BakeResponse();
-	FVector2D GetBandWPos(TSharedPtr<FEQBand> InBand);
+	FVector2D GetBandWPos(TSharedPtr<FVM_SonaQBand> InBand);
 
 	FSizeChanged SizeChanged;
 	FVector2D    LastSize;

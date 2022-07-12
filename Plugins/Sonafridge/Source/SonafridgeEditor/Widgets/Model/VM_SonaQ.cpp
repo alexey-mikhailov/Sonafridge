@@ -1,10 +1,10 @@
 // Sonafridge 2022
 
-#include "EQSettingsMock.h"
+#include "VM_SonaQ.h"
 #include "AudioDevice.h"
 #include "Sonafridge/MathTools.h"
 
-FEQSettingsMock::FEQSettingsMock()
+FVM_SonaQ::FVM_SonaQ()
 {
 	if (auto AudioDevice = GEngine->GetActiveAudioDevice())
 	{
@@ -12,22 +12,22 @@ FEQSettingsMock::FEQSettingsMock()
 	}
 }
 
-void FEQSettingsMock::Init(TArray<TSharedPtr<FEQBand>> InBands)
+void FVM_SonaQ::Init(TArray<TSharedPtr<FVM_SonaQBand>> InBands)
 {
 	Bands = InBands;
 }
 
-void FEQSettingsMock::AddBand(TSharedPtr<FEQBand> InBand)
+void FVM_SonaQ::AddBand(TSharedPtr<FVM_SonaQBand> InBand)
 {
 	Bands.Add(InBand);
 }
 
-void FEQSettingsMock::RemoveBand(TSharedPtr<FEQBand> InBand)
+void FVM_SonaQ::RemoveBand(TSharedPtr<FVM_SonaQBand> InBand)
 {
 	Bands.Remove(InBand);
 }
 
-void FEQSettingsMock::ResetBand(TSharedPtr<FEQBand> InBand)
+void FVM_SonaQ::ResetBand(TSharedPtr<FVM_SonaQBand> InBand)
 {
 	InBand->SetFrequency(1000.f);
 	InBand->SetQuality(1.f);
@@ -35,22 +35,22 @@ void FEQSettingsMock::ResetBand(TSharedPtr<FEQBand> InBand)
 	InBand->SetLoudCompDb(0.f);
 }
 
-void FEQSettingsMock::Freeze()
+void FVM_SonaQ::Freeze()
 {
 	// TODO: Optimize response calculation
 	// TODO: bIsFrozen = true ...
 }
 
-void FEQSettingsMock::Unfreeze()
+void FVM_SonaQ::Unfreeze()
 {
 	// TODO: Optimize response calculation
 	// TODO: bIsFrozen = false ...
 }
 
-float FEQSettingsMock::Dtft(float InFrequency) const
+float FVM_SonaQ::Dtft(float InFrequency) const
 {
 	float Result = 1.f;
-	for (TSharedPtr<FEQBand> Band : Bands)
+	for (TSharedPtr<FVM_SonaQBand> Band : Bands)
 	{
 		Result *= Band->Dtft(InFrequency);
 	}
@@ -58,10 +58,10 @@ float FEQSettingsMock::Dtft(float InFrequency) const
 	return Result;
 }
 
-float FEQSettingsMock::DtftDb(float InFrequency) const
+float FVM_SonaQ::DtftDb(float InFrequency) const
 {
 	float Result = 1.f;
-	for (TSharedPtr<FEQBand> Band : Bands)
+	for (TSharedPtr<FVM_SonaQBand> Band : Bands)
 	{
 		Result *= Band->Dtft(InFrequency);
 	}

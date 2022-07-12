@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EQBand.generated.h"
+#include "VM_SonaQBand.generated.h"
 
 UENUM()
 enum class EBandType : uint8
@@ -21,7 +21,7 @@ enum class EBandType : uint8
 	AllPass,
 };
 
-class SONAFRIDGEEDITOR_API FEQBand final
+class SONAFRIDGEEDITOR_API FVM_SonaQBand final
 {
 	EBandType Type = EBandType::None;
 	float Frequency = 1000.f;
@@ -37,8 +37,8 @@ class SONAFRIDGEEDITOR_API FEQBand final
 	float A0 = 0.f, A1 = 0.f, A2 = 0.f, B0 = 0.f, B1 = 0.f, B2 = 0.f;
 
 public:
-	FEQBand() {}
-	~FEQBand() = default;
+	FVM_SonaQBand() {}
+	~FVM_SonaQBand() = default;
 
 	void Init(float InSampleRate);
 	void SetType(EBandType Value);

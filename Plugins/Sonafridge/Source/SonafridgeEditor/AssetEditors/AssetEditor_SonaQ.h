@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-class UEW_EQ;
+class UEW_SonaQ;
 class USFXPreset_SonaQ;
 
 /**
@@ -42,7 +42,7 @@ private:
 
 	// UObjects that referenced by this asset editor. 
 	USFXPreset_SonaQ* SonaQPreset = nullptr;
-	UEW_EQ*           SonaQWidget = nullptr;
+	UEW_SonaQ*        SonaQWidget = nullptr;
 
 	TSharedPtr<IDetailsView> DetailsView;
 

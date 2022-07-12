@@ -1,11 +1,11 @@
 // Sonafridge 2022
 
-#include "EW_EQBandPopup.h"
+#include "EW_SonaQBandPopup.h"
 
 #include "Sonafridge/Widgets/NaveledKnob.h"
 #include "Sonafridge/Widgets/ToggleKnob.h"
 #include "Sonafridge/MathTools.h"
-#include "EW_EQ.h"
+#include "EW_SonaQ.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
@@ -30,16 +30,16 @@ FText FloatToText(float     InValue,
 	                                            NumDigits);
 }
 
-void UEW_EQBandPopup::Init(UEW_EQ* InRootWidget, TSharedPtr<IEQSettings> InSettings)
+void UEW_SonaQBandPopup::Init(UEW_SonaQ* InRootWidget, TSharedPtr<FVM_SonaQ> InViewModel)
 {
 	RootWidget = InRootWidget;
-	Settings = InSettings;
-	RootWidget->GetEvent_BandChanging().AddUObject(this, &UEW_EQBandPopup::OnBandChanging);
-	RootWidget->GetEvent_BandChanged().AddUObject(this, &UEW_EQBandPopup::OnBandChanged);
-	RootWidget->GetEvent_BandSelectionChanged().AddUObject(this, &UEW_EQBandPopup::OnBandSelectionChanged);
+	ViewModel = InViewModel;
+	RootWidget->GetEvent_BandChanging().AddUObject(this, &UEW_SonaQBandPopup::OnBandChanging);
+	RootWidget->GetEvent_BandChanged().AddUObject(this, &UEW_SonaQBandPopup::OnBandChanged);
+	RootWidget->GetEvent_BandSelectionChanged().AddUObject(this, &UEW_SonaQBandPopup::OnBandSelectionChanged);
 }
 
-void UEW_EQBandPopup::FollowBand()
+void UEW_SonaQBandPopup::FollowBand()
 {
 	if (!RootWidget)
 	{
@@ -75,49 +75,49 @@ void UEW_EQBandPopup::FollowBand()
 	}
 }
 
-void UEW_EQBandPopup::NativeConstruct()
+void UEW_SonaQBandPopup::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	NaveledKnobFrequency->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnFrequencyEntrance);
-	NaveledKnobAmount->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnAmountEntrance);
-	NaveledKnobQuality->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnQualityEntrance);
-	ToggleKnobMakeupGain->GetEvent_KnobEntrance().AddUObject(this, &UEW_EQBandPopup::OnMakeupGainEntrance);
+	NaveledKnobFrequency->GetEvent_KnobEntrance().AddUObject(this, &UEW_SonaQBandPopup::OnFrequencyEntrance);
+	NaveledKnobAmount->GetEvent_KnobEntrance().AddUObject(this, &UEW_SonaQBandPopup::OnAmountEntrance);
+	NaveledKnobQuality->GetEvent_KnobEntrance().AddUObject(this, &UEW_SonaQBandPopup::OnQualityEntrance);
+	ToggleKnobMakeupGain->GetEvent_KnobEntrance().AddUObject(this, &UEW_SonaQBandPopup::OnMakeupGainEntrance);
 
-	NaveledKnobFrequency->GetEvent_NavelEntrance().AddUObject(this, &UEW_EQBandPopup::OnListenEntrance);
-	NaveledKnobAmount->GetEvent_NavelEntrance().AddUObject(this, &UEW_EQBandPopup::OnBandTypeEntrance);
-	NaveledKnobQuality->GetEvent_NavelEntrance().AddUObject(this, &UEW_EQBandPopup::OnButtonRemoveEntrance);
-	ToggleKnobMakeupGain->GetEvent_NavelEntrance().AddUObject(this, &UEW_EQBandPopup::OnToggleOnOffEntrance);
+	NaveledKnobFrequency->GetEvent_NavelEntrance().AddUObject(this, &UEW_SonaQBandPopup::OnListenEntrance);
+	NaveledKnobAmount->GetEvent_NavelEntrance().AddUObject(this, &UEW_SonaQBandPopup::OnBandTypeEntrance);
+	NaveledKnobQuality->GetEvent_NavelEntrance().AddUObject(this, &UEW_SonaQBandPopup::OnButtonRemoveEntrance);
+	ToggleKnobMakeupGain->GetEvent_NavelEntrance().AddUObject(this, &UEW_SonaQBandPopup::OnToggleOnOffEntrance);
 
-	NaveledKnobFrequency->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnListenExit);
-	NaveledKnobAmount->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnBandTypeExit);
-	NaveledKnobQuality->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnButtonRemoveExit);
-	ToggleKnobMakeupGain->GetEvent_NavelExit().AddUObject(this, &UEW_EQBandPopup::OnToggleOnOffExit);
+	NaveledKnobFrequency->GetEvent_NavelExit().AddUObject(this, &UEW_SonaQBandPopup::OnListenExit);
+	NaveledKnobAmount->GetEvent_NavelExit().AddUObject(this, &UEW_SonaQBandPopup::OnBandTypeExit);
+	NaveledKnobQuality->GetEvent_NavelExit().AddUObject(this, &UEW_SonaQBandPopup::OnButtonRemoveExit);
+	ToggleKnobMakeupGain->GetEvent_NavelExit().AddUObject(this, &UEW_SonaQBandPopup::OnToggleOnOffExit);
 
-	NaveledKnobFrequency->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnFrequencyDelta);
-	NaveledKnobAmount->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnAmountDelta);
-	NaveledKnobQuality->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnQualityDelta);
-	ToggleKnobMakeupGain->GetEvent_KnobValueChanged().AddUObject(this, &UEW_EQBandPopup::OnMakeupGainDelta);
+	NaveledKnobFrequency->GetEvent_KnobValueChanged().AddUObject(this, &UEW_SonaQBandPopup::OnFrequencyDelta);
+	NaveledKnobAmount->GetEvent_KnobValueChanged().AddUObject(this, &UEW_SonaQBandPopup::OnAmountDelta);
+	NaveledKnobQuality->GetEvent_KnobValueChanged().AddUObject(this, &UEW_SonaQBandPopup::OnQualityDelta);
+	ToggleKnobMakeupGain->GetEvent_KnobValueChanged().AddUObject(this, &UEW_SonaQBandPopup::OnMakeupGainDelta);
 
-	NaveledKnobFrequency->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnListenDelta);
-	NaveledKnobAmount->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnBandTypeChanged);
-	NaveledKnobQuality->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelRemoveValueChanged);
-	ToggleKnobMakeupGain->GetEvent_NavelValueChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelOnOffValueChanged);
+	NaveledKnobFrequency->GetEvent_NavelValueChanged().AddUObject(this, &UEW_SonaQBandPopup::OnListenDelta);
+	NaveledKnobAmount->GetEvent_NavelValueChanged().AddUObject(this, &UEW_SonaQBandPopup::OnBandTypeChanged);
+	NaveledKnobQuality->GetEvent_NavelValueChanged().AddUObject(this, &UEW_SonaQBandPopup::OnToggleNavelRemoveValueChanged);
+	ToggleKnobMakeupGain->GetEvent_NavelValueChanged().AddUObject(this, &UEW_SonaQBandPopup::OnToggleNavelOnOffValueChanged);
 
-	NaveledKnobQuality->GetEvent_NavelClick().AddUObject(this, &UEW_EQBandPopup::OnRemoveClick);
-	ToggleKnobMakeupGain->GetEvent_ToggleStateChanged().AddUObject(this, &UEW_EQBandPopup::OnToggleNavelOnOffStateChanged);
+	NaveledKnobQuality->GetEvent_NavelClick().AddUObject(this, &UEW_SonaQBandPopup::OnRemoveClick);
+	ToggleKnobMakeupGain->GetEvent_ToggleStateChanged().AddUObject(this, &UEW_SonaQBandPopup::OnToggleNavelOnOffStateChanged);
 
-	NaveledKnobFrequency->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_EQBandPopup::OnFrequencyCommit);
-	NaveledKnobAmount->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_EQBandPopup::OnAmountCommit);
-	NaveledKnobQuality->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_EQBandPopup::OnQualityCommit);
-	ToggleKnobMakeupGain->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_EQBandPopup::OnMakeupGainCommit);
-	NaveledKnobFrequency->GetEvent_NavelCaptureStarted().AddUObject(this, &UEW_EQBandPopup::OnListenStarted);
-	NaveledKnobFrequency->GetEvent_NavelCaptureFinished().AddUObject(this, &UEW_EQBandPopup::OnListenFinished);
+	NaveledKnobFrequency->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_SonaQBandPopup::OnFrequencyCommit);
+	NaveledKnobAmount->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_SonaQBandPopup::OnAmountCommit);
+	NaveledKnobQuality->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_SonaQBandPopup::OnQualityCommit);
+	ToggleKnobMakeupGain->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_SonaQBandPopup::OnMakeupGainCommit);
+	NaveledKnobFrequency->GetEvent_NavelCaptureStarted().AddUObject(this, &UEW_SonaQBandPopup::OnListenStarted);
+	NaveledKnobFrequency->GetEvent_NavelCaptureFinished().AddUObject(this, &UEW_SonaQBandPopup::OnListenFinished);
 
-	TextBoxValue->OnTextCommitted.AddDynamic(this, &UEW_EQBandPopup::OnTextCommitted);
+	TextBoxValue->OnTextCommitted.AddDynamic(this, &UEW_SonaQBandPopup::OnTextCommitted);
 }
 
-void UEW_EQBandPopup::OnFrequencyEntrance()
+void UEW_SonaQBandPopup::OnFrequencyEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Frequency;
 	TextBlockKey->SetText(FText::FromString(TEXT("Frequency")));
@@ -125,7 +125,7 @@ void UEW_EQBandPopup::OnFrequencyEntrance()
 	NaveledKnobFrequency->RefreshVisual();
 }
 
-void UEW_EQBandPopup::OnAmountEntrance()
+void UEW_SonaQBandPopup::OnAmountEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Amount;
 	TextBlockKey->SetText(FText::FromString(TEXT("Amount")));
@@ -133,7 +133,7 @@ void UEW_EQBandPopup::OnAmountEntrance()
 	NaveledKnobAmount->RefreshVisual();
 }
 
-void UEW_EQBandPopup::OnQualityEntrance()
+void UEW_SonaQBandPopup::OnQualityEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Quality;
 	TextBlockKey->SetText(FText::FromString(TEXT("Quality")));
@@ -141,7 +141,7 @@ void UEW_EQBandPopup::OnQualityEntrance()
 	NaveledKnobQuality->RefreshVisual();
 }
 
-void UEW_EQBandPopup::OnMakeupGainEntrance()
+void UEW_SonaQBandPopup::OnMakeupGainEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Makeup;
 	TextBlockKey->SetText(FText::FromString(TEXT("Makeup Gain")));
@@ -149,7 +149,7 @@ void UEW_EQBandPopup::OnMakeupGainEntrance()
 	ToggleKnobMakeupGain->RefreshVisual();
 }
 
-void UEW_EQBandPopup::OnListenEntrance()
+void UEW_SonaQBandPopup::OnListenEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Frequency;
 	TextBlockKey->SetText(FText::FromString(TEXT("Frequency")));
@@ -157,7 +157,7 @@ void UEW_EQBandPopup::OnListenEntrance()
 	NaveledKnobFrequency->RefreshVisual();
 }
 
-void UEW_EQBandPopup::OnBandTypeEntrance()
+void UEW_SonaQBandPopup::OnBandTypeEntrance()
 {
 	UEnum* BandTypeEnum = StaticEnum<EBandType>();
 	if (BandTypeEnum)
@@ -175,7 +175,7 @@ void UEW_EQBandPopup::OnBandTypeEntrance()
 	NaveledKnobAmount->RefreshVisual();
 }
 
-void UEW_EQBandPopup::OnButtonRemoveEntrance()
+void UEW_SonaQBandPopup::OnButtonRemoveEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Quality;
 	TextBlockKey->SetText(FText::FromString(TEXT("Quality")));
@@ -183,7 +183,7 @@ void UEW_EQBandPopup::OnButtonRemoveEntrance()
 	NaveledKnobQuality->RefreshVisual();
 }
 
-void UEW_EQBandPopup::OnToggleOnOffEntrance()
+void UEW_SonaQBandPopup::OnToggleOnOffEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Makeup;
 	TextBlockKey->SetText(FText::FromString(TEXT("Makeup Gain")));
@@ -191,23 +191,23 @@ void UEW_EQBandPopup::OnToggleOnOffEntrance()
 	ToggleKnobMakeupGain->RefreshVisual();
 }
 
-void UEW_EQBandPopup::OnListenExit()
+void UEW_SonaQBandPopup::OnListenExit()
 {
 }
 
-void UEW_EQBandPopup::OnBandTypeExit()
+void UEW_SonaQBandPopup::OnBandTypeExit()
 {
 }
 
-void UEW_EQBandPopup::OnButtonRemoveExit()
+void UEW_SonaQBandPopup::OnButtonRemoveExit()
 {
 }
 
-void UEW_EQBandPopup::OnToggleOnOffExit()
+void UEW_SonaQBandPopup::OnToggleOnOffExit()
 {
 }
 
-void UEW_EQBandPopup::OnBandSelectionChanged(TSharedPtr<FEQBand> InBand)
+void UEW_SonaQBandPopup::OnBandSelectionChanged(TSharedPtr<FVM_SonaQBand> InBand)
 {
 	Band = InBand;
 	SetVisibility(Band ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
@@ -215,18 +215,18 @@ void UEW_EQBandPopup::OnBandSelectionChanged(TSharedPtr<FEQBand> InBand)
 	RefreshVisual();
 }
 
-void UEW_EQBandPopup::OnBandChanging(TSharedPtr<FEQBand> InBand)
+void UEW_SonaQBandPopup::OnBandChanging(TSharedPtr<FVM_SonaQBand> InBand)
 {
 	RefreshVisual();
 }
 
-void UEW_EQBandPopup::OnBandChanged(TSharedPtr<FEQBand> InBand)
+void UEW_SonaQBandPopup::OnBandChanged(TSharedPtr<FVM_SonaQBand> InBand)
 {
 	RefreshVisual();
 	FollowBand();
 }
 
-void UEW_EQBandPopup::OnFrequencyDelta(float OldFrequency01, float NewFrequency01)
+void UEW_SonaQBandPopup::OnFrequencyDelta(float OldFrequency01, float NewFrequency01)
 {
 	float NewFrequency = MathLogTool::TribelToTwentieths(NewFrequency01);
 	Band->SetFrequency(NewFrequency);
@@ -234,7 +234,7 @@ void UEW_EQBandPopup::OnFrequencyDelta(float OldFrequency01, float NewFrequency0
 	RootWidget->GetEvent_BandChanging().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnAmountDelta(float OldAmount01, float NewAmount01)
+void UEW_SonaQBandPopup::OnAmountDelta(float OldAmount01, float NewAmount01)
 {
 	float NewAmountDb = NewAmount01 * 96.f - 48.f;
 	Band->SetAmountDb(NewAmountDb);
@@ -242,7 +242,7 @@ void UEW_EQBandPopup::OnAmountDelta(float OldAmount01, float NewAmount01)
 	RootWidget->GetEvent_BandChanging().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnQualityDelta(float OldQuality01, float NewQuality01)
+void UEW_SonaQBandPopup::OnQualityDelta(float OldQuality01, float NewQuality01)
 {
 	float NewQuality = MathLogTool::HexabelToThousands(NewQuality01);
 	Band->SetQuality(NewQuality);
@@ -250,7 +250,7 @@ void UEW_EQBandPopup::OnQualityDelta(float OldQuality01, float NewQuality01)
 	RootWidget->GetEvent_BandChanging().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnMakeupGainDelta(float OldMakeupGain01, float NewMakeupGain01)
+void UEW_SonaQBandPopup::OnMakeupGainDelta(float OldMakeupGain01, float NewMakeupGain01)
 {
 	float NewMakeupGainDb = NewMakeupGain01 * 96.f - 48.f;
 	Band->SetLoudCompDb(NewMakeupGainDb);
@@ -258,7 +258,7 @@ void UEW_EQBandPopup::OnMakeupGainDelta(float OldMakeupGain01, float NewMakeupGa
 	RootWidget->GetEvent_BandChanging().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnListenDelta(float FrequencyDelta)
+void UEW_SonaQBandPopup::OnListenDelta(float FrequencyDelta)
 {
 	float OldFrequency01 = MathLogTool::TwentiethsToTribel(Band->GetFrequency());
 	float NewFrequency01 = OldFrequency01 + FrequencyDelta;
@@ -271,7 +271,7 @@ void UEW_EQBandPopup::OnListenDelta(float FrequencyDelta)
 	RootWidget->GetEvent_BandChanging().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat)
+void UEW_SonaQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat)
 {
 	UEnum* BandPopupTypeEnum = StaticEnum<EBandPopupType>();
 	if (BandPopupTypeEnum)
@@ -294,7 +294,7 @@ void UEW_EQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat)
 	}
 }
 
-void UEW_EQBandPopup::OnToggleNavelRemoveValueChanged(float QualityDelta01)
+void UEW_SonaQBandPopup::OnToggleNavelRemoveValueChanged(float QualityDelta01)
 {
 	float OldQuality01 = MathLogTool::ThousandsToHexabel(Band->GetQuality());
 	float NewQuality01 = OldQuality01 + QualityDelta01;
@@ -307,7 +307,7 @@ void UEW_EQBandPopup::OnToggleNavelRemoveValueChanged(float QualityDelta01)
 	RootWidget->GetEvent_BandChanging().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnToggleNavelOnOffValueChanged(float MakeupGainDelta01)
+void UEW_SonaQBandPopup::OnToggleNavelOnOffValueChanged(float MakeupGainDelta01)
 {
 	float OldMakeupGain01 = (Band->GetLoudCompDb() + 48.f) / 96.f;
 	float NewMakeupGain01 = OldMakeupGain01 + MakeupGainDelta01;
@@ -320,54 +320,54 @@ void UEW_EQBandPopup::OnToggleNavelOnOffValueChanged(float MakeupGainDelta01)
 	RootWidget->GetEvent_BandChanging().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnRemoveClick()
+void UEW_SonaQBandPopup::OnRemoveClick()
 {
-	Settings->RemoveBand(Band);
+	ViewModel->RemoveBand(Band);
 	RootWidget->SetSelectedBandIndex(-1);
 	RootWidget->GetEvent_BandSelectionChanged().Broadcast(Band);
 	RootWidget->GetEvent_BandRemoved().Broadcast(Band);
 	RootWidget->GetEvent_BandChanged().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNewValue)
+void UEW_SonaQBandPopup::OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNewValue)
 {
 	Band->SetIsEnabled(bNewValue);
 	RootWidget->GetEvent_BandChanged().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnFrequencyCommit()
+void UEW_SonaQBandPopup::OnFrequencyCommit()
 {
 	RootWidget->GetEvent_BandChanged().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnAmountCommit()
+void UEW_SonaQBandPopup::OnAmountCommit()
 {
 	RootWidget->GetEvent_BandChanged().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnQualityCommit()
+void UEW_SonaQBandPopup::OnQualityCommit()
 {
 	RootWidget->GetEvent_BandChanged().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnMakeupGainCommit()
+void UEW_SonaQBandPopup::OnMakeupGainCommit()
 {
 	RootWidget->GetEvent_BandChanged().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnListenStarted()
+void UEW_SonaQBandPopup::OnListenStarted()
 {
 	BandTypeBeforeListenTime = Band->GetType();
 	Band->SetType(EBandType::BandPass);
 }
 
-void UEW_EQBandPopup::OnListenFinished()
+void UEW_SonaQBandPopup::OnListenFinished()
 {
 	Band->SetType(BandTypeBeforeListenTime);
 	RootWidget->GetEvent_BandChanged().Broadcast(Band);
 }
 
-void UEW_EQBandPopup::OnTextCommitted(const FText& Text, ETextCommit::Type CommitType)
+void UEW_SonaQBandPopup::OnTextCommitted(const FText& Text, ETextCommit::Type CommitType)
 {
 	if (FocusMode == EBandPopupFocusMode::Frequency)
 	{
@@ -413,13 +413,13 @@ void UEW_EQBandPopup::OnTextCommitted(const FText& Text, ETextCommit::Type Commi
 	RootWidget->GetEvent_BandChanged().Broadcast(Band);
 }
 
-int32 UEW_EQBandPopup::NativePaint(const FPaintArgs&        Args,
-                                   const FGeometry&         AllottedGeometry,
-                                   const FSlateRect&        MyCullingRect,
-                                   FSlateWindowElementList& OutDrawElements,
-                                   int32                    LayerId,
-                                   const FWidgetStyle&      InWidgetStyle,
-                                   bool                     bParentEnabled) const
+int32 UEW_SonaQBandPopup::NativePaint(const FPaintArgs&        Args,
+                                      const FGeometry&         AllottedGeometry,
+                                      const FSlateRect&        MyCullingRect,
+                                      FSlateWindowElementList& OutDrawElements,
+                                      int32                    LayerId,
+                                      const FWidgetStyle&      InWidgetStyle,
+                                      bool                     bParentEnabled) const
 {
 	int32 Result = Super::NativePaint(Args,
 	                                  AllottedGeometry,
@@ -432,7 +432,7 @@ int32 UEW_EQBandPopup::NativePaint(const FPaintArgs&        Args,
 	return Result;
 }
 
-void UEW_EQBandPopup::RefreshVisual()
+void UEW_SonaQBandPopup::RefreshVisual()
 {
 	if (Band)
 	{
@@ -470,7 +470,7 @@ void UEW_EQBandPopup::RefreshVisual()
 	}
 }
 
-EBandType UEW_EQBandPopup::GetBandTypeByPopupType(EBandPopupType InBandPopupType)
+EBandType UEW_SonaQBandPopup::GetBandTypeByPopupType(EBandPopupType InBandPopupType)
 {
 	UEnum* BandPopupEnum = StaticEnum<EBandPopupType>();
 	UEnum* BandEnum = StaticEnum<EBandType>();
@@ -493,7 +493,7 @@ EBandType UEW_EQBandPopup::GetBandTypeByPopupType(EBandPopupType InBandPopupType
 	return EBandType::None;
 }
 
-UTexture* UEW_EQBandPopup::GetBandIconByType(EBandPopupType InBandPopup)
+UTexture* UEW_SonaQBandPopup::GetBandIconByType(EBandPopupType InBandPopup)
 {
 	switch (InBandPopup)
 	{
@@ -507,14 +507,14 @@ UTexture* UEW_EQBandPopup::GetBandIconByType(EBandPopupType InBandPopup)
 	}
 }
 
-FVector2D UEW_EQBandPopup::GetBandWPos()
+FVector2D UEW_SonaQBandPopup::GetBandWPos()
 {
 	if (Band)
 	{
 		float F = Band->GetFrequency();
 		float NX = MathLogTool::TwentiethsToTribel(F);
-		float NY = (UEW_EQ::DynamicMax - Settings->DtftDb(F))
-		         / (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin);
+		float NY = (UEW_SonaQ::DynamicMax - ViewModel->DtftDb(F))
+		         / (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
 		float WX = NX * RootWidget->GetLastSize().X;
 		float WY = NY * RootWidget->GetLastSize().Y;
 

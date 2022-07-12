@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "EditorUtilityWidget.h"
-#include "Model/EQSettingsMock.h"
-#include "EW_EQ.generated.h"
+#include "Model/VM_SonaQ.h"
+#include "EW_SonaQ.generated.h"
 
 class UEW_EQBandList;
-class UEW_EQBandPopup;
+class UEW_SonaQBandPopup;
 class UEW_EQManagementStrip;
-class UEW_EQFrequencyResponse;
+class UEW_SonaQFrequencyResponse;
 
 UCLASS()
-class SONAFRIDGEEDITOR_API UEW_EQ : public UEditorUtilityWidget
+class SONAFRIDGEEDITOR_API UEW_SonaQ : public UEditorUtilityWidget
 {
 	GENERATED_BODY()
 
@@ -21,30 +21,30 @@ public:
 	static constexpr float DynamicMin = -48.f;
 	static constexpr float DynamicMax = +48.f;
 
-	UEW_EQ();
-	void Init(TSharedPtr<IEQSettings> InSettings);
+	UEW_SonaQ();
+	void Init(TSharedPtr<FVM_SonaQ> InViewModel);
 
-	TSharedPtr<FEQBand> GetSelectedBand() const { return SelectedBand; }
-	void                SetSelectedBand(TSharedPtr<FEQBand> InBand);
+	TSharedPtr<FVM_SonaQBand> GetSelectedBand() const { return SelectedBand; }
+	void                      SetSelectedBand(TSharedPtr<FVM_SonaQBand> InBand);
 
 	int32 GetSelectedBandIndex() const { return SelectedBandIndex; }
 	void  SetSelectedBandIndex(int32 InBandIndex);
 
 	const FVector2D& GetLastSize() const { return LastSize; }
 
-	DECLARE_EVENT_OneParam(UEW_EQBandList, FBandSelectionChanged, TSharedPtr<FEQBand>)
+	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandSelectionChanged, TSharedPtr<FVM_SonaQBand>)
 	FBandSelectionChanged& GetEvent_BandSelectionChanged() { return BandSelectionChanged; }
 
-	DECLARE_EVENT_OneParam(UEW_EQBandList, FBandChanging, TSharedPtr<FEQBand>);
+	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandChanging, TSharedPtr<FVM_SonaQBand>);
 	FBandChanging& GetEvent_BandChanging() { return BandChanging; }
 
-	DECLARE_EVENT_OneParam(UEW_EQBandList, FBandChanged, TSharedPtr<FEQBand>);
+	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandChanged, TSharedPtr<FVM_SonaQBand>);
 	FBandChanged& GetEvent_BandChanged() { return BandChanged; }
 
-	DECLARE_EVENT_OneParam(UEW_EQBandList, FBandAdded, TSharedPtr<FEQBand>);
+	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandAdded, TSharedPtr<FVM_SonaQBand>);
 	FBandAdded& GetEvent_BandAdded() { return BandAdded; }
 
-	DECLARE_EVENT_OneParam(UEW_EQBandList, FBandRemoved, TSharedPtr<FEQBand>);
+	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandRemoved, TSharedPtr<FVM_SonaQBand>);
 	FBandRemoved& GetEvent_BandRemoved() { return BandRemoved; }
 
 protected:
@@ -59,15 +59,15 @@ protected:
 	                          bool                     bParentEnabled) const override;
 
 	float SampleRate = 44100.f;
-	TSharedPtr<IEQSettings> Settings;
+	TSharedPtr<FVM_SonaQ> ViewModel;
 
 	UPROPERTY(meta = (BindWidget))
-	UEW_EQFrequencyResponse* FrequencyResponse;
+	UEW_SonaQFrequencyResponse* FrequencyResponse;
 
 	UPROPERTY(meta = (BindWidget))
-	UEW_EQBandPopup* BandPopup;
+	UEW_SonaQBandPopup* BandPopup;
 
-	TSharedPtr<FEQBand> SelectedBand;
+	TSharedPtr<FVM_SonaQBand> SelectedBand;
 	int32 SelectedBandIndex = -1;
 
 private:

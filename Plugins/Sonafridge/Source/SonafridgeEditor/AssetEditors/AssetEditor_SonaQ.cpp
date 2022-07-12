@@ -4,7 +4,7 @@
 #include "AssetEditor_SonaQ.h"
 
 #include "Sonafridge/SignalProcessing/SFX_SonaQ.h"
-#include "SonafridgeEditor/Widgets/EW_EQ.h"
+#include "SonafridgeEditor/Widgets/EW_SonaQ.h"
 #include "WidgetBlueprint.h"
 
 #define LOCTEXT_NAMESPACE "FAssetEditor_SonaQ"
@@ -191,14 +191,14 @@ TSharedRef<SDockTab> FAssetEditor_SonaQ::SpawnTab_SonaQWidget(const FSpawnTabArg
 	UWidgetBlueprint* Blueprint = LoadObject<UWidgetBlueprint>
 	(
 		nullptr,
-		TEXT("/Sonafridge/UI/EW_EQ.EW_EQ")
+		TEXT("/Sonafridge/UI/EW_SonaQ.EW_SonaQ")
 	);
 
 	UWorld* World = GEditor->GetEditorWorldContext().World();
 	check(World);
 
 	// Transient UWidget, which SWidget will be held by shared pointer. 
-	SonaQWidget = CreateWidget<UEW_EQ>
+	SonaQWidget = CreateWidget<UEW_SonaQ>
 	(
 		World, static_cast<UClass*>(Blueprint->GeneratedClass)
 	);

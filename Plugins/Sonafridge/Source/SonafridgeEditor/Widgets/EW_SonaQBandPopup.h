@@ -2,17 +2,17 @@
 
 #pragma once
 
-#include "Model/EQBand.h"
+#include "Model/VM_SonaQBand.h"
 #include "EditorUtilityWidget.h"
 #include "CoreMinimal.h"
-#include "EW_EQBandPopup.generated.h"
+#include "EW_SonaQBandPopup.generated.h"
 
-struct IEQSettings;
+class FVM_SonaQ;
 class UNaveledKnob;
 class UToggleKnob;
 class UTextBlock;
 class UEditableTextBox;
-class UEW_EQ;
+class UEW_SonaQ;
 
 UENUM()
 enum class EBandPopupFocusMode : uint8
@@ -36,12 +36,12 @@ enum class EBandPopupType : uint8
 };
 
 UCLASS()
-class SONAFRIDGEEDITOR_API UEW_EQBandPopup : public UEditorUtilityWidget
+class SONAFRIDGEEDITOR_API UEW_SonaQBandPopup : public UEditorUtilityWidget
 {
 	GENERATED_BODY()
 
 public:
-	void Init(UEW_EQ* InRootWidget, TSharedPtr<IEQSettings> InSettings);
+	void Init(UEW_SonaQ* InRootWidget, TSharedPtr<FVM_SonaQ> InViewModel);
 	void FollowBand();
 
 protected:
@@ -99,9 +99,9 @@ protected:
 	void OnButtonRemoveExit();
 	void OnToggleOnOffExit();
 	
-	void OnBandSelectionChanged(TSharedPtr<FEQBand> InBand);
-	void OnBandChanging(TSharedPtr<FEQBand> InBand);
-	void OnBandChanged(TSharedPtr<FEQBand> InBand);
+	void OnBandSelectionChanged(TSharedPtr<FVM_SonaQBand> InBand);
+	void OnBandChanging(TSharedPtr<FVM_SonaQBand> InBand);
+	void OnBandChanged(TSharedPtr<FVM_SonaQBand> InBand);
 	void OnFrequencyDelta(float OldFrequency01, float NewFrequency01);
 	void OnAmountDelta(float OldAmount01, float NewAmount01);
 	void OnQualityDelta(float OldQuality01, float NewQuality01);
@@ -136,11 +136,11 @@ private:
 	FVector2D GetBandWPos();
 
 	UPROPERTY()
-	UEW_EQ* RootWidget;
+	UEW_SonaQ* RootWidget;
 
-	TSharedPtr<IEQSettings> Settings;
-	TSharedPtr<FEQBand>     Band;
-	float                   BandTypeFloat = 0.f;
-	EBandType               BandTypeBeforeListenTime = EBandType::BandCut;
-	EBandPopupFocusMode     FocusMode = EBandPopupFocusMode::Frequency;
+	TSharedPtr<FVM_SonaQ>     ViewModel;
+	TSharedPtr<FVM_SonaQBand> Band;
+	float                     BandTypeFloat = 0.f;
+	EBandType                 BandTypeBeforeListenTime = EBandType::BandCut;
+	EBandPopupFocusMode       FocusMode = EBandPopupFocusMode::Frequency;
 };

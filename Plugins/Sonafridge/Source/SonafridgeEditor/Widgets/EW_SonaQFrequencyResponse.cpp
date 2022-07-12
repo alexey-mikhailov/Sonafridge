@@ -1,56 +1,57 @@
 // Sonafridge 2022
 
-#include "EW_EQFrequencyResponse.h"
-#include "EW_EQ.h"
-#include "Model/EQSettingsMock.h"
+#include "EW_SonaQFrequencyResponse.h"
+#include "EW_SonaQ.h"
+#include "Model/VM_SonaQ.h"
 #include "Sonafridge/ColorManagement/HSRColor.h"
 #include "Sonafridge/MathTools.h"
 #include "Input/HittestGrid.h"
 #include "AudioDevice.h"
 
-UEW_EQFrequencyResponse::UEW_EQFrequencyResponse()
+UEW_SonaQFrequencyResponse::UEW_SonaQFrequencyResponse()
 {
-	SizeChanged.AddUObject(this, &UEW_EQFrequencyResponse::OnSizeChanged);
+	SizeChanged.AddUObject(this, &UEW_SonaQFrequencyResponse::OnSizeChanged);
 }
 
-void UEW_EQFrequencyResponse::Init(UEW_EQ* InRootWidget, TSharedPtr<IEQSettings> InSettings)
+void UEW_SonaQFrequencyResponse::Init(UEW_SonaQ* InRootWidget, TSharedPtr<FVM_SonaQ> InViewModel)
 {
 	RootWidget = InRootWidget;
-	Settings = InSettings;
-	SampleRate = Settings->GetSampleRate();
-	RootWidget->GetEvent_BandChanging().AddUObject(this, &UEW_EQFrequencyResponse::OnBandChanging);
-	RootWidget->GetEvent_BandChanged().AddUObject(this, &UEW_EQFrequencyResponse::OnBandChanged);
+	ViewModel = InViewModel;
+	SampleRate = ViewModel->GetSampleRate();
+	RootWidget->GetEvent_BandChanging().AddUObject(this, &UEW_SonaQFrequencyResponse::OnBandChanging);
+	RootWidget->GetEvent_BandChanged().AddUObject(this, &UEW_SonaQFrequencyResponse::OnBandChanged);
 	GridPointPairs.SetNumZeroed((7 + 10 + 10) + ((48.f + 42.f) / 6.f));
 	ResponsePoints.SetNumZeroed(Resolution);
 	BakeGrid();
 	BakeResponse();
 }
 
-void UEW_EQFrequencyResponse::OnBandChanging(TSharedPtr<FEQBand> InBand)
+void UEW_SonaQFrequencyResponse::OnBandChanging(TSharedPtr<FVM_SonaQBand> InBand)
 {
 	BakeResponse();
 }
 
-void UEW_EQFrequencyResponse::OnBandChanged(TSharedPtr<FEQBand> InBand)
+void UEW_SonaQFrequencyResponse::OnBandChanged(TSharedPtr<FVM_SonaQBand> InBand)
 {
 	BakeResponse();
 }
 
-void UEW_EQFrequencyResponse::OnSizeChanged(const FVector2D& OldSize,
-                                            const FVector2D& NewSize)
+void UEW_SonaQFrequencyResponse::OnSizeChanged(const FVector2D& OldSize,
+                                               const FVector2D& NewSize)
 {
 	LastSize = NewSize;
 	BakeGrid();
 	BakeResponse();
 }
 
-void UEW_EQFrequencyResponse::NativeConstruct()
+void UEW_SonaQFrequencyResponse::NativeConstruct()
 {
 	Super::NativeConstruct();
 	SetClipping(EWidgetClipping::ClipToBoundsAlways);
 }
 
-FReply UEW_EQFrequencyResponse::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply UEW_SonaQFrequencyResponse::NativeOnMouseButtonDown(const FGeometry& InGeometry, 
+														   const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
 
@@ -64,7 +65,7 @@ FReply UEW_EQFrequencyResponse::NativeOnMouseButtonDown(const FGeometry& InGeome
 	PossessedBandIndex = -1;
 
 	int32 Index = 0;
-	for (auto Band : Settings->GetBands())
+	for (auto Band : ViewModel->GetBands())
 	{
 		FVector2D       WBandPos = GetBandWPos(Band);
 		constexpr float ScreenSpaceTolerance = 10.f;
@@ -76,8 +77,8 @@ FReply UEW_EQFrequencyResponse::NativeOnMouseButtonDown(const FGeometry& InGeome
 			PossessedBandIndex = Index;
 			PresstimeMousePos = MousePos;
 			PresstimeFrequency = Band->GetFrequency();
-			PresstimeNAmountDb = (UEW_EQ::DynamicMax - Band->GetAmountDb())
-			                   / (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin);
+			PresstimeNAmountDb = (UEW_SonaQ::DynamicMax - Band->GetAmountDb())
+			                   / (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
 			Reply = Reply.CaptureMouse(TakeWidget());
 			break;
 		}
@@ -90,7 +91,8 @@ FReply UEW_EQFrequencyResponse::NativeOnMouseButtonDown(const FGeometry& InGeome
 	return Reply;
 }
 
-FReply UEW_EQFrequencyResponse::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+FReply UEW_SonaQFrequencyResponse::NativeOnMouseButtonUp(const FGeometry& InGeometry, 
+														 const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = Super::NativeOnMouseButtonUp(InGeometry, InMouseEvent);
 
@@ -102,27 +104,27 @@ FReply UEW_EQFrequencyResponse::NativeOnMouseButtonUp(const FGeometry& InGeometr
 	return Reply;
 }
 
-FReply UEW_EQFrequencyResponse::NativeOnMouseButtonDoubleClick(const FGeometry&     InGeometry,
-                                                               const FPointerEvent& InMouseEvent)
+FReply UEW_SonaQFrequencyResponse::NativeOnMouseButtonDoubleClick(const FGeometry&     InGeometry,
+                                                                  const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = Super::NativeOnMouseButtonDoubleClick(InGeometry, InMouseEvent);
 	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
 	float Frequency = MathLogTool::TribelToTwentieths(MousePos.X / LastSize.X);
 
-	TSharedPtr<FEQBand> Band = MakeShared<FEQBand>();
+	TSharedPtr<FVM_SonaQBand> Band = MakeShared<FVM_SonaQBand>();
 	Band->Init(SampleRate);
 	Band->SetType(EBandType::BandCut);
 	Band->SetFrequency(Frequency);
 	Band->SetQuality(1.f);
 	Band->SetAmountDb(0.f);
 	Band->SetLoudCompDb(0.f);
-	Settings->AddBand(Band);
+	ViewModel->AddBand(Band);
 
 	return Reply;
 }
 
-FReply UEW_EQFrequencyResponse::NativeOnMouseMove(const FGeometry& InGeometry, 
-                                                  const FPointerEvent& InMouseEvent)
+FReply UEW_SonaQFrequencyResponse::NativeOnMouseMove(const FGeometry&     InGeometry,
+                                                     const FPointerEvent& InMouseEvent)
 {
 	FReply Reply = Super::NativeOnMouseMove(InGeometry, InMouseEvent);
 
@@ -140,7 +142,7 @@ FReply UEW_EQFrequencyResponse::NativeOnMouseMove(const FGeometry& InGeometry,
 	bool bCtrl = InMouseEvent.IsControlDown();
 
 	int32 Index = 0;
-	for (auto Band : Settings->GetBands())
+	for (auto Band : ViewModel->GetBands())
 	{
 		FVector2D       WBandPos = GetBandWPos(Band);
 		constexpr float ScreenSpaceTolerance = 10.f;
@@ -180,7 +182,7 @@ FReply UEW_EQFrequencyResponse::NativeOnMouseMove(const FGeometry& InGeometry,
 			float NNewY = PresstimeNAmountDb + NDiff.Y;
 
 			PossessedBand->SetFrequency(F);
-			PossessedBand->SetAmountDb(UEW_EQ::DynamicMax - NNewY * (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin));
+			PossessedBand->SetAmountDb(UEW_SonaQ::DynamicMax - NNewY * (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin));
 			RootWidget->GetEvent_BandChanged().Broadcast(PossessedBand);
 		}
 	}
@@ -190,13 +192,13 @@ FReply UEW_EQFrequencyResponse::NativeOnMouseMove(const FGeometry& InGeometry,
 	return Reply;
 }
 
-int32 UEW_EQFrequencyResponse::NativePaint(const FPaintArgs&        Args,
-                                           const FGeometry&         AllottedGeometry,
-                                           const FSlateRect&        MyCullingRect,
-                                           FSlateWindowElementList& OutDrawElements,
-                                           int32                    LayerId,
-                                           const FWidgetStyle&      InWidgetStyle,
-                                           bool                     bParentEnabled) const
+int32 UEW_SonaQFrequencyResponse::NativePaint(const FPaintArgs&        Args,
+                                              const FGeometry&         AllottedGeometry,
+                                              const FSlateRect&        MyCullingRect,
+                                              FSlateWindowElementList& OutDrawElements,
+                                              int32                    LayerId,
+                                              const FWidgetStyle&      InWidgetStyle,
+                                              bool                     bParentEnabled) const
 {
 	int32 Result = Super::NativePaint(Args,
 	                                  AllottedGeometry,
@@ -206,7 +208,7 @@ int32 UEW_EQFrequencyResponse::NativePaint(const FPaintArgs&        Args,
 	                                  InWidgetStyle,
 	                                  bParentEnabled);
 
-	if (!Settings) return Result;
+	if (!ViewModel) return Result;
 
 	FVector2D Size = AllottedGeometry.GetLocalSize();
 	if (Size != LastSize)
@@ -258,10 +260,10 @@ int32 UEW_EQFrequencyResponse::NativePaint(const FPaintArgs&        Args,
 
 	for (int32 Index = 0; Index < BandPoints.Num(); ++Index)
 	{
-		TSharedPtr<FEQBand> CurrentBand;
-		if (Settings->GetBands().Num() > Index)
+		TSharedPtr<FVM_SonaQBand> CurrentBand;
+		if (ViewModel->GetBands().Num() > Index)
 		{
-			CurrentBand = Settings->GetBands()[Index];
+			CurrentBand = ViewModel->GetBands()[Index];
 		}
 
 		FVector2D P1 = BandPoints[Index] + FVector2D(0.f, -1.f);
@@ -314,7 +316,7 @@ int32 UEW_EQFrequencyResponse::NativePaint(const FPaintArgs&        Args,
 	return Result;
 }
 
-void UEW_EQFrequencyResponse::BakeGrid()
+void UEW_SonaQFrequencyResponse::BakeGrid()
 {
 	const float W = LastSize.X;
 	const float H = LastSize.Y;
@@ -362,9 +364,9 @@ void UEW_EQFrequencyResponse::BakeGrid()
 	}
 }
 
-void UEW_EQFrequencyResponse::BakeResponse()
+void UEW_SonaQFrequencyResponse::BakeResponse()
 {
-	if (!Settings) return;
+	if (!ViewModel) return;
 
 	const float W = LastSize.X;
 	const float H = LastSize.Y;
@@ -372,10 +374,10 @@ void UEW_EQFrequencyResponse::BakeResponse()
 	for (int32 I = 0; I < Resolution; ++I)
 	{
 		auto Frequency = FMath::Exp(I * FLS + FLMin);
-		float Response = Settings->DtftDb(Frequency);
+		float Response = ViewModel->DtftDb(Frequency);
 
-		float Y = (Response           - UEW_EQ::DynamicMin)
-		        / (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin);
+		float Y = (Response              - UEW_SonaQ::DynamicMin)
+		        / (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
 
 		ResponsePoints[I] = 
 		{
@@ -384,15 +386,15 @@ void UEW_EQFrequencyResponse::BakeResponse()
 		};
 	}
 
-	BandPoints.SetNumZeroed(Settings->GetBands().Num());
+	BandPoints.SetNumZeroed(ViewModel->GetBands().Num());
 
 	int32 Index = 0;
-	for (const auto& Band : Settings->GetBands())
+	for (const auto& Band : ViewModel->GetBands())
 	{
 		float F = Band->GetFrequency();
 		float X = MathLogTool::TwentiethsToTribel(F);
-		float Response = Settings->DtftDb(F);
-		float Y = (Response - UEW_EQ::DynamicMin) / (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin);
+		float Response = ViewModel->DtftDb(F);
+		float Y = (Response - UEW_SonaQ::DynamicMin) / (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
 
 		if (BandPoints.Num() > Index)
 		{
@@ -403,14 +405,14 @@ void UEW_EQFrequencyResponse::BakeResponse()
 	}
 }
 
-FVector2D UEW_EQFrequencyResponse::GetBandWPos(TSharedPtr<FEQBand> InBand)
+FVector2D UEW_SonaQFrequencyResponse::GetBandWPos(TSharedPtr<FVM_SonaQBand> InBand)
 {
 	if (InBand)
 	{
 		float F = InBand->GetFrequency();
 		float NX = MathLogTool::TwentiethsToTribel(F);
-		float NY = (UEW_EQ::DynamicMax - Settings->DtftDb(F))
-		         / (UEW_EQ::DynamicMax - UEW_EQ::DynamicMin);
+		float NY = (UEW_SonaQ::DynamicMax - ViewModel->DtftDb(F))
+		         / (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
 		float WX = NX * LastSize.X;
 		float WY = NY * LastSize.Y;
 		return { WX, WY };

@@ -1,5 +1,5 @@
 #include "ContentBrowserMenuExtender.h"
-#include "Widgets/EW_EQ.h"
+#include "Widgets/EW_SonaQ.h"
 #include "Sonafridge/SignalProcessing/SFX_SonaQ.h"
 #include "WidgetBlueprint.h"
 #include "ContentBrowserModule.h"
@@ -101,25 +101,25 @@ void FSonafridgeContentBrowserMenuExtender::AddMenuEntryForSonaQs(FMenuBuilder& 
 			UWidgetBlueprint* Blueprint = LoadObject<UWidgetBlueprint>
 			(
 				nullptr,
-				TEXT("/Sonafridge/UI/EW_EQ.EW_EQ")
+				TEXT("/Sonafridge/UI/EW_SonaQ.EW_SonaQ")
 			);
 
 			UWorld* World = GEditor->GetEditorWorldContext().World();
 			check(World);
 
-			UEW_EQ* EW_EQ = CreateWidget<UEW_EQ>
+			UEW_SonaQ* EW_SonaQ = CreateWidget<UEW_SonaQ>
 			(
 				World,
 				static_cast<UClass*>(Blueprint->GeneratedClass)
 			);
 
-			// TODO: EW_EQ->Init(SonaQPreset);
+			// TODO: EW_SonaQ->Init(SonaQPreset);
 
 			TSharedRef<SWindow> MyWindow = 
 			{
 				SNew(SWindow).ClientSize({ 600, 400 }).MaxWidth(600).MaxHeight(400)
 				[
-					EW_EQ->TakeWidget()
+					EW_SonaQ->TakeWidget()
 				]
 			};
 
