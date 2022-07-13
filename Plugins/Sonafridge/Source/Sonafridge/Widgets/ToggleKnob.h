@@ -51,7 +51,7 @@ public:
 	DECLARE_EVENT_TwoParams(UToggleNavelWidget, FToggleStateChanged, bool Oldvalue, bool NewValue)
 	FToggleStateChanged& GetEvent_ToggleStateChanged() { return ToggleStateChanged; }
 
-	DECLARE_EVENT_TwoParams(UToggleKnob, FKnobValueChanged, float OldValue, float NewValue)
+	DECLARE_EVENT_ThreeParams(UToggleKnob, FKnobValueChanged, float OldValue, float NewValue, bool& bInOutHaveAllHandlersAccepted)
 	FKnobValueChanged& GetEvent_KnobValueChanged() { return KnobValueChanged; }
 
 	DECLARE_EVENT_OneParam(UToggleKnob, FNavelValueChanged, float ValueDelta)

@@ -157,7 +157,7 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseMove(const FGeometry&     InGeom
 		++Index;
 	}
 
-	if (PossessedBand)
+	if (PossessedBand && PossessedBand->GetIsEnabled())
 	{
 		if (bCtrl)
 		{

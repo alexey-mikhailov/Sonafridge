@@ -45,6 +45,7 @@ void UEW_SonaQ::NativeConstruct()
 	ViewModel = MakeShared<FVM_SonaQ>();
 	ViewModel->Init(SampleRate);
 	ViewModel->GetEvent_BandChanged().AddUObject(this, &UEW_SonaQ::OnInternalChanged);
+	ViewModel->GetEvent_BandChanging().AddUObject(this, &UEW_SonaQ::OnInternalChanging);
 
 	if (IsValid(Preset))
 	{
@@ -115,39 +116,14 @@ void UEW_SonaQ::OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize
 	BandPopup->FollowBand();
 }
 
+void UEW_SonaQ::OnInternalChanging(TSharedPtr<FVM_SonaQBand> InBand)
+{
+	TransferViewModelToPreset();
+}
+
 void UEW_SonaQ::OnInternalChanged(TSharedPtr<FVM_SonaQBand> InBand)
 {
-	FSFXSettings_SonaQ                Settings = Preset->GetSettings();
-	TArray<TSharedPtr<FVM_SonaQBand>> VMBands = ViewModel->GetBands();
-
-	Settings.EQBands.Reset(VMBands.Num());
-
-	for (int32 Index = 0; Index < VMBands.Num(); ++Index)
-	{
-		TSharedPtr<FVM_SonaQBand> BandViewModel = VMBands[Index];
-		FSFXSettings_SonaQBand    Band;
-
-		Band.bEnabled = BandViewModel->GetIsEnabled();
-		Band.Type = BandViewModel->GetType();
-		Band.Frequency = BandViewModel->GetFrequency();
-		Band.AmountDb = BandViewModel->GetAmountDb();
-		Band.Quality = BandViewModel->GetQuality();
-		Band.MakeupDb = BandViewModel->GetMakeupDb();
-
-		Settings.EQBands.Add(Band);
-	}
-
-	// Sync external widgets. 
-	Preset->SetSettings(Settings);
-	Preset->Settings = Settings;
-
-	if (IsValid(Preset))
-	{
-		if (!Preset->MarkPackageDirty())
-		{
-			UE_LOG(LogSonafridgeEditor, Error, TEXT("Could not mark package dirty during USFXPreset changing. "));
-		}
-	}
+	TransferViewModelToPreset();
 }
 
 void UEW_SonaQ::OnExternalChanged()
@@ -198,5 +174,40 @@ int32 UEW_SonaQ::NativePaint(const FPaintArgs&        Args,
 
 	MutableThis->LastSize = Size;
 	return Result;
+}
+
+void UEW_SonaQ::TransferViewModelToPreset()
+{
+	FSFXSettings_SonaQ                Settings = Preset->GetSettings();
+	TArray<TSharedPtr<FVM_SonaQBand>> VMBands = ViewModel->GetBands();
+
+	Settings.EQBands.Reset(VMBands.Num());
+
+	for (int32 Index = 0; Index < VMBands.Num(); ++Index)
+	{
+		TSharedPtr<FVM_SonaQBand> BandViewModel = VMBands[Index];
+		FSFXSettings_SonaQBand    Band;
+
+		Band.bEnabled = BandViewModel->GetIsEnabled();
+		Band.Type = BandViewModel->GetType();
+		Band.Frequency = BandViewModel->GetFrequency();
+		Band.AmountDb = BandViewModel->GetAmountDb();
+		Band.Quality = BandViewModel->GetQuality();
+		Band.MakeupDb = BandViewModel->GetMakeupDb();
+
+		Settings.EQBands.Add(Band);
+	}
+
+	// Sync external widgets. 
+	Preset->SetSettings(Settings);
+	Preset->Settings = Settings;
+
+	if (IsValid(Preset))
+	{
+		if (!Preset->MarkPackageDirty())
+		{
+			UE_LOG(LogSonafridgeEditor, Error, TEXT("Could not mark package dirty during USFXPreset changing. "));
+		}
+	}
 }
 

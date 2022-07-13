@@ -144,16 +144,21 @@ void UNaveledKnob::OnNavelClick()
 
 void UNaveledKnob::OnKnobDeltaRequested(float ValueDelta)
 {
-	float OldValue01 = Value01;
-	Value01 += ValueDelta;
-	Value01 = FMath::Clamp(Value01, 0.f, 1.f);
+	float NewValue01 = Value01 + ValueDelta;
+	NewValue01 = FMath::Clamp(NewValue01, 0.f, 1.f);
 
 	if (SWidget)
 	{
 		SWidget->UpdateMaterial();
 	}
 
-	KnobValueChanged.Broadcast(OldValue01, Value01);
+	bool bHaveAllHandlersAccepted = true;
+	KnobValueChanged.Broadcast(Value01, NewValue01, bHaveAllHandlersAccepted);
+
+	if (bHaveAllHandlersAccepted)
+	{
+		Value01 = NewValue01;
+	}
 }
 
 void UNaveledKnob::OnNavelDeltaRequested(float ValueDelta)

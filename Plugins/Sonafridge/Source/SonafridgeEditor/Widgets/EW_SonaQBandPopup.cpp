@@ -226,98 +226,146 @@ void UEW_SonaQBandPopup::OnBandChanged(TSharedPtr<FVM_SonaQBand> InBand)
 	FollowBand();
 }
 
-void UEW_SonaQBandPopup::OnFrequencyDelta(float OldFrequency01, float NewFrequency01)
+void UEW_SonaQBandPopup::OnFrequencyDelta(float OldFrequency01, 
+										  float NewFrequency01, 
+										  bool& bInOutHaveAllHandlersAccepted)
 {
-	float NewFrequency = MathLogTool::TribelToTwentieths(NewFrequency01);
-	Band->SetFrequency(NewFrequency);
-	TextBoxValue->SetText(FloatToText(NewFrequency, 1));
-	ViewModel->GetEvent_BandChanging().Broadcast(Band);
+	if (Band->GetIsEnabled())
+	{
+		float NewFrequency = MathLogTool::TribelToTwentieths(NewFrequency01);
+		Band->SetFrequency(NewFrequency);
+		TextBoxValue->SetText(FloatToText(NewFrequency, 1));
+		ViewModel->GetEvent_BandChanging().Broadcast(Band);
+	}
+	else
+	{
+		bInOutHaveAllHandlersAccepted = false;
+	}
 }
 
-void UEW_SonaQBandPopup::OnAmountDelta(float OldAmount01, float NewAmount01)
+void UEW_SonaQBandPopup::OnAmountDelta(float OldAmount01, 
+									   float NewAmount01, 
+									   bool& bInOutHaveAllHandlersAccepted)
 {
-	float NewAmountDb = NewAmount01 * 96.f - 48.f;
-	Band->SetAmountDb(NewAmountDb);
-	TextBoxValue->SetText(FloatToText(NewAmountDb, 2, ESignMode::Always));
-	ViewModel->GetEvent_BandChanging().Broadcast(Band);
+	if (Band->GetIsEnabled())
+	{
+		float NewAmountDb = NewAmount01 * 96.f - 48.f;
+		Band->SetAmountDb(NewAmountDb);
+		TextBoxValue->SetText(FloatToText(NewAmountDb, 2, ESignMode::Always));
+		ViewModel->GetEvent_BandChanging().Broadcast(Band);
+	}
+	else
+	{
+		bInOutHaveAllHandlersAccepted = false;
+	}
 }
 
-void UEW_SonaQBandPopup::OnQualityDelta(float OldQuality01, float NewQuality01)
+void UEW_SonaQBandPopup::OnQualityDelta(float OldQuality01, 
+										float NewQuality01, 
+										bool& bInOutHaveAllHandlersAccepted)
 {
-	float NewQuality = MathLogTool::HexabelToThousands(NewQuality01);
-	Band->SetQuality(NewQuality);
-	TextBoxValue->SetText(FloatToText(NewQuality, 3));
-	ViewModel->GetEvent_BandChanging().Broadcast(Band);
+	if (Band->GetIsEnabled())
+	{
+		float NewQuality = MathLogTool::HexabelToThousands(NewQuality01);
+		Band->SetQuality(NewQuality);
+		TextBoxValue->SetText(FloatToText(NewQuality, 3));
+		ViewModel->GetEvent_BandChanging().Broadcast(Band);
+	}
+	else
+	{
+		bInOutHaveAllHandlersAccepted = false;
+	}
 }
 
-void UEW_SonaQBandPopup::OnMakeupGainDelta(float OldMakeupGain01, float NewMakeupGain01)
+void UEW_SonaQBandPopup::OnMakeupGainDelta(float OldMakeupGain01,
+                                           float NewMakeupGain01,
+                                           bool& bInOutHaveAllHandlersAccepted)
 {
-	float NewMakeupGainDb = NewMakeupGain01 * 96.f - 48.f;
-	Band->SetMakeupDb(NewMakeupGainDb);
-	TextBoxValue->SetText(FloatToText(NewMakeupGainDb, 2, ESignMode::Always));
-	ViewModel->GetEvent_BandChanging().Broadcast(Band);
+	if (Band->GetIsEnabled())
+	{
+		float NewMakeupGainDb = NewMakeupGain01 * 96.f - 48.f;
+		Band->SetMakeupDb(NewMakeupGainDb);
+		TextBoxValue->SetText(FloatToText(NewMakeupGainDb, 2, ESignMode::Always));
+		ViewModel->GetEvent_BandChanging().Broadcast(Band);
+	}
+	else
+	{
+		bInOutHaveAllHandlersAccepted = false;
+	}
 }
 
 void UEW_SonaQBandPopup::OnListenDelta(float FrequencyDelta)
 {
-	float OldFrequency01 = MathLogTool::TwentiethsToTribel(Band->GetFrequency());
-	float NewFrequency01 = OldFrequency01 + FrequencyDelta;
-	NewFrequency01 = FMath::Clamp(NewFrequency01, 0.f, 1.f);
-	NaveledKnobFrequency->SetValue01(NewFrequency01);
+	if (Band->GetIsEnabled())
+	{
+		float OldFrequency01 = MathLogTool::TwentiethsToTribel(Band->GetFrequency());
+		float NewFrequency01 = OldFrequency01 + FrequencyDelta;
+		NewFrequency01 = FMath::Clamp(NewFrequency01, 0.f, 1.f);
+		NaveledKnobFrequency->SetValue01(NewFrequency01);
 
-	float NewFrequency = MathLogTool::TribelToTwentieths(NewFrequency01);
-	Band->SetFrequency(NewFrequency);
-	TextBoxValue->SetText(FloatToText(NewFrequency, 1));
-	ViewModel->GetEvent_BandChanging().Broadcast(Band);
+		float NewFrequency = MathLogTool::TribelToTwentieths(NewFrequency01);
+		Band->SetFrequency(NewFrequency);
+		TextBoxValue->SetText(FloatToText(NewFrequency, 1));
+		ViewModel->GetEvent_BandChanging().Broadcast(Band);
+	}
 }
 
 void UEW_SonaQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat)
 {
-	UEnum* BandPopupTypeEnum = StaticEnum<EBandPopupType>();
-	if (BandPopupTypeEnum)
+	if (Band->GetIsEnabled())
 	{
-		BandTypeFloat += 10.f * BandTypeDeltaAsFloat;
+		UEnum* BandPopupTypeEnum = StaticEnum<EBandPopupType>();
+		if (BandPopupTypeEnum)
+		{
+			BandTypeFloat += 10.f * BandTypeDeltaAsFloat;
 
-		BandTypeFloat = FMath::Clamp(BandTypeFloat,
-		                             static_cast<float>(EBandPopupType::CutLow),
-		                             static_cast<float>(BandPopupTypeEnum->GetMaxEnumValue()) - 1.f);
+			BandTypeFloat = FMath::Clamp(BandTypeFloat,
+										 static_cast<float>(EBandPopupType::CutLow),
+										 static_cast<float>(BandPopupTypeEnum->GetMaxEnumValue()) - 1.f);
 
-		EBandPopupType BandPopupType = static_cast<EBandPopupType>(BandTypeFloat);
-		Band->SetType(GetBandTypeByPopupType(BandPopupType));
-		NaveledKnobAmount->HoverIcon = GetBandIconByType(BandPopupType);
-		NaveledKnobAmount->RefreshVisual();
+			EBandPopupType BandPopupType = static_cast<EBandPopupType>(BandTypeFloat);
+			Band->SetType(GetBandTypeByPopupType(BandPopupType));
+			NaveledKnobAmount->HoverIcon = GetBandIconByType(BandPopupType);
+			NaveledKnobAmount->RefreshVisual();
 
-		FText EnumText = BandPopupTypeEnum->GetDisplayNameTextByValue(static_cast<int64>(BandPopupType));
-		TextBoxValue->SetText(EnumText);
+			FText EnumText = BandPopupTypeEnum->GetDisplayNameTextByValue(static_cast<int64>(BandPopupType));
+			TextBoxValue->SetText(EnumText);
 
-		ViewModel->GetEvent_BandChanging().Broadcast(Band);
+			ViewModel->GetEvent_BandChanging().Broadcast(Band);
+		}
 	}
 }
 
 void UEW_SonaQBandPopup::OnToggleNavelRemoveValueChanged(float QualityDelta01)
 {
-	float OldQuality01 = MathLogTool::ThousandsToHexabel(Band->GetQuality());
-	float NewQuality01 = OldQuality01 + QualityDelta01;
-	NewQuality01 = FMath::Clamp(NewQuality01, 0.f, 1.f);
-	NaveledKnobQuality->SetValue01(NewQuality01);
+	if (Band->GetIsEnabled())
+	{
+		float OldQuality01 = MathLogTool::ThousandsToHexabel(Band->GetQuality());
+		float NewQuality01 = OldQuality01 + QualityDelta01;
+		NewQuality01 = FMath::Clamp(NewQuality01, 0.f, 1.f);
+		NaveledKnobQuality->SetValue01(NewQuality01);
 
-	float NewQuality = MathLogTool::HexabelToThousands(NewQuality01);
-	Band->SetQuality(NewQuality);
-	TextBoxValue->SetText(FloatToText(NewQuality, 3));
-	ViewModel->GetEvent_BandChanging().Broadcast(Band);
+		float NewQuality = MathLogTool::HexabelToThousands(NewQuality01);
+		Band->SetQuality(NewQuality);
+		TextBoxValue->SetText(FloatToText(NewQuality, 3));
+		ViewModel->GetEvent_BandChanging().Broadcast(Band);
+	}
 }
 
 void UEW_SonaQBandPopup::OnToggleNavelOnOffValueChanged(float MakeupGainDelta01)
 {
-	float OldMakeupGain01 = (Band->GetMakeupDb() + 48.f) / 96.f;
-	float NewMakeupGain01 = OldMakeupGain01 + MakeupGainDelta01;
-	NewMakeupGain01 = FMath::Clamp(NewMakeupGain01, 0.f, 1.f);
-	ToggleKnobMakeupGain->SetValue01(NewMakeupGain01);
+	if (Band->GetIsEnabled())
+	{
+		float OldMakeupGain01 = (Band->GetMakeupDb() + 48.f) / 96.f;
+		float NewMakeupGain01 = OldMakeupGain01 + MakeupGainDelta01;
+		NewMakeupGain01 = FMath::Clamp(NewMakeupGain01, 0.f, 1.f);
+		ToggleKnobMakeupGain->SetValue01(NewMakeupGain01);
 
-	float NewMakeupGainDb = NewMakeupGain01 * 96.f - 48.f;
-	Band->SetMakeupDb(NewMakeupGainDb);
-	TextBoxValue->SetText(FloatToText(NewMakeupGainDb, 2, ESignMode::Always));
-	ViewModel->GetEvent_BandChanging().Broadcast(Band);
+		float NewMakeupGainDb = NewMakeupGain01 * 96.f - 48.f;
+		Band->SetMakeupDb(NewMakeupGainDb);
+		TextBoxValue->SetText(FloatToText(NewMakeupGainDb, 2, ESignMode::Always));
+		ViewModel->GetEvent_BandChanging().Broadcast(Band);
+	}
 }
 
 void UEW_SonaQBandPopup::OnRemoveClick()
@@ -337,38 +385,61 @@ void UEW_SonaQBandPopup::OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNe
 
 void UEW_SonaQBandPopup::OnFrequencyCommit()
 {
-	ViewModel->GetEvent_BandChanged().Broadcast(Band);
+	if (Band->GetIsEnabled())
+	{
+		ViewModel->GetEvent_BandChanged().Broadcast(Band);
+	}
 }
 
 void UEW_SonaQBandPopup::OnAmountCommit()
 {
-	ViewModel->GetEvent_BandChanged().Broadcast(Band);
+	if (Band->GetIsEnabled())
+	{
+		ViewModel->GetEvent_BandChanged().Broadcast(Band);
+	}
 }
 
 void UEW_SonaQBandPopup::OnQualityCommit()
 {
-	ViewModel->GetEvent_BandChanged().Broadcast(Band);
+	if (Band->GetIsEnabled())
+	{
+		ViewModel->GetEvent_BandChanged().Broadcast(Band);
+	}
 }
 
 void UEW_SonaQBandPopup::OnMakeupGainCommit()
 {
-	ViewModel->GetEvent_BandChanged().Broadcast(Band);
+	if (Band->GetIsEnabled())
+	{
+		ViewModel->GetEvent_BandChanged().Broadcast(Band);
+	}
 }
 
 void UEW_SonaQBandPopup::OnListenStarted()
 {
-	BandTypeBeforeListenTime = Band->GetType();
-	Band->SetType(EEQBandType::PassBand);
+	if (Band->GetIsEnabled())
+	{
+		BandTypeBeforeListenTime = Band->GetType();
+		Band->SetType(EEQBandType::PassBand);
+	}
 }
 
 void UEW_SonaQBandPopup::OnListenFinished()
 {
-	Band->SetType(BandTypeBeforeListenTime);
-	ViewModel->GetEvent_BandChanged().Broadcast(Band);
+	if (Band->GetIsEnabled())
+	{
+		Band->SetType(BandTypeBeforeListenTime);
+		ViewModel->GetEvent_BandChanged().Broadcast(Band);
+	}
 }
 
 void UEW_SonaQBandPopup::OnTextCommitted(const FText& Text, ETextCommit::Type CommitType)
 {
+	if (!Band->GetIsEnabled())
+	{
+		return;
+	}
+
 	if (FocusMode == EBandPopupFocusMode::Frequency)
 	{
 		float NewFrequency;

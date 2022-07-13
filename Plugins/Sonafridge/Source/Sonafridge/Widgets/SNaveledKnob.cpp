@@ -229,7 +229,8 @@ FReply SNaveledKnob::OnMouseButtonUp(const FGeometry& InGeometry, const FPointer
 		bIsDraggingNavel = false;
 	}
 
-	if (MousePos == PresstimeMousePos && IsInsideNavel(MousePos))
+	constexpr float ClickTolerance = 1.f;
+	if ((MousePos - PresstimeMousePos).Size() < ClickTolerance && IsInsideNavel(MousePos))
 	{
 		NavelClick.ExecuteIfBound();
 	}

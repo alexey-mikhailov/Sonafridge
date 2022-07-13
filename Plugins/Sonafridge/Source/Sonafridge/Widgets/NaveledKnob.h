@@ -51,7 +51,7 @@ public:
 	DECLARE_EVENT(UNaveledKnob, FNavelClick)
 	FNavelClick& GetEvent_NavelClick() { return NavelClick; }
 
-	DECLARE_EVENT_TwoParams(UNaveledKnob, FKnobValueChanged, float OldValue, float NewValue)
+	DECLARE_EVENT_ThreeParams(UNaveledKnob, FKnobValueChanged, float OldValue, float NewValue, bool& bInOutHaveAllHandlersAccepted)
 	FKnobValueChanged& GetEvent_KnobValueChanged() { return KnobValueChanged; }
 
 	DECLARE_EVENT_OneParam(UNaveledKnob, FNavelValueChanged, float ValueDelta)

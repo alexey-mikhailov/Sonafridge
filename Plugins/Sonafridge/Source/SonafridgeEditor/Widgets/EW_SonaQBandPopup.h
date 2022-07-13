@@ -102,10 +102,10 @@ protected:
 	void OnBandSelectionChanged(TSharedPtr<FVM_SonaQBand> InBand);
 	void OnBandChanging(TSharedPtr<FVM_SonaQBand> InBand);
 	void OnBandChanged(TSharedPtr<FVM_SonaQBand> InBand);
-	void OnFrequencyDelta(float OldFrequency01, float NewFrequency01);
-	void OnAmountDelta(float OldAmount01, float NewAmount01);
-	void OnQualityDelta(float OldQuality01, float NewQuality01);
-	void OnMakeupGainDelta(float OldMakeupGain01, float NewMakeupGain01);
+	void OnFrequencyDelta(float OldFrequency01, float NewFrequency01, bool& bInOutHaveAllHandlersAccepted);
+	void OnAmountDelta(float OldAmount01, float NewAmount01, bool& bInOutHaveAllHandlersAccepted);
+	void OnQualityDelta(float OldQuality01, float NewQuality01, bool& bInOutHaveAllHandlersAccepted);
+	void OnMakeupGainDelta(float OldMakeupGain01, float NewMakeupGain01, bool& bInOutHaveAllHandlersAccepted);
 	void OnListenDelta(float FrequencyDelta);
 	void OnBandTypeChanged(float BandTypeDeltaAsFloat);
 	void OnToggleNavelRemoveValueChanged(float QualityDelta01);

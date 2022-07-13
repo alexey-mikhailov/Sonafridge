@@ -28,6 +28,7 @@ public:
 protected:
 	virtual void  NativeConstruct() override;
 	void          OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize);
+	void          OnInternalChanging(TSharedPtr<FVM_SonaQBand> InBand);
 	void          OnInternalChanged(TSharedPtr<FVM_SonaQBand> InBand);
 	void          OnExternalChanged();
 	virtual int32 NativePaint(const FPaintArgs&        Args,
@@ -50,5 +51,7 @@ protected:
 	UEW_SonaQBandPopup* BandPopup;
 
 private:
+	void TransferViewModelToPreset();
+
 	FVector2D LastSize;
 };
