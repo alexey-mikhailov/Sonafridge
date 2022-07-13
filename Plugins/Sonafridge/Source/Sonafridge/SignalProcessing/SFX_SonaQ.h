@@ -201,4 +201,13 @@ public:
 	// Note that the value read in BP is the serialized settings, will not reflect dynamic changes made in BP.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Audio|Effects")
 	FSFXSettings_SonaQ Settings;
+
+	DECLARE_EVENT(UEW_SFX_SonaQ, FChanged);
+	FChanged& GetEvent_Changed() { return Changed; }
+
+protected:
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
+private:
+	FChanged Changed;
 };

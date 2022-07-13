@@ -27,11 +27,11 @@ enum class EBandPopupFocusMode : uint8
 UENUM()
 enum class EBandPopupType : uint8
 {
-	LowCut,
-	HighCut,
-	LowShelf,
-	HighShelf,
-	BandCut,
+	CutLow,
+	CutHigh,
+	AttLow,
+	AttHigh,
+	AttBand,
 	Notch,
 };
 
@@ -131,7 +131,7 @@ protected:
 	                          bool                     bParentEnabled) const override;
 private:
 	void RefreshVisual();
-	static EBandType GetBandTypeByPopupType(EBandPopupType InBandPopupType);
+	static EEQBandType GetBandTypeByPopupType(EBandPopupType InBandPopupType);
 	UTexture* GetBandIconByType(EBandPopupType InBandPopup);
 	FVector2D GetBandWPos();
 
@@ -141,6 +141,6 @@ private:
 	TSharedPtr<FVM_SonaQ>     ViewModel;
 	TSharedPtr<FVM_SonaQBand> Band;
 	float                     BandTypeFloat = 0.f;
-	EBandType                 BandTypeBeforeListenTime = EBandType::BandCut;
+	EEQBandType                 BandTypeBeforeListenTime = EEQBandType::AttBand;
 	EBandPopupFocusMode       FocusMode = EBandPopupFocusMode::Frequency;
 };

@@ -7,9 +7,8 @@
 #include "Model/VM_SonaQ.h"
 #include "EW_SonaQ.generated.h"
 
-class UEW_EQBandList;
+class USFXPreset_SonaQ;
 class UEW_SonaQBandPopup;
-class UEW_EQManagementStrip;
 class UEW_SonaQFrequencyResponse;
 
 UCLASS()
@@ -22,34 +21,15 @@ public:
 	static constexpr float DynamicMax = +48.f;
 
 	UEW_SonaQ();
-	void Init(TSharedPtr<FVM_SonaQ> InViewModel);
-
-	TSharedPtr<FVM_SonaQBand> GetSelectedBand() const { return SelectedBand; }
-	void                      SetSelectedBand(TSharedPtr<FVM_SonaQBand> InBand);
-
-	int32 GetSelectedBandIndex() const { return SelectedBandIndex; }
-	void  SetSelectedBandIndex(int32 InBandIndex);
+	void Init(USFXPreset_SonaQ* InPreset);
 
 	const FVector2D& GetLastSize() const { return LastSize; }
-
-	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandSelectionChanged, TSharedPtr<FVM_SonaQBand>)
-	FBandSelectionChanged& GetEvent_BandSelectionChanged() { return BandSelectionChanged; }
-
-	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandChanging, TSharedPtr<FVM_SonaQBand>);
-	FBandChanging& GetEvent_BandChanging() { return BandChanging; }
-
-	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandChanged, TSharedPtr<FVM_SonaQBand>);
-	FBandChanged& GetEvent_BandChanged() { return BandChanged; }
-
-	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandAdded, TSharedPtr<FVM_SonaQBand>);
-	FBandAdded& GetEvent_BandAdded() { return BandAdded; }
-
-	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandRemoved, TSharedPtr<FVM_SonaQBand>);
-	FBandRemoved& GetEvent_BandRemoved() { return BandRemoved; }
 
 protected:
 	virtual void  NativeConstruct() override;
 	void          OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize);
+	void          OnInternalChanged(TSharedPtr<FVM_SonaQBand> InBand);
+	void          OnExternalChanged();
 	virtual int32 NativePaint(const FPaintArgs&        Args,
 	                          const FGeometry&         AllottedGeometry,
 	                          const FSlateRect&        MyCullingRect,
@@ -58,7 +38,9 @@ protected:
 	                          const FWidgetStyle&      InWidgetStyle,
 	                          bool                     bParentEnabled) const override;
 
-	float SampleRate = 44100.f;
+	UPROPERTY()
+	USFXPreset_SonaQ* Preset;
+
 	TSharedPtr<FVM_SonaQ> ViewModel;
 
 	UPROPERTY(meta = (BindWidget))
@@ -67,16 +49,6 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UEW_SonaQBandPopup* BandPopup;
 
-	TSharedPtr<FVM_SonaQBand> SelectedBand;
-	int32 SelectedBandIndex = -1;
-
 private:
-	FBandSelectionChanged BandSelectionChanged;
-	FBandChanging BandChanging;
-	FBandChanged BandChanged;
-	FBandAdded BandAdded;
-	FBandRemoved BandRemoved;
-
 	FVector2D LastSize;
-	bool bWasInitialized = false;
 };

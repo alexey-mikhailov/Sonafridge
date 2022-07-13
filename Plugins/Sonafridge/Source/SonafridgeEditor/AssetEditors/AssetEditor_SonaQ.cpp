@@ -197,28 +197,31 @@ TSharedRef<SDockTab> FAssetEditor_SonaQ::SpawnTab_SonaQWidget(const FSpawnTabArg
 	UWorld* World = GEditor->GetEditorWorldContext().World();
 	check(World);
 
-	// Transient UWidget, which SWidget will be held by shared pointer. 
-	SonaQWidget = CreateWidget<UEW_SonaQ>
-	(
-		World, static_cast<UClass*>(Blueprint->GeneratedClass)
-	);
-
-	// TODO: Set widget data context as SonaQPreset.
-	SonaQWidget->Init({});
-
-	if (SonaQWidget)
+	if (IsValid(Blueprint))
 	{
-		return SNew(SDockTab)
-			.Label(Label)
-			.TabColorScale(GetTabColorScale())
-			[
-				SNew(SBorder)
-				.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
-				.Padding(0.0f)
+		// Transient UWidget, which SWidget will be held by shared pointer. 
+		SonaQWidget = CreateWidget<UEW_SonaQ>
+		(
+			World, static_cast<UClass*>(Blueprint->GeneratedClass)
+		);
+
+		// TODO: Set widget data context as SonaQPreset.
+		SonaQWidget->Init(SonaQPreset);
+
+		if (SonaQWidget)
+		{
+			return SNew(SDockTab)
+				.Label(Label)
+				.TabColorScale(GetTabColorScale())
 				[
-					SonaQWidget->TakeWidget()
-				]
-			];
+					SNew(SBorder)
+					.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
+					.Padding(0.0f)
+					[
+						SonaQWidget->TakeWidget()
+					]
+				];
+		}
 	}
 
 	return SNew(SDockTab)

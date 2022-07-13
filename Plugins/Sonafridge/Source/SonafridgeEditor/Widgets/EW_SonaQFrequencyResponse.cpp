@@ -18,8 +18,8 @@ void UEW_SonaQFrequencyResponse::Init(UEW_SonaQ* InRootWidget, TSharedPtr<FVM_So
 	RootWidget = InRootWidget;
 	ViewModel = InViewModel;
 	SampleRate = ViewModel->GetSampleRate();
-	RootWidget->GetEvent_BandChanging().AddUObject(this, &UEW_SonaQFrequencyResponse::OnBandChanging);
-	RootWidget->GetEvent_BandChanged().AddUObject(this, &UEW_SonaQFrequencyResponse::OnBandChanged);
+	ViewModel->GetEvent_BandChanging().AddUObject(this, &UEW_SonaQFrequencyResponse::OnBandChanging);
+	ViewModel->GetEvent_BandChanged().AddUObject(this, &UEW_SonaQFrequencyResponse::OnBandChanged);
 	GridPointPairs.SetNumZeroed((7 + 10 + 10) + ((48.f + 42.f) / 6.f));
 	ResponsePoints.SetNumZeroed(Resolution);
 	BakeGrid();
@@ -86,7 +86,7 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseButtonDown(const FGeometry& InGe
 		++Index;
 	}
 
-	RootWidget->SetSelectedBandIndex(PossessedBandIndex);
+	ViewModel->SetSelectedBandIndex(PossessedBandIndex);
 
 	return Reply;
 }
@@ -99,7 +99,7 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseButtonUp(const FGeometry& InGeom
 	Reply = Reply.ReleaseMouseCapture();
 	PossessedBand = {};
 	PossessedBandIndex = -1;
-	RootWidget->GetEvent_BandChanging().Broadcast(PossessedBand);
+	ViewModel->GetEvent_BandChanging().Broadcast(PossessedBand);
 
 	return Reply;
 }
@@ -113,11 +113,11 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseButtonDoubleClick(const FGeometr
 
 	TSharedPtr<FVM_SonaQBand> Band = MakeShared<FVM_SonaQBand>();
 	Band->Init(SampleRate);
-	Band->SetType(EBandType::BandCut);
+	Band->SetType(EEQBandType::AttBand);
 	Band->SetFrequency(Frequency);
 	Band->SetQuality(1.f);
 	Band->SetAmountDb(0.f);
-	Band->SetLoudCompDb(0.f);
+	Band->SetMakeupDb(0.f);
 	ViewModel->AddBand(Band);
 
 	return Reply;
@@ -167,7 +167,7 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseMove(const FGeometry&     InGeom
 			
 			float QDelta = MathLogTool::HexabelToLinear(WDelta.Y / LastSize.Y);
 			PossessedBand->SetQuality(PossessedBand->GetQuality() * QDelta);
-			RootWidget->GetEvent_BandChanged().Broadcast(PossessedBand);
+			ViewModel->GetEvent_BandChanged().Broadcast(PossessedBand);
 		}
 		else
 		{
@@ -183,7 +183,7 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseMove(const FGeometry&     InGeom
 
 			PossessedBand->SetFrequency(F);
 			PossessedBand->SetAmountDb(UEW_SonaQ::DynamicMax - NNewY * (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin));
-			RootWidget->GetEvent_BandChanged().Broadcast(PossessedBand);
+			ViewModel->GetEvent_BandChanged().Broadcast(PossessedBand);
 		}
 	}
 
@@ -277,7 +277,7 @@ int32 UEW_SonaQFrequencyResponse::NativePaint(const FPaintArgs&        Args,
 				{
 					PointColor = BandPointEnabledHoveredColor;
 				}
-				else if (RootWidget->GetSelectedBandIndex() == Index)
+				else if (ViewModel->GetSelectedBandIndex() == Index)
 				{
 					PointColor = BandPointEnabledSelectedColor;
 				}
@@ -292,7 +292,7 @@ int32 UEW_SonaQFrequencyResponse::NativePaint(const FPaintArgs&        Args,
 				{
 					PointColor = BandPointDisabledHoveredColor;
 				}
-				else if (RootWidget->GetSelectedBandIndex() == Index)
+				else if (ViewModel->GetSelectedBandIndex() == Index)
 				{
 					PointColor = BandPointDisabledSelectedColor;
 				}

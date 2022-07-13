@@ -3,6 +3,7 @@
 #include "EW_SonaQ.h"
 #include "EW_SonaQFrequencyResponse.h"
 #include "EW_SonaQBandPopup.h"
+#include "Sonafridge/SignalProcessing/SFX_SonaQ.h"
 #include "Sonafridge/SonafridgeCommon.h"
 #include "Components/CanvasPanelSlot.h"
 #include "AudioDevice.h"
@@ -11,14 +12,12 @@ UEW_SonaQ::UEW_SonaQ()
 {
 }
 
-void UEW_SonaQ::Init(TSharedPtr<FVM_SonaQ> InViewModel)
+void UEW_SonaQ::Init(USFXPreset_SonaQ* InPreset)
 {
-	if (InViewModel)
+	if (IsValid(InPreset))
 	{
-		SampleRate = InViewModel->GetSampleRate();
-		ViewModel = InViewModel;
-		FrequencyResponse->Init(this, ViewModel);
-		bWasInitialized = true;
+		Preset = InPreset;
+		Preset->GetEvent_Changed().AddUObject(this, &UEW_SonaQ::OnExternalChanged);
 	}
 	else
 	{
@@ -26,102 +25,149 @@ void UEW_SonaQ::Init(TSharedPtr<FVM_SonaQ> InViewModel)
 	}
 }
 
-void UEW_SonaQ::SetSelectedBand(TSharedPtr<FVM_SonaQBand> InBand)
-{
-	SelectedBand = InBand;
-	SelectedBandIndex = -1;
-
-	auto& Bands = ViewModel->GetBands();
-	for (int32 Index = 0; Index < Bands.Num(); ++Index)
-	{
-		auto Band = Bands[Index];
-
-		if (Band == InBand)
-		{
-			SelectedBandIndex = Index;
-			break;
-		}
-	}
-
-	BandSelectionChanged.Broadcast(SelectedBand);
-}
-
-void UEW_SonaQ::SetSelectedBandIndex(int32 InBandIndex)
-{
-	SelectedBand = {};
-	SelectedBandIndex = InBandIndex;
-
-	auto& Bands = ViewModel->GetBands();
-
-	for (int32 Index = 0; Index < Bands.Num(); ++Index)
-	{
-		auto& Band = Bands[Index];
-
-		if (Index == InBandIndex)
-		{
-			SelectedBand = Band;
-			break;
-		}
-	}
-
-	BandSelectionChanged.Broadcast(SelectedBand);
-}
-
 void UEW_SonaQ::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (!bWasInitialized)
-	{
-		// Deferred initialization in case of settings injection (Init call) is impossible. 
+	// Last known default value from project template settings. 
+	float SampleRate = 48000.f;
 
-		if (auto AudioDevice = GEngine->GetActiveAudioDevice())
+	if (auto AudioDevice = GEngine->GetActiveAudioDevice())
+	{
+		// We cannot obtain SampleRate from SFX due to encapsulation
+		// but we can do it this way.
+		// Note that design time sample rate is not very important visualization input quality metric. 
+		SampleRate = AudioDevice->GetSampleRate();
+	}
+
+	// Initialize view model (either from preset or from mock). 
+
+	ViewModel = MakeShared<FVM_SonaQ>();
+	ViewModel->Init(SampleRate);
+	ViewModel->GetEvent_BandChanged().AddUObject(this, &UEW_SonaQ::OnInternalChanged);
+
+	if (IsValid(Preset))
+	{
+		// Initialize from preset
+
+		FSFXSettings_SonaQ Settings = Preset->Settings;
+		TArray<TSharedPtr<FVM_SonaQBand>> Bands;
+
+		for (const FSFXSettings_SonaQBand& Band : Settings.EQBands)
 		{
-			SampleRate = AudioDevice->GetSampleRate();
+			TSharedPtr<FVM_SonaQBand> BandViewModel = MakeShared<FVM_SonaQBand>();
+			BandViewModel->Init(SampleRate);
+			BandViewModel->SetType(Band.Type);
+			BandViewModel->SetFrequency(Band.Frequency);
+			BandViewModel->SetAmountDb(Band.AmountDb);
+			BandViewModel->SetMakeupDb(Band.MakeupDb);
+			Bands.Add(BandViewModel);
 		}
+
+		ViewModel->SetBands(Bands);
+	}
+	else
+	{
+		// Deferred initialization in case of settings injection (Init call) is impossible.
+		// It may happen when editor widget is called via 'Run Editor Widget' command.
 
 		TArray<TSharedPtr<FVM_SonaQBand>> Bands;
 		auto Band = MakeShared<FVM_SonaQBand>();
 		Band->Init(SampleRate);
-		Band->SetType(EBandType::LowShelf);
+		Band->SetType(EEQBandType::AttLow);
 		Band->SetFrequency(100.f);
 		Band->SetQuality(.5f);
 		Band->SetAmountDb(0.f);
-		Band->SetLoudCompDb(0.f);
+		Band->SetMakeupDb(0.f);
 		Bands.Add(Band);
 
 		Band = MakeShared<FVM_SonaQBand>();
 		Band->Init(SampleRate);
-		Band->SetType(EBandType::BandCut);
+		Band->SetType(EEQBandType::AttBand);
 		Band->SetFrequency(1000.f);
 		Band->SetQuality(.667f);
 		Band->SetAmountDb(0.f);
-		Band->SetLoudCompDb(0.f);
+		Band->SetMakeupDb(0.f);
 		Bands.Add(Band);
 		
 		Band = MakeShared<FVM_SonaQBand>();
 		Band->Init(SampleRate);
-		Band->SetType(EBandType::HighShelf);
+		Band->SetType(EEQBandType::AttHigh);
 		Band->SetFrequency(10000.f);
 		Band->SetQuality(.5f);
 		Band->SetAmountDb(0.f);
-		Band->SetLoudCompDb(0.f);
+		Band->SetMakeupDb(0.f);
 		Bands.Add(Band);
 
-		ViewModel = MakeShared<FVM_SonaQ>();
-		ViewModel->Init(Bands);
-
-		// Children too
-
-		FrequencyResponse->Init(this, ViewModel);
-		BandPopup->Init(this, ViewModel);
-		BandPopup->SetVisibility(ESlateVisibility::Hidden);
+		ViewModel->SetBands(Bands);
 	}
+
+	// Children too
+	FrequencyResponse->Init(this, ViewModel);
+	BandPopup->Init(this, ViewModel);
+	BandPopup->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UEW_SonaQ::OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize)
 {
 	BandPopup->FollowBand();
+}
+
+void UEW_SonaQ::OnInternalChanged(TSharedPtr<FVM_SonaQBand> InBand)
+{
+	FSFXSettings_SonaQ                Settings = Preset->GetSettings();
+	TArray<TSharedPtr<FVM_SonaQBand>> VMBands = ViewModel->GetBands();
+
+	Settings.EQBands.Reset(VMBands.Num());
+
+	for (int32 Index = 0; Index < VMBands.Num(); ++Index)
+	{
+		TSharedPtr<FVM_SonaQBand> BandViewModel = VMBands[Index];
+		FSFXSettings_SonaQBand    Band;
+
+		Band.bEnabled = BandViewModel->GetIsEnabled();
+		Band.Type = BandViewModel->GetType();
+		Band.Frequency = BandViewModel->GetFrequency();
+		Band.AmountDb = BandViewModel->GetAmountDb();
+		Band.Quality = BandViewModel->GetQuality();
+		Band.MakeupDb = BandViewModel->GetMakeupDb();
+
+		Settings.EQBands.Add(Band);
+	}
+
+	// Sync external widgets. 
+	Preset->SetSettings(Settings);
+	Preset->Settings = Settings;
+
+	if (IsValid(Preset))
+	{
+		if (!Preset->MarkPackageDirty())
+		{
+			UE_LOG(LogSonafridgeEditor, Error, TEXT("Could not mark package dirty during USFXPreset changing. "));
+		}
+	}
+}
+
+void UEW_SonaQ::OnExternalChanged()
+{
+	FSFXSettings_SonaQ Settings = Preset->Settings;
+	TArray<TSharedPtr<FVM_SonaQBand>> Bands;
+
+	for (const FSFXSettings_SonaQBand& Band : Settings.EQBands)
+	{
+		TSharedPtr<FVM_SonaQBand> BandViewModel = MakeShared<FVM_SonaQBand>();
+		BandViewModel->Init(ViewModel->GetSampleRate());
+		BandViewModel->SetType(Band.Type);
+		BandViewModel->SetFrequency(Band.Frequency);
+		BandViewModel->SetAmountDb(Band.AmountDb);
+		BandViewModel->SetMakeupDb(Band.MakeupDb);
+		Bands.Add(BandViewModel);
+	}
+
+	ViewModel->SetBands(Bands);
+
+	// Sync internal widgets. 
+	// TODO: ViewModel->NotifyChanged(); 
 }
 
 int32 UEW_SonaQ::NativePaint(const FPaintArgs&        Args,

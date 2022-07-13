@@ -2,61 +2,47 @@
 
 #pragma once
 
+#include "Sonafridge/SonafridgeCommon.h"
 #include "CoreMinimal.h"
-#include "VM_SonaQBand.generated.h"
 
-UENUM()
-enum class EBandType : uint8
-{
-	None,
-	LowCutFast,
-	LowCutButterworth,
-	HighCutFast,
-	HighCutButterworth,
-	LowShelf,
-	HighShelf,
-	BandPass,
-	BandCut,
-	Notch,
-	AllPass,
-};
 
 class SONAFRIDGEEDITOR_API FVM_SonaQBand final
 {
-	EBandType Type = EBandType::None;
+	float SampleRate = 0.f;
+
+	EEQBandType Type = EEQBandType::None;
 	float Frequency = 1000.f;
 	float Quality = 1.f;
 	float AmountDb = 0.f;
-	float LoudCompDb = 0.f;
-	float LoudCompCoef = 0.f;
+	float MakeupDb = 0.f;
+	float MakeupCoeff = 0.f;
 	
+	float A0 = 0.f, A1 = 0.f, A2 = 0.f, B0 = 0.f, B1 = 0.f, B2 = 0.f;
+
 	bool bIsInitialized = false;
 	bool bIsEnabled = true;
-	float SampleRate = 0.f;
-
-	float A0 = 0.f, A1 = 0.f, A2 = 0.f, B0 = 0.f, B1 = 0.f, B2 = 0.f;
 
 public:
 	FVM_SonaQBand() {}
 	~FVM_SonaQBand() = default;
 
 	void Init(float InSampleRate);
-	void SetType(EBandType Value);
+	void SetType(EEQBandType Value);
 	void SetIsEnabled(bool bInValue);
 	void SetFrequency(float Value);
 	void SetQuality(float Value);
 	void SetAmountDb(float Value);
-	void SetLoudCompDb(float Value);
+	void SetMakeupDb(float Value);
 
 	/// Gives response coefficient at certain frequency. 1.f means no changes. 
 	float Dtft(float InFrequency) const;
 
-	EBandType GetType() const;
-	bool      GetIsEnabled() const;
-	float     GetFrequency() const;
-	float     GetQuality() const;
-	float     GetAmountDb() const;
-	float     GetLoudCompDb() const;
+	EEQBandType GetType() const;
+	bool        GetIsEnabled() const;
+	float       GetFrequency() const;
+	float       GetQuality() const;
+	float       GetAmountDb() const;
+	float       GetMakeupDb() const;
 
 private:
 	void Recalculate();

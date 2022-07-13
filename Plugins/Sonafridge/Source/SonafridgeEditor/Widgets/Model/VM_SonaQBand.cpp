@@ -10,7 +10,7 @@ void FVM_SonaQBand::Init(float InSampleRate)
 	bIsInitialized = true;
 }
 
-void FVM_SonaQBand::SetType(EBandType Value)
+void FVM_SonaQBand::SetType(EEQBandType Value)
 {
 	LogIfUninitialized();
 	Type = Value;
@@ -45,11 +45,11 @@ void FVM_SonaQBand::SetAmountDb(float Value)
 	Recalculate();
 }
 
-void FVM_SonaQBand::SetLoudCompDb(float Value)
+void FVM_SonaQBand::SetMakeupDb(float Value)
 {
 	LogIfUninitialized();
-	LoudCompDb = Value;
-	LoudCompCoef = MathLogTool::VigesibelToLinear(LoudCompDb);
+	MakeupDb = Value;
+	MakeupCoeff = MathLogTool::VigesibelToLinear(MakeupDb);
 	Recalculate();
 }
 
@@ -62,7 +62,7 @@ float FVM_SonaQBand::Dtft(float InFrequency) const
 		FEcn Angle1 = FEcn(InOmega)^-1;
 		FEcn Angle2 = FEcn(InOmega)^-2;
 
-		return LoudCompCoef *
+		return MakeupCoeff *
 		(
 			(B0 * Angle0 + B1 * Angle1 + B2 * Angle2) /
 			(A0 * Angle0 + A1 * Angle1 + A2 * Angle2)
@@ -73,7 +73,7 @@ float FVM_SonaQBand::Dtft(float InFrequency) const
 	return 1.f;
 }
 
-EBandType FVM_SonaQBand::GetType() const
+EEQBandType FVM_SonaQBand::GetType() const
 {
 	LogIfUninitialized();
 	return Type;
@@ -103,15 +103,15 @@ float FVM_SonaQBand::GetAmountDb() const
 	return AmountDb;
 }
 
-float FVM_SonaQBand::GetLoudCompDb() const
+float FVM_SonaQBand::GetMakeupDb() const
 {
 	LogIfUninitialized();
-	return LoudCompDb;
+	return MakeupDb;
 }
 
 void FVM_SonaQBand::Recalculate()
 {
-	if (Type == EBandType::LowCutFast)
+	if (Type == EEQBandType::CutLowFast)
 	{
 		const float Omega = 2.f * PI * Frequency / SampleRate;
 		const float Sn = FMath::Sin(Omega);
@@ -125,7 +125,7 @@ void FVM_SonaQBand::Recalculate()
 		B1 = - 1.f - Cs;
 		B2 = .5f * (1.f + Cs);
 	}
-	else if (Type == EBandType::LowCutButterworth)
+	else if (Type == EEQBandType::CutLowButterworth)
 	{
 		const float Lambda = FMath::Tan(PI * Frequency / SampleRate);
 		const float LambdaScaled = UE_SQRT_2 * Lambda / Quality;
@@ -138,7 +138,7 @@ void FVM_SonaQBand::Recalculate()
 		B1 = -2.f * B0;
 		B2 = B0;
 	}
-	else if (Type == EBandType::HighCutFast)
+	else if (Type == EEQBandType::CutHighFast)
 	{
 		const float Omega = 2.f * PI * Frequency / SampleRate;
 		const float Sn = FMath::Sin(Omega);
@@ -152,7 +152,7 @@ void FVM_SonaQBand::Recalculate()
 		B1 = 1.f - Cs;
 		B2 = .5f * (1.f - Cs);
 	}
-	else if (Type == EBandType::HighCutButterworth)
+	else if (Type == EEQBandType::CutHighButterworth)
 	{
 		const float Lambda = 1.f / FMath::Tan(PI * Frequency / SampleRate);
 		const float LambdaScaled = UE_SQRT_2 * Lambda / Quality;
@@ -165,7 +165,21 @@ void FVM_SonaQBand::Recalculate()
 		B1 = 2.f * B0;
 		B2 = B0;
 	}
-	else if (Type == EBandType::LowShelf)
+	else if (Type == EEQBandType::PassBand)
+	{
+		const float Omega = 2.f * PI * Frequency / SampleRate;
+		const float Sn = FMath::Sin(Omega);
+		const float Cs = FMath::Cos(Omega);
+		const float Alpha = .5f * Sn / Quality;
+
+		A0 = 1.f + Alpha;
+		A1 = -2.f * Cs;
+		A2 = 1.f - Alpha;
+		B0 = +Quality * Alpha;
+		B1 = 0.f;
+		B2 = -Quality * Alpha;
+	}
+	else if (Type == EEQBandType::AttLow)
 	{
 		const float GainSqrt = FMath::Pow(10, AmountDb / 40.f);
 		const float Omega = 2.f * PI * Frequency / SampleRate;
@@ -181,7 +195,7 @@ void FVM_SonaQBand::Recalculate()
 		B1 = +2.f * GainSqrt * (GainSqrt - 1.f - Cs * (GainSqrt + 1.f));
 		B2 = GainSqrt * (GainSqrt + 1.f - Cs * (GainSqrt - 1.f) - DoubleAlphaGain);
 	}
-	else if (Type == EBandType::HighShelf)
+	else if (Type == EEQBandType::AttHigh)
 	{
 		const float GainSqrt = FMath::Pow(10, AmountDb / 40.f);
 		const float Omega = 2.f * PI * Frequency / SampleRate;
@@ -197,21 +211,7 @@ void FVM_SonaQBand::Recalculate()
 		B1 = -2.f * GainSqrt * (GainSqrt - 1.f + Cs * (GainSqrt + 1.f));
 		B2 = GainSqrt * (GainSqrt + 1.f + Cs * (GainSqrt - 1.f) - DoubleAlphaGain);
 	}
-	else if (Type == EBandType::BandPass)
-	{
-		const float Omega = 2.f * PI * Frequency / SampleRate;
-		const float Sn = FMath::Sin(Omega);
-		const float Cs = FMath::Cos(Omega);
-		const float Alpha = .5f * Sn / Quality;
-
-		A0 = 1.f + Alpha;
-		A1 = -2.f * Cs;
-		A2 = 1.f - Alpha;
-		B0 = +Quality * Alpha;
-		B1 = 0.f;
-		B2 = -Quality * Alpha;
-	}
-	else if (Type == EBandType::BandCut)
+	else if (Type == EEQBandType::AttBand)
 	{
 		const float GainSqrt = FMath::Pow(10, AmountDb / 40.f);
 		const float Omega = 2.f * PI * Frequency / SampleRate;
@@ -226,7 +226,7 @@ void FVM_SonaQBand::Recalculate()
 		B1 = -2.f * Cs;
 		B2 = 1.f - Alpha * GainSqrt;
 	}
-	else if (Type == EBandType::Notch)
+	else if (Type == EEQBandType::Notch)
 	{
 		const float Omega = 2.f * PI * Frequency / SampleRate;
 		const float Sn = FMath::Sin(Omega);
