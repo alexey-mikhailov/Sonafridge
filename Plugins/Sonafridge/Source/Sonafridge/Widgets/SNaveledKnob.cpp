@@ -248,17 +248,18 @@ FReply SNaveledKnob::OnMouseButtonUp(const FGeometry& InGeometry, const FPointer
 FReply SNaveledKnob::OnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	FReply    Reply = SLeafWidget::OnMouseMove(InGeometry, InMouseEvent);
-	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
-	bool      bIsInsideKnob = IsInsideKnob(MousePos);
-	bool      bIsInsideNavel = IsInsideNavel(MousePos);
+	FVector2D MouseScreenPos = InMouseEvent.GetScreenSpacePosition();
+	FVector2D MouseLocalPos = InGeometry.AbsoluteToLocal(MouseScreenPos);
+	bool      bIsInsideKnob = IsInsideKnob(MouseLocalPos);
+	bool      bIsInsideNavel = IsInsideNavel(MouseLocalPos);
 
 	if (bIsDraggingKnob)
 	{
-		OnKnobDrag(Reply, InGeometry, InMouseEvent, MousePos);
+		OnKnobDrag(Reply, InGeometry, InMouseEvent, MouseScreenPos);
 	}
 	else if (bIsDraggingNavel)
 	{
-		OnNavelDrag(Reply, InGeometry, InMouseEvent, MousePos);
+		OnNavelDrag(Reply, InGeometry, InMouseEvent, MouseScreenPos);
 	}
 	else
 	{
@@ -281,16 +282,16 @@ FReply SNaveledKnob::OnMouseMove(const FGeometry& InGeometry, const FPointerEven
 		}
 	}
 
-	LastMousePos = MousePos;
+	LastMouseScreenPos = MouseScreenPos;
 	return Reply;
 }
 
 void SNaveledKnob::OnKnobDrag(FReply&              InOutReply,
                               const FGeometry&     InGeometry,
                               const FPointerEvent& InMouseEvent,
-                              const FVector2D&     InMousePos)
+                              const FVector2D&     InMouseScreenPos)
 {
-	FVector2D MouseDelta = InMousePos - LastMousePos;
+	FVector2D MouseDelta = InMouseScreenPos - LastMouseScreenPos;
 
 	// Mouse delta per ~1Kpx-height screen.
 	constexpr float ScreensPerPxApprox = -.001f;
@@ -305,9 +306,9 @@ void SNaveledKnob::OnKnobDrag(FReply&              InOutReply,
 void SNaveledKnob::OnNavelDrag(FReply&              InOutReply,
                                const FGeometry&     InGeometry,
                                const FPointerEvent& InMouseEvent,
-                               const FVector2D&     InMousePos)
+                               const FVector2D&     InMouseScreenPos)
 {
-	FVector2D MouseDelta = InMousePos - LastMousePos;
+	FVector2D MouseDelta = InMouseScreenPos - LastMouseScreenPos;
 
 	// Mouse delta per ~1Kpx-height screen.
 	constexpr float ScreensPerPxApprox = -.001f;

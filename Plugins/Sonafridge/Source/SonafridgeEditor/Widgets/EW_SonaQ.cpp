@@ -128,7 +128,7 @@ void UEW_SonaQ::OnInternalChanged(TSharedPtr<FVM_SonaQBand> InBand)
 
 void UEW_SonaQ::OnExternalChanged()
 {
-	FSFXSettings_SonaQ Settings = Preset->Settings;
+	FSFXSettings_SonaQ Settings = Preset->SettingsCopy;
 	TArray<TSharedPtr<FVM_SonaQBand>> Bands;
 
 	for (const FSFXSettings_SonaQBand& Band : Settings.EQBands)
@@ -138,14 +138,13 @@ void UEW_SonaQ::OnExternalChanged()
 		BandViewModel->SetType(Band.Type);
 		BandViewModel->SetFrequency(Band.Frequency);
 		BandViewModel->SetAmountDb(Band.AmountDb);
+		BandViewModel->SetQuality(Band.Quality);
 		BandViewModel->SetMakeupDb(Band.MakeupDb);
 		Bands.Add(BandViewModel);
 	}
 
 	ViewModel->SetBands(Bands);
-
-	// Sync internal widgets. 
-	// TODO: ViewModel->NotifyChanged(); 
+	FrequencyResponse->BakeResponse();
 }
 
 int32 UEW_SonaQ::NativePaint(const FPaintArgs&        Args,

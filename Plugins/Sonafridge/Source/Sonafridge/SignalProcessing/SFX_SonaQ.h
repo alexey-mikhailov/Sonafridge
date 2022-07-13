@@ -40,7 +40,8 @@ struct SONAFRIDGE_API FSFXSettings_SonaQBand
 			ClampMin = "20.0",
 			ClampMax = "20000.0",
 			UIMin = "20.0",
-			UIMax = "20000.0"
+			UIMax = "20000.0",
+			SliderExponent = "20.0"
 		)
 	)
 	float Frequency;
@@ -73,7 +74,8 @@ struct SONAFRIDGE_API FSFXSettings_SonaQBand
 			ClampMin = "0.001",
 			ClampMax = "1000.0",
 			UIMin = "0.001",
-			UIMax = "1000.0"
+			UIMax = "1000.0",
+			SliderExponent = "1000.0"
 		)
 	)
 	float Quality;

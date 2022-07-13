@@ -79,12 +79,12 @@ protected:
 	void OnKnobDrag(FReply&              InOutReply,
 	                const FGeometry&     InGeometry,
 	                const FPointerEvent& InMouseEvent,
-	                const FVector2D&     InMousePos);
+	                const FVector2D&     InMouseScreenPos);
 
 	void OnNavelDrag(FReply&              InOutReply,
 	                 const FGeometry&     InGeometry,
 	                 const FPointerEvent& InMouseEvent,
-	                 const FVector2D&     InMousePos);
+	                 const FVector2D&     InMouseScreenPos);
 
 	virtual void OnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent) override;
 
@@ -131,7 +131,7 @@ private:
 	TSharedPtr<SImage> Image;
 	FSlateBrush        Brush;
 	FVector2D          LastSize;
-	FVector2D          LastMousePos;
+	FVector2D          LastMouseScreenPos;
 	FVector2D          PresstimeMousePos;
 
 	bool bWasInsideKnob = false;

@@ -211,6 +211,13 @@ void UEW_SonaQBandPopup::OnBandSelectionChanged(TSharedPtr<FVM_SonaQBand> InBand
 {
 	Band = InBand;
 	SetVisibility(Band ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+
+	if (Band)
+	{
+		BandPopupTypeFloat = static_cast<float>(GetPopupTypeByBandType(Band->GetType()));
+		TextBoxValue->SetIsEnabled(Band->GetIsEnabled());
+	}
+
 	FollowBand();
 	RefreshVisual();
 }
@@ -218,6 +225,7 @@ void UEW_SonaQBandPopup::OnBandSelectionChanged(TSharedPtr<FVM_SonaQBand> InBand
 void UEW_SonaQBandPopup::OnBandChanging(TSharedPtr<FVM_SonaQBand> InBand)
 {
 	RefreshVisual();
+	FollowBand();
 }
 
 void UEW_SonaQBandPopup::OnBandChanged(TSharedPtr<FVM_SonaQBand> InBand)
@@ -317,13 +325,13 @@ void UEW_SonaQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat)
 		UEnum* BandPopupTypeEnum = StaticEnum<EBandPopupType>();
 		if (BandPopupTypeEnum)
 		{
-			BandTypeFloat += 10.f * BandTypeDeltaAsFloat;
+			BandPopupTypeFloat += 10.f * BandTypeDeltaAsFloat;
 
-			BandTypeFloat = FMath::Clamp(BandTypeFloat,
+			BandPopupTypeFloat = FMath::Clamp(BandPopupTypeFloat,
 										 static_cast<float>(EBandPopupType::CutLow),
 										 static_cast<float>(BandPopupTypeEnum->GetMaxEnumValue()) - 1.f);
 
-			EBandPopupType BandPopupType = static_cast<EBandPopupType>(BandTypeFloat);
+			EBandPopupType BandPopupType = static_cast<EBandPopupType>(BandPopupTypeFloat);
 			Band->SetType(GetBandTypeByPopupType(BandPopupType));
 			NaveledKnobAmount->HoverIcon = GetBandIconByType(BandPopupType);
 			NaveledKnobAmount->RefreshVisual();
@@ -435,7 +443,7 @@ void UEW_SonaQBandPopup::OnListenFinished()
 
 void UEW_SonaQBandPopup::OnTextCommitted(const FText& Text, ETextCommit::Type CommitType)
 {
-	if (!Band->GetIsEnabled())
+	if (!Band || !Band->GetIsEnabled())
 	{
 		return;
 	}
@@ -518,6 +526,8 @@ void UEW_SonaQBandPopup::RefreshVisual()
 		ToggleKnobMakeupGain->SetValue01(MakeupGain01);
 		ToggleKnobMakeupGain->SetIsOn(Band->GetIsEnabled());
 
+		NaveledKnobAmount->HoverIcon = GetBandIconByType(GetPopupTypeByBandType(Band->GetType()));
+
 		if (FocusMode == EBandPopupFocusMode::Frequency)
 		{
 			TextBlockKey->SetText(FText::FromString(TEXT("Frequency")));
@@ -562,6 +572,21 @@ EEQBandType UEW_SonaQBandPopup::GetBandTypeByPopupType(EBandPopupType InBandPopu
 	}
 
 	return EEQBandType::None;
+}
+
+EBandPopupType UEW_SonaQBandPopup::GetPopupTypeByBandType(EEQBandType InBandType)
+{
+	UEnum* BandPopupEnum = StaticEnum<EBandPopupType>();
+	UEnum* BandEnum = StaticEnum<EEQBandType>();
+
+	if (BandEnum && BandPopupEnum)
+	{
+		FName Name = BandEnum->GetNameByValue(static_cast<int64>(InBandType));
+		return static_cast<EBandPopupType>(BandPopupEnum->GetValueByName(Name));
+	}
+
+	UE_LOG(LogSonafridgeEditor, Error, TEXT("Could not get EBandPopupType or EEQBandType metadata. "))
+	return EBandPopupType::AttBand;
 }
 
 UTexture* UEW_SonaQBandPopup::GetBandIconByType(EBandPopupType InBandPopup)

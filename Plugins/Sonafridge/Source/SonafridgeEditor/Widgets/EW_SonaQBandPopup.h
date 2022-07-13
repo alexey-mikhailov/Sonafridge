@@ -130,17 +130,18 @@ protected:
 	                          const FWidgetStyle&      InWidgetStyle,
 	                          bool                     bParentEnabled) const override;
 private:
-	void RefreshVisual();
-	static EEQBandType GetBandTypeByPopupType(EBandPopupType InBandPopupType);
-	UTexture* GetBandIconByType(EBandPopupType InBandPopup);
-	FVector2D GetBandWPos();
+	void                  RefreshVisual();
+	static EEQBandType    GetBandTypeByPopupType(EBandPopupType InBandPopupType);
+	static EBandPopupType GetPopupTypeByBandType(EEQBandType InBandPopupType);
+	UTexture*             GetBandIconByType(EBandPopupType InBandPopup);
+	FVector2D             GetBandWPos();
 
 	UPROPERTY()
 	UEW_SonaQ* RootWidget;
 
 	TSharedPtr<FVM_SonaQ>     ViewModel;
 	TSharedPtr<FVM_SonaQBand> Band;
-	float                     BandTypeFloat = 0.f;
-	EEQBandType                 BandTypeBeforeListenTime = EEQBandType::AttBand;
+	float                     BandPopupTypeFloat = 0.f;
+	EEQBandType               BandTypeBeforeListenTime = EEQBandType::AttBand;
 	EBandPopupFocusMode       FocusMode = EBandPopupFocusMode::Frequency;
 };

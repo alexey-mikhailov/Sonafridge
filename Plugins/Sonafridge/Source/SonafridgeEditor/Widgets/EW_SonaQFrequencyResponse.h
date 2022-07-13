@@ -72,7 +72,11 @@ protected:
 
 private:
 	void      BakeGrid();
+
+public:
 	void      BakeResponse();
+
+private:
 	FVector2D GetBandWPos(TSharedPtr<FVM_SonaQBand> InBand);
 
 	FSizeChanged SizeChanged;
