@@ -99,7 +99,7 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseButtonUp(const FGeometry& InGeom
 	Reply = Reply.ReleaseMouseCapture();
 	PossessedBand = {};
 	PossessedBandIndex = -1;
-	ViewModel->GetEvent_BandChanging().Broadcast(PossessedBand);
+	ViewModel->GetEvent_BandChanged().Broadcast(PossessedBand);
 
 	return Reply;
 }
@@ -167,7 +167,7 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseMove(const FGeometry&     InGeom
 			
 			float QDelta = MathLogTool::HexabelToLinear(WDelta.Y / LastSize.Y);
 			PossessedBand->SetQuality(PossessedBand->GetQuality() * QDelta);
-			ViewModel->GetEvent_BandChanged().Broadcast(PossessedBand);
+			ViewModel->GetEvent_BandChanging().Broadcast(PossessedBand);
 		}
 		else
 		{
@@ -183,7 +183,7 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseMove(const FGeometry&     InGeom
 
 			PossessedBand->SetFrequency(F);
 			PossessedBand->SetAmountDb(UEW_SonaQ::DynamicMax - NNewY * (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin));
-			ViewModel->GetEvent_BandChanged().Broadcast(PossessedBand);
+			ViewModel->GetEvent_BandChanging().Broadcast(PossessedBand);
 		}
 	}
 

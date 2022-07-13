@@ -57,8 +57,10 @@ void UEW_SonaQ::NativeConstruct()
 		{
 			TSharedPtr<FVM_SonaQBand> BandViewModel = MakeShared<FVM_SonaQBand>();
 			BandViewModel->Init(SampleRate);
+			BandViewModel->SetIsEnabled(Band.bEnabled);
 			BandViewModel->SetType(Band.Type);
 			BandViewModel->SetFrequency(Band.Frequency);
+			BandViewModel->SetQuality(Band.Quality);
 			BandViewModel->SetAmountDb(Band.AmountDb);
 			BandViewModel->SetMakeupDb(Band.MakeupDb);
 			Bands.Add(BandViewModel);
