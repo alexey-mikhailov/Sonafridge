@@ -193,7 +193,7 @@ public:
 	SONAFX_PRESET_METHODS(SonaQ)
 
 	// Allows you to customize the color of the preset in the editor.
-	virtual FColor GetPresetColor() const override { return FColor(196.0f, 185.0f, 121.0f); }
+	virtual FColor GetPresetColor() const override { return FColor(0x3f, 0x5f, 0xff); }
 
 	// Change settings of your effect from blueprints. Will broadcast changes to active instances.
 	UFUNCTION(BlueprintCallable, Category = "Audio|Effects")

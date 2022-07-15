@@ -31,7 +31,10 @@ void SNaveledKnob::Construct(const FArguments& InArgs)
 	NavelCaptureFinished = InArgs._NavelCaptureFinished;
 	KnobDeltaRequested = InArgs._KnobDeltaRequested;
 	NavelDeltaRequested = InArgs._NavelDeltaRequested;
+	KnobClick = InArgs._KnobClick;
 	NavelClick = InArgs._NavelClick;
+	KnobDoubleClick = InArgs._KnobDoubleClick;
+	NavelDoubleClick = InArgs._NavelDoubleClick;
 
 	Image = SNew(SImage);
 }
@@ -230,9 +233,16 @@ FReply SNaveledKnob::OnMouseButtonUp(const FGeometry& InGeometry, const FPointer
 	}
 
 	constexpr float ClickTolerance = 1.f;
-	if ((MousePos - PresstimeMousePos).Size() < ClickTolerance && IsInsideNavel(MousePos))
+	if ((MousePos - PresstimeMousePos).Size() < ClickTolerance)
 	{
-		NavelClick.ExecuteIfBound();
+		if (IsInsideKnob(MousePos))
+		{
+			KnobClick.ExecuteIfBound();
+		}
+		else if (IsInsideNavel(MousePos))
+		{
+			NavelClick.ExecuteIfBound();
+		}
 	}
 
 	UMaterialInstanceDynamic* BrushMID = GetMaterial();
@@ -240,6 +250,27 @@ FReply SNaveledKnob::OnMouseButtonUp(const FGeometry& InGeometry, const FPointer
 	{
 		BrushMID->SetScalarParameterValue("Is Knob Taken", false);
 		BrushMID->SetScalarParameterValue("Is Navel Taken", false);
+	}
+
+	return Reply;
+}
+
+FReply SNaveledKnob::OnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	FReply Reply =  SLeafWidget::OnMouseButtonDoubleClick(InGeometry, InMouseEvent);
+	FVector2D MousePos = InGeometry.AbsoluteToLocal(InMouseEvent.GetScreenSpacePosition());
+
+	constexpr float ClickTolerance = 1.f;
+	if ((MousePos - PresstimeMousePos).Size() < ClickTolerance)
+	{
+		if (IsInsideKnob(MousePos))
+		{
+			KnobDoubleClick.ExecuteIfBound();
+		}
+		else if (IsInsideNavel(MousePos))
+		{
+			NavelDoubleClick.ExecuteIfBound();
+		}
 	}
 
 	return Reply;

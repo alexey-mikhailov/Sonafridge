@@ -115,7 +115,7 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseButtonDoubleClick(const FGeometr
 	Band->Init(SampleRate);
 	Band->SetType(EEQBandType::AttBand);
 	Band->SetFrequency(Frequency);
-	Band->SetQuality(1.f);
+	Band->SetQuality(.667f);
 	Band->SetAmountDb(0.f);
 	Band->SetMakeupDb(0.f);
 	ViewModel->AddBand(Band);
@@ -182,7 +182,16 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseMove(const FGeometry&     InGeom
 			float NNewY = PresstimeNAmountDb + NDiff.Y;
 
 			PossessedBand->SetFrequency(F);
-			PossessedBand->SetAmountDb(UEW_SonaQ::DynamicMax - NNewY * (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin));
+
+			if (PossessedBand->GetType() != EEQBandType::CutLowFast &&
+				PossessedBand->GetType() != EEQBandType::CutLowButterworth &&
+				PossessedBand->GetType() != EEQBandType::CutHighFast &&
+				PossessedBand->GetType() != EEQBandType::CutHighButterworth &&
+				PossessedBand->GetType() != EEQBandType::Notch)
+			{
+				PossessedBand->SetAmountDb(UEW_SonaQ::DynamicMax - NNewY * (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin));
+			}
+
 			ViewModel->GetEvent_BandChanging().Broadcast(PossessedBand);
 		}
 	}
@@ -394,11 +403,14 @@ void UEW_SonaQFrequencyResponse::BakeResponse()
 		float F = Band->GetFrequency();
 		float X = MathLogTool::TwentiethsToTribel(F);
 		float Response = ViewModel->DtftDb(F);
-		float Y = (Response - UEW_SonaQ::DynamicMin) / (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
+		float Y = Band->GetType() == EEQBandType::Notch
+		          ? .75f
+		          : (UEW_SonaQ::DynamicMax - Response) / 
+		            (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
 
 		if (BandPoints.Num() > Index)
 		{
-			BandPoints[Index] = { W * X, H * (1.f - Y) };
+			BandPoints[Index] = { W * X, H * Y };
 		}
 
 		++Index;
@@ -411,8 +423,11 @@ FVector2D UEW_SonaQFrequencyResponse::GetBandWPos(TSharedPtr<FVM_SonaQBand> InBa
 	{
 		float F = InBand->GetFrequency();
 		float NX = MathLogTool::TwentiethsToTribel(F);
-		float NY = (UEW_SonaQ::DynamicMax - ViewModel->DtftDb(F))
-		         / (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
+		float NY = InBand->GetType() == EEQBandType::Notch
+			? .75f
+			: (UEW_SonaQ::DynamicMax - ViewModel->DtftDb(F)) /
+			  (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
+		
 		float WX = NX * LastSize.X;
 		float WY = NY * LastSize.Y;
 		return { WX, WY };

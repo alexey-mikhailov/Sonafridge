@@ -52,6 +52,7 @@ public:
 		SLATE_EVENT(FSimpleDelegate, NavelCaptureStarted)
 		SLATE_EVENT(FSimpleDelegate, NavelCaptureFinished)
 		SLATE_EVENT(FSimpleDelegate, ToggleStateRequested)
+		SLATE_EVENT(FSimpleDelegate, KnobClick)
 		SLATE_EVENT(FOnFloatValueChanged, KnobDeltaRequested)
 		SLATE_EVENT(FOnFloatValueChanged, NavelDeltaRequested)
 
@@ -127,6 +128,7 @@ private:
 	FOnFloatValueChanged KnobDeltaRequested;
 	FOnFloatValueChanged NavelDeltaRequested;
 	FSimpleDelegate      ToggleStateRequested;
+	FSimpleDelegate      KnobClick;
 
 	TSharedPtr<SImage> Image;
 	FSlateBrush        Brush;

@@ -246,9 +246,9 @@ namespace Sonafridge
 				const float Cs = FMath::Cos(Omega);
 				const float Alpha = .5f * Sn / Quality;
 
-				A0 = Alpha;
+				A0 = Alpha * OutputFactor;
 				A1 = 0.0f;
-				A2 = -Alpha;
+				A2 = -Alpha * OutputFactor;
 				B0 = 1.0f + Alpha;
 				B1 = -2.0f * Cs;
 				B2 = 1.0f - Alpha;

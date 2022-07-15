@@ -112,12 +112,18 @@ protected:
 	void OnToggleNavelOnOffValueChanged(float MakeupGainDelta01);
 	void OnRemoveClick();
 	void OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNewValue);
+
 	void OnFrequencyCommit();
 	void OnAmountCommit();
 	void OnQualityCommit();
 	void OnMakeupGainCommit();
 	void OnListenStarted();
 	void OnListenFinished();
+
+	void OnFrequencyClick();
+	void OnAmountClick();
+	void OnQualityClick();
+	void OnMakeupClick();
 
 	UFUNCTION()
 	void OnTextCommitted(const FText& Text, ETextCommit::Type CommitType);
@@ -142,6 +148,10 @@ private:
 	TSharedPtr<FVM_SonaQ>     ViewModel;
 	TSharedPtr<FVM_SonaQBand> Band;
 	float                     BandPopupTypeFloat = 0.f;
+
 	EEQBandType               BandTypeBeforeListenTime = EEQBandType::AttBand;
+	float                     BandMakeupBeforeListenTime = 0.f;
+	TArray<bool>              BandsActivityBeforeListenTime;
+
 	EBandPopupFocusMode       FocusMode = EBandPopupFocusMode::Frequency;
 };

@@ -68,6 +68,7 @@ TSharedRef<SWidget> UToggleKnob::RebuildWidget()
 		.NavelCaptureStarted_UObject(this, &UToggleKnob::OnNavelCaptureStarted)
 		.NavelCaptureFinished_UObject(this, &UToggleKnob::OnNavelCaptureFinished)
 		.ToggleStateRequested_UObject(this, &UToggleKnob::OnToggleStateRequested)
+		.KnobClick_UObject(this, &UToggleKnob::OnKnobClick)
 		.KnobDeltaRequested_UObject(this, &UToggleKnob::OnKnobDeltaRequested)
 		.NavelDeltaRequested_UObject(this, &UToggleKnob::OnNavelDeltaRequested);
 
@@ -149,6 +150,11 @@ void UToggleKnob::OnToggleStateRequested()
 {
 	bIsOn = !bIsOn;
 	ToggleStateChanged.Broadcast(!bIsOn, bIsOn);
+}
+
+void UToggleKnob::OnKnobClick()
+{
+	KnobClick.Broadcast();
 }
 
 void UToggleKnob::OnKnobDeltaRequested(float ValueDelta)

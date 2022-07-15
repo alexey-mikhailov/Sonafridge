@@ -16,7 +16,7 @@ public:
 
 	virtual FText   GetName() const override { return NSLOCTEXT("Sonafridge", "AssetTypeActions_SonaQ", "SonaQ"); }
 	virtual UClass* GetSupportedClass() const override;
-	virtual FColor  GetTypeColor() const override { return FColor(97, 85, 212); }
+	virtual FColor  GetTypeColor() const override { return FColor(0x3f, 0x5f, 0xff); }
 	virtual uint32  GetCategories() override { return EAssetTypeCategories::Sounds; }
 
 	virtual void OpenAssetEditor(const TArray<UObject*>&  InObjects,

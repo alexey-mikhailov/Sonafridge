@@ -114,6 +114,11 @@ void UEW_SonaQBandPopup::NativeConstruct()
 	NaveledKnobFrequency->GetEvent_NavelCaptureStarted().AddUObject(this, &UEW_SonaQBandPopup::OnListenStarted);
 	NaveledKnobFrequency->GetEvent_NavelCaptureFinished().AddUObject(this, &UEW_SonaQBandPopup::OnListenFinished);
 
+	NaveledKnobFrequency->GetEvent_KnobClick().AddUObject(this, &UEW_SonaQBandPopup::OnFrequencyClick);
+	NaveledKnobAmount->GetEvent_KnobClick().AddUObject(this, &UEW_SonaQBandPopup::OnAmountClick);
+	NaveledKnobQuality->GetEvent_KnobClick().AddUObject(this, &UEW_SonaQBandPopup::OnQualityClick);
+	ToggleKnobMakeupGain->GetEvent_KnobClick().AddUObject(this, &UEW_SonaQBandPopup::OnMakeupClick);
+
 	TextBoxValue->OnTextCommitted.AddDynamic(this, &UEW_SonaQBandPopup::OnTextCommitted);
 }
 
@@ -152,7 +157,7 @@ void UEW_SonaQBandPopup::OnMakeupGainEntrance()
 void UEW_SonaQBandPopup::OnListenEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Frequency;
-	TextBlockKey->SetText(FText::FromString(TEXT("Frequency")));
+	TextBlockKey->SetText(FText::FromString(TEXT("Listen band")));
 	TextBoxValue->SetText(FloatToText(Band->GetFrequency(), 1));
 	NaveledKnobFrequency->RefreshVisual();
 }
@@ -178,16 +183,16 @@ void UEW_SonaQBandPopup::OnBandTypeEntrance()
 void UEW_SonaQBandPopup::OnButtonRemoveEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Quality;
-	TextBlockKey->SetText(FText::FromString(TEXT("Quality")));
-	TextBoxValue->SetText(FloatToText(Band->GetQuality(), 3));
+	TextBlockKey->SetText(FText::FromString(TEXT("Remove band")));
+	TextBoxValue->SetText(FText::FromString(TEXT("Remove band")));
 	NaveledKnobQuality->RefreshVisual();
 }
 
 void UEW_SonaQBandPopup::OnToggleOnOffEntrance()
 {
 	FocusMode = EBandPopupFocusMode::Makeup;
-	TextBlockKey->SetText(FText::FromString(TEXT("Makeup Gain")));
-	TextBoxValue->SetText(FloatToText(Band->GetMakeupDb(), 2, ESignMode::Always));
+	TextBlockKey->SetText(FText::FromString(TEXT("On/off band")));
+	TextBoxValue->SetText(FText::FromString(TEXT("On/off band")));
 	ToggleKnobMakeupGain->RefreshVisual();
 }
 
@@ -389,6 +394,7 @@ void UEW_SonaQBandPopup::OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNe
 {
 	Band->SetIsEnabled(bNewValue);
 	ViewModel->GetEvent_BandChanged().Broadcast(Band);
+	TextBoxValue->SetIsEnabled(Band->GetIsEnabled());
 }
 
 void UEW_SonaQBandPopup::OnFrequencyCommit()
@@ -427,8 +433,25 @@ void UEW_SonaQBandPopup::OnListenStarted()
 {
 	if (Band->GetIsEnabled())
 	{
+		const TArray<TSharedPtr<FVM_SonaQBand>>& Bands = ViewModel->GetBands();
+
 		BandTypeBeforeListenTime = Band->GetType();
+		BandMakeupBeforeListenTime = Band->GetMakeupDb();
+		BandsActivityBeforeListenTime.SetNum(Bands.Num());
+
+		for (int32 Index = 0; Index < Bands.Num(); ++Index)
+		{
+			TSharedPtr<FVM_SonaQBand> Band_ = Bands[Index];
+			if (Band != Band_)
+			{
+				BandsActivityBeforeListenTime[Index] = Band_->GetIsEnabled();
+				Band_->SetIsEnabled(false);
+			}
+		}
+
 		Band->SetType(EEQBandType::PassBand);
+		Band->SetMakeupCoeff(4.f * FMath::Pow(Band->GetQuality(), .25f));
+		Band->SetQuality(2.f * Band->GetQuality());
 	}
 }
 
@@ -436,9 +459,43 @@ void UEW_SonaQBandPopup::OnListenFinished()
 {
 	if (Band->GetIsEnabled())
 	{
+		const TArray<TSharedPtr<FVM_SonaQBand>>& Bands = ViewModel->GetBands();
+
+		for (int32 Index = 0; Index < Bands.Num(); ++Index)
+		{
+			TSharedPtr<FVM_SonaQBand> Band_ = Bands[Index];
+			if (Band != Band_)
+			{
+				Band_->SetIsEnabled(BandsActivityBeforeListenTime[Index]);
+			}
+		}
+
 		Band->SetType(BandTypeBeforeListenTime);
+		Band->SetMakeupDb(BandMakeupBeforeListenTime);
+		Band->SetQuality(.5f * Band->GetQuality());
+
 		ViewModel->GetEvent_BandChanged().Broadcast(Band);
 	}
+}
+
+void UEW_SonaQBandPopup::OnFrequencyClick()
+{
+	TextBoxValue->SetKeyboardFocus();
+}
+
+void UEW_SonaQBandPopup::OnAmountClick()
+{
+	TextBoxValue->SetKeyboardFocus();
+}
+
+void UEW_SonaQBandPopup::OnQualityClick()
+{
+	TextBoxValue->SetKeyboardFocus();
+}
+
+void UEW_SonaQBandPopup::OnMakeupClick()
+{
+	TextBoxValue->SetKeyboardFocus();
 }
 
 void UEW_SonaQBandPopup::OnTextCommitted(const FText& Text, ETextCommit::Type CommitType)
@@ -609,8 +666,11 @@ FVector2D UEW_SonaQBandPopup::GetBandWPos()
 	{
 		float F = Band->GetFrequency();
 		float NX = MathLogTool::TwentiethsToTribel(F);
-		float NY = (UEW_SonaQ::DynamicMax - ViewModel->DtftDb(F))
-		         / (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
+		float NY = Band->GetType() == EEQBandType::Notch
+		           ? 0.f
+		           : (UEW_SonaQ::DynamicMax - ViewModel->DtftDb(F)) / 
+		             (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
+
 		float WX = NX * RootWidget->GetLastSize().X;
 		float WY = NY * RootWidget->GetLastSize().Y;
 

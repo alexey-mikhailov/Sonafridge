@@ -49,7 +49,15 @@ void FVM_SonaQBand::SetMakeupDb(float Value)
 {
 	LogIfUninitialized();
 	MakeupDb = Value;
-	MakeupCoeff = MathLogTool::VigesibelToLinear(MakeupDb);
+	MakeupCoeff = MathLogTool::VigesibelToLinear(Value);
+	Recalculate();
+}
+
+void FVM_SonaQBand::SetMakeupCoeff(float Value)
+{
+	LogIfUninitialized();
+	MakeupDb = MathLogTool::LinearToVigesibel(Value);
+	MakeupCoeff = Value;
 	Recalculate();
 }
 
@@ -175,9 +183,9 @@ void FVM_SonaQBand::Recalculate()
 		A0 = 1.f + Alpha;
 		A1 = -2.f * Cs;
 		A2 = 1.f - Alpha;
-		B0 = +Quality * Alpha;
+		B0 = +Alpha * MakeupCoeff;
 		B1 = 0.f;
-		B2 = -Quality * Alpha;
+		B2 = -Alpha * MakeupCoeff;
 	}
 	else if (Type == EEQBandType::AttLow)
 	{

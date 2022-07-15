@@ -48,8 +48,11 @@ public:
 	DECLARE_EVENT(UToggleKnob, FNavelCaptureFinished)
 	FNavelCaptureFinished& GetEvent_NavelCaptureFinished() { return NavelCaptureFinished; }
 
-	DECLARE_EVENT_TwoParams(UToggleNavelWidget, FToggleStateChanged, bool Oldvalue, bool NewValue)
+	DECLARE_EVENT_TwoParams(UToggleKnob, FToggleStateChanged, bool Oldvalue, bool NewValue)
 	FToggleStateChanged& GetEvent_ToggleStateChanged() { return ToggleStateChanged; }
+
+	DECLARE_EVENT(UToggleKnob, FKnobClick)
+	FKnobClick& GetEvent_KnobClick() { return KnobClick; }
 
 	DECLARE_EVENT_ThreeParams(UToggleKnob, FKnobValueChanged, float OldValue, float NewValue, bool& bInOutHaveAllHandlersAccepted)
 	FKnobValueChanged& GetEvent_KnobValueChanged() { return KnobValueChanged; }
@@ -123,6 +126,7 @@ private:
 	FToggleStateChanged   ToggleStateChanged;
 	FKnobValueChanged     KnobValueChanged;
 	FNavelValueChanged    NavelValueChanged;
+	FKnobClick            KnobClick;
 
 	TSharedPtr<SToggleKnob> SWidget;
 	FVector2D   LastSize;
@@ -144,6 +148,7 @@ private:
 	void OnNavelCaptureStarted();
 	void OnNavelCaptureFinished();
 	void OnToggleStateRequested();
+	void OnKnobClick();
 	void OnKnobDeltaRequested(float ValueDelta);
 	void OnNavelDeltaRequested(float ValueDelta);
 };

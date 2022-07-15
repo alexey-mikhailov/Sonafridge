@@ -48,8 +48,17 @@ public:
 	DECLARE_EVENT(UNaveledKnob, FNavelCaptureFinished)
 	FNavelCaptureFinished& GetEvent_NavelCaptureFinished() { return NavelCaptureFinished; }
 
+	DECLARE_EVENT(UNaveledKnob, FKnobClick)
+	FKnobClick& GetEvent_KnobClick() { return KnobClick; }
+
 	DECLARE_EVENT(UNaveledKnob, FNavelClick)
 	FNavelClick& GetEvent_NavelClick() { return NavelClick; }
+
+	DECLARE_EVENT(UNaveledKnob, FKnobDoubleClick)
+	FKnobDoubleClick& GetEvent_KnobDoubleClick() { return KnobDoubleClick; }
+
+	DECLARE_EVENT(UNaveledKnob, FNavelDoubleClick)
+	FNavelDoubleClick& GetEvent_NavelDoubleClick() { return NavelDoubleClick; }
 
 	DECLARE_EVENT_ThreeParams(UNaveledKnob, FKnobValueChanged, float OldValue, float NewValue, bool& bInOutHaveAllHandlersAccepted)
 	FKnobValueChanged& GetEvent_KnobValueChanged() { return KnobValueChanged; }
@@ -113,7 +122,10 @@ private:
 	FKnobCaptureFinished  KnobCaptureFinished;
 	FNavelCaptureStarted  NavelCaptureStarted;
 	FNavelCaptureFinished NavelCaptureFinished;
+	FKnobClick            KnobClick;
 	FNavelClick           NavelClick;
+	FKnobDoubleClick      KnobDoubleClick;
+	FNavelDoubleClick     NavelDoubleClick;
 	FKnobValueChanged     KnobValueChanged;
 	FNavelValueChanged    NavelValueChanged;
 
@@ -136,7 +148,10 @@ private:
 	void OnKnobCaptureFinished();
 	void OnNavelCaptureStarted();
 	void OnNavelCaptureFinished();
+	void OnKnobClick();
 	void OnNavelClick();
+	void OnKnobDoubleClick();
+	void OnNavelDoubleClick();
 	void OnKnobDeltaRequested(float ValueDelta);
 	void OnNavelDeltaRequested(float ValueDelta);
 };

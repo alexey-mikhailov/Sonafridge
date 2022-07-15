@@ -34,6 +34,7 @@ void SToggleKnob::Construct(const FArguments& InArgs)
 	KnobDeltaRequested = InArgs._KnobDeltaRequested;
 	NavelDeltaRequested = InArgs._NavelDeltaRequested;
 	ToggleStateRequested = InArgs._ToggleStateRequested;
+	KnobClick = InArgs._KnobClick;
 
 	Image = SNew(SImage);
 }
@@ -234,9 +235,16 @@ FReply SToggleKnob::OnMouseButtonUp(const FGeometry& InGeometry, const FPointerE
 	}
 
 	constexpr float ClickTolerance = 1.f;
-	if ((MousePos - PresstimeMousePos).Size() < ClickTolerance && IsInsideNavel(MousePos))
+	if ((MousePos - PresstimeMousePos).Size() < ClickTolerance)
 	{
-		ToggleStateRequested.ExecuteIfBound();
+		if (IsInsideKnob(MousePos))
+		{
+			KnobClick.ExecuteIfBound();
+		}
+		else if (IsInsideNavel(MousePos))
+		{
+			ToggleStateRequested.ExecuteIfBound();
+		}
 	}
 
 	UMaterialInstanceDynamic* BrushMID = GetMaterial();

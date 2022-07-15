@@ -33,6 +33,7 @@ public:
 	void SetQuality(float Value);
 	void SetAmountDb(float Value);
 	void SetMakeupDb(float Value);
+	void SetMakeupCoeff(float Value);
 
 	/// Gives response coefficient at certain frequency. 1.f means no changes. 
 	float Dtft(float InFrequency) const;

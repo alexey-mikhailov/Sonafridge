@@ -47,7 +47,10 @@ public:
 		SLATE_EVENT(FSimpleDelegate, KnobCaptureFinished)
 		SLATE_EVENT(FSimpleDelegate, NavelCaptureStarted)
 		SLATE_EVENT(FSimpleDelegate, NavelCaptureFinished)
+		SLATE_EVENT(FSimpleDelegate, KnobClick)
 		SLATE_EVENT(FSimpleDelegate, NavelClick)
+		SLATE_EVENT(FSimpleDelegate, KnobDoubleClick)
+		SLATE_EVENT(FSimpleDelegate, NavelDoubleClick)
 		SLATE_EVENT(FOnFloatValueChanged, KnobDeltaRequested)
 		SLATE_EVENT(FOnFloatValueChanged, NavelDeltaRequested)
 
@@ -70,6 +73,7 @@ protected:
 	virtual FReply OnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual FReply OnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual FReply OnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual FReply OnMouseButtonDoubleClick(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual FReply OnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 	void OnKnobDrag(FReply&              InOutReply,
@@ -120,7 +124,10 @@ private:
 	FSimpleDelegate      NavelCaptureFinished;
 	FOnFloatValueChanged KnobDeltaRequested;
 	FOnFloatValueChanged NavelDeltaRequested;
+	FSimpleDelegate      KnobClick;
 	FSimpleDelegate      NavelClick;
+	FSimpleDelegate      KnobDoubleClick;
+	FSimpleDelegate      NavelDoubleClick;
 
 	TSharedPtr<SImage> Image;
 	FSlateBrush        Brush;
