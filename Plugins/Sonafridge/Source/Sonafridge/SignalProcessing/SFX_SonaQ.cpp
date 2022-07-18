@@ -27,7 +27,7 @@ void FSFX_SonaQ::OnPresetChanged()
 	GET_SONAFX_SETTINGS(SonaQ);
 
 	bEnabled = Settings.bEnabled;
-	OutputGain = FMath::Pow(10.0f, Settings.OutputDb / 40.f);
+	OutputGain = FMath::Pow(10.0f, Settings.OutputDb / 20.f);
 
 	const int32 NumSettingBands = Settings.EQBands.Num();
 

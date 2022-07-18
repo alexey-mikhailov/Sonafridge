@@ -41,7 +41,7 @@ namespace Sonafridge
 	{
 		SampleRate = InSampleRate;
 		NumChannels = InNumChannels;
-		OutputFactor = FMath::Pow(10.0f, InOutputDB / 40.0f);
+		OutputFactor = FMath::Pow(10.0f, InOutputDB / 20.0f);
 		FilterType = InFilterType;
 		GainDB = InGainDB;
 		Frequency = ClampCutoffFrequency(InCutoffFrequency);
@@ -101,7 +101,7 @@ namespace Sonafridge
 	{
 		const float InCutoffFrequencyClamped = ClampCutoffFrequency(InCutoffFrequency);
 
-		OutputFactor = FMath::Pow(10.0f, InOutputDB / 40.0f);
+		OutputFactor = FMath::Pow(10.0f, InOutputDB / 20.0f);
 
 		if (FilterType != InFilterType ||
 			!FMath::IsNearlyEqual(Frequency, InCutoffFrequencyClamped) ||
