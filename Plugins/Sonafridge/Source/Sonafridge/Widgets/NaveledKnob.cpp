@@ -160,7 +160,7 @@ void UNaveledKnob::OnNavelDoubleClick()
 	NavelDoubleClick.Broadcast();
 }
 
-void UNaveledKnob::OnKnobDeltaRequested(float ValueDelta)
+void UNaveledKnob::OnKnobDeltaRequested(float ValueDelta, const FPointerEvent& InMouseEvent)
 {
 	float NewValue01 = Value01 + ValueDelta;
 	NewValue01 = FMath::Clamp(NewValue01, 0.f, 1.f);
@@ -171,7 +171,7 @@ void UNaveledKnob::OnKnobDeltaRequested(float ValueDelta)
 	}
 
 	bool bHaveAllHandlersAccepted = true;
-	KnobValueChanged.Broadcast(Value01, NewValue01, bHaveAllHandlersAccepted);
+	KnobValueChanged.Broadcast(Value01, NewValue01, InMouseEvent, bHaveAllHandlersAccepted);
 
 	if (bHaveAllHandlersAccepted)
 	{
@@ -179,9 +179,9 @@ void UNaveledKnob::OnKnobDeltaRequested(float ValueDelta)
 	}
 }
 
-void UNaveledKnob::OnNavelDeltaRequested(float ValueDelta)
+void UNaveledKnob::OnNavelDeltaRequested(float ValueDelta, const FPointerEvent& InMouseEvent)
 {
-	NavelValueChanged.Broadcast(ValueDelta);
+	NavelValueChanged.Broadcast(ValueDelta, InMouseEvent);
 }
 
 #undef LOCTEXT_NAMESPACE

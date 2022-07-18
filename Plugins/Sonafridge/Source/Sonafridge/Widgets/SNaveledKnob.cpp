@@ -169,11 +169,11 @@ FReply SNaveledKnob::OnMouseWheel(const FGeometry& InGeometry, const FPointerEve
 
 	if (IsInsideKnob(MousePos))
 	{
-		KnobDeltaRequested.ExecuteIfBound(WheelStepAttribute.Get() * InMouseEvent.GetWheelDelta());
+		KnobDeltaRequested.ExecuteIfBound(WheelStepAttribute.Get() * InMouseEvent.GetWheelDelta(), InMouseEvent);
 	}
 	else if (IsInsideNavel(MousePos))
 	{
-		NavelDeltaRequested.ExecuteIfBound(WheelStepAttribute.Get() * InMouseEvent.GetWheelDelta());
+		NavelDeltaRequested.ExecuteIfBound(WheelStepAttribute.Get() * InMouseEvent.GetWheelDelta(), InMouseEvent);
 	}
 
 	return Reply;
@@ -331,7 +331,7 @@ void SNaveledKnob::OnKnobDrag(FReply&              InOutReply,
 	                   ? ValueDelta = MouseFineSpeedAttribute.Get() * MouseDelta.Y * ScreensPerPxApprox
 	                   : ValueDelta = MouseFastSpeedAttribute.Get() * MouseDelta.Y * ScreensPerPxApprox;
 
-	KnobDeltaRequested.ExecuteIfBound(ValueDelta);
+	KnobDeltaRequested.ExecuteIfBound(ValueDelta, InMouseEvent);
 }
 
 void SNaveledKnob::OnNavelDrag(FReply&              InOutReply,
@@ -348,7 +348,7 @@ void SNaveledKnob::OnNavelDrag(FReply&              InOutReply,
 	                   ? ValueDelta = MouseFineSpeedAttribute.Get() * MouseDelta.Y * ScreensPerPxApprox
 	                   : ValueDelta = MouseFastSpeedAttribute.Get() * MouseDelta.Y * ScreensPerPxApprox;
 
-	NavelDeltaRequested.ExecuteIfBound(ValueDelta);
+	NavelDeltaRequested.ExecuteIfBound(ValueDelta, InMouseEvent);
 }
 
 void SNaveledKnob::OnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent)

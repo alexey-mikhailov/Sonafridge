@@ -60,10 +60,10 @@ public:
 	DECLARE_EVENT(UNaveledKnob, FNavelDoubleClick)
 	FNavelDoubleClick& GetEvent_NavelDoubleClick() { return NavelDoubleClick; }
 
-	DECLARE_EVENT_ThreeParams(UNaveledKnob, FKnobValueChanged, float OldValue, float NewValue, bool& bInOutHaveAllHandlersAccepted)
+	DECLARE_EVENT_FourParams(UNaveledKnob, FKnobValueChanged, float OldValue, float NewValue, const FPointerEvent& InMouseEvent, bool& bInOutHaveAllHandlersAccepted)
 	FKnobValueChanged& GetEvent_KnobValueChanged() { return KnobValueChanged; }
 
-	DECLARE_EVENT_OneParam(UNaveledKnob, FNavelValueChanged, float ValueDelta)
+	DECLARE_EVENT_TwoParams(UNaveledKnob, FNavelValueChanged, float ValueDelta, const FPointerEvent& InMouseEvent)
 	FNavelValueChanged& GetEvent_NavelValueChanged() { return NavelValueChanged; }
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, meta = (UIMin = 0.f, UIMax = 1.f))
@@ -152,8 +152,8 @@ private:
 	void OnNavelClick();
 	void OnKnobDoubleClick();
 	void OnNavelDoubleClick();
-	void OnKnobDeltaRequested(float ValueDelta);
-	void OnNavelDeltaRequested(float ValueDelta);
+	void OnKnobDeltaRequested(float ValueDelta, const FPointerEvent& InMouseEvent);
+	void OnNavelDeltaRequested(float ValueDelta, const FPointerEvent& InMouseEvent);
 };
 
 

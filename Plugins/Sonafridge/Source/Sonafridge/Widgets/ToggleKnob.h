@@ -54,10 +54,10 @@ public:
 	DECLARE_EVENT(UToggleKnob, FKnobClick)
 	FKnobClick& GetEvent_KnobClick() { return KnobClick; }
 
-	DECLARE_EVENT_ThreeParams(UToggleKnob, FKnobValueChanged, float OldValue, float NewValue, bool& bInOutHaveAllHandlersAccepted)
+	DECLARE_EVENT_FourParams(UToggleKnob, FKnobValueChanged, float OldValue, float NewValue, const FPointerEvent& InMouseEvent, bool& bInOutHaveAllHandlersAccepted)
 	FKnobValueChanged& GetEvent_KnobValueChanged() { return KnobValueChanged; }
 
-	DECLARE_EVENT_OneParam(UToggleKnob, FNavelValueChanged, float ValueDelta)
+	DECLARE_EVENT_TwoParams(UToggleKnob, FNavelValueChanged, float ValueDelta, const FPointerEvent& InMouseEvent)
 	FNavelValueChanged& GetEvent_NavelValueChanged() { return NavelValueChanged; }
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
@@ -149,8 +149,8 @@ private:
 	void OnNavelCaptureFinished();
 	void OnToggleStateRequested();
 	void OnKnobClick();
-	void OnKnobDeltaRequested(float ValueDelta);
-	void OnNavelDeltaRequested(float ValueDelta);
+	void OnKnobDeltaRequested(float ValueDelta, const FPointerEvent& InMouseEvent);
+	void OnNavelDeltaRequested(float ValueDelta, const FPointerEvent& InMouseEvent);
 };
 
 

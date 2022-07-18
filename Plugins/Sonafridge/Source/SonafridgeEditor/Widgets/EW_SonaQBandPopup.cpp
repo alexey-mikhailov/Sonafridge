@@ -12,6 +12,8 @@
 #include "Kismet/KismetTextLibrary.h"
 #include "Misc/DefaultValueHelper.h"
 #include "AudioDevice.h"
+#include "Kismet/KismetInputLibrary.h"
+
 
 enum class ESignMode { NegativeOnly, Always };
 
@@ -107,9 +109,13 @@ void UEW_SonaQBandPopup::NativeConstruct()
 	NaveledKnobQuality->GetEvent_NavelClick().AddUObject(this, &UEW_SonaQBandPopup::OnRemoveClick);
 	ToggleKnobMakeupGain->GetEvent_ToggleStateChanged().AddUObject(this, &UEW_SonaQBandPopup::OnToggleNavelOnOffStateChanged);
 
+	NaveledKnobFrequency->GetEvent_KnobCaptureStarted().AddUObject(this, &UEW_SonaQBandPopup::OnFrequencyCapture);
 	NaveledKnobFrequency->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_SonaQBandPopup::OnFrequencyCommit);
+	NaveledKnobAmount->GetEvent_KnobCaptureStarted().AddUObject(this, &UEW_SonaQBandPopup::OnAmountCapture);
 	NaveledKnobAmount->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_SonaQBandPopup::OnAmountCommit);
+	NaveledKnobQuality->GetEvent_KnobCaptureStarted().AddUObject(this, &UEW_SonaQBandPopup::OnQualityCapture);
 	NaveledKnobQuality->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_SonaQBandPopup::OnQualityCommit);
+	ToggleKnobMakeupGain->GetEvent_KnobCaptureStarted().AddUObject(this, &UEW_SonaQBandPopup::OnMakeupGainCapture);
 	ToggleKnobMakeupGain->GetEvent_KnobCaptureFinished().AddUObject(this, &UEW_SonaQBandPopup::OnMakeupGainCommit);
 	NaveledKnobFrequency->GetEvent_NavelCaptureStarted().AddUObject(this, &UEW_SonaQBandPopup::OnListenStarted);
 	NaveledKnobFrequency->GetEvent_NavelCaptureFinished().AddUObject(this, &UEW_SonaQBandPopup::OnListenFinished);
@@ -240,8 +246,9 @@ void UEW_SonaQBandPopup::OnBandChanged(TSharedPtr<FVM_SonaQBand> InBand)
 }
 
 void UEW_SonaQBandPopup::OnFrequencyDelta(float OldFrequency01, 
-										  float NewFrequency01, 
-										  bool& bInOutHaveAllHandlersAccepted)
+                                          float NewFrequency01,
+                                          const FPointerEvent& InMouseEvent,
+                                          bool& bInOutHaveAllHandlersAccepted)
 {
 	if (Band->GetIsEnabled())
 	{
@@ -257,7 +264,8 @@ void UEW_SonaQBandPopup::OnFrequencyDelta(float OldFrequency01,
 }
 
 void UEW_SonaQBandPopup::OnAmountDelta(float OldAmount01, 
-									   float NewAmount01, 
+									   float NewAmount01,
+									   const FPointerEvent& InMouseEvent, 
 									   bool& bInOutHaveAllHandlersAccepted)
 {
 	if (Band->GetIsEnabled())
@@ -274,7 +282,8 @@ void UEW_SonaQBandPopup::OnAmountDelta(float OldAmount01,
 }
 
 void UEW_SonaQBandPopup::OnQualityDelta(float OldQuality01, 
-										float NewQuality01, 
+										float NewQuality01,
+										const FPointerEvent& InMouseEvent, 
 										bool& bInOutHaveAllHandlersAccepted)
 {
 	if (Band->GetIsEnabled())
@@ -292,6 +301,7 @@ void UEW_SonaQBandPopup::OnQualityDelta(float OldQuality01,
 
 void UEW_SonaQBandPopup::OnMakeupGainDelta(float OldMakeupGain01,
                                            float NewMakeupGain01,
+										   const FPointerEvent& InMouseEvent,
                                            bool& bInOutHaveAllHandlersAccepted)
 {
 	if (Band->GetIsEnabled())
@@ -307,7 +317,7 @@ void UEW_SonaQBandPopup::OnMakeupGainDelta(float OldMakeupGain01,
 	}
 }
 
-void UEW_SonaQBandPopup::OnListenDelta(float FrequencyDelta)
+void UEW_SonaQBandPopup::OnListenDelta(float FrequencyDelta, const FPointerEvent& InMouseEvent)
 {
 	if (Band->GetIsEnabled())
 	{
@@ -323,7 +333,7 @@ void UEW_SonaQBandPopup::OnListenDelta(float FrequencyDelta)
 	}
 }
 
-void UEW_SonaQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat)
+void UEW_SonaQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat, const FPointerEvent& InMouseEvent)
 {
 	if (Band->GetIsEnabled())
 	{
@@ -349,7 +359,7 @@ void UEW_SonaQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat)
 	}
 }
 
-void UEW_SonaQBandPopup::OnToggleNavelRemoveValueChanged(float QualityDelta01)
+void UEW_SonaQBandPopup::OnToggleNavelRemoveValueChanged(float QualityDelta01, const FPointerEvent& InMouseEvent)
 {
 	if (Band->GetIsEnabled())
 	{
@@ -365,7 +375,7 @@ void UEW_SonaQBandPopup::OnToggleNavelRemoveValueChanged(float QualityDelta01)
 	}
 }
 
-void UEW_SonaQBandPopup::OnToggleNavelOnOffValueChanged(float MakeupGainDelta01)
+void UEW_SonaQBandPopup::OnToggleNavelOnOffValueChanged(float MakeupGainDelta01, const FPointerEvent& InMouseEvent)
 {
 	if (Band->GetIsEnabled())
 	{
@@ -397,12 +407,24 @@ void UEW_SonaQBandPopup::OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNe
 	TextBoxValue->SetIsEnabled(Band->GetIsEnabled());
 }
 
+void UEW_SonaQBandPopup::OnFrequencyCapture()
+{
+	PresstimeMakeupDb = Band->GetMakeupDb();
+	PresstimeAvgDb = Band->GetResponseAvgDb();
+}
+
 void UEW_SonaQBandPopup::OnFrequencyCommit()
 {
 	if (Band->GetIsEnabled())
 	{
 		ViewModel->GetEvent_BandChanged().Broadcast(Band);
 	}
+}
+
+void UEW_SonaQBandPopup::OnAmountCapture()
+{
+	PresstimeMakeupDb = Band->GetMakeupDb();
+	PresstimeAvgDb = Band->GetResponseAvgDb();
 }
 
 void UEW_SonaQBandPopup::OnAmountCommit()
@@ -413,12 +435,24 @@ void UEW_SonaQBandPopup::OnAmountCommit()
 	}
 }
 
+void UEW_SonaQBandPopup::OnQualityCapture()
+{
+	PresstimeMakeupDb = Band->GetMakeupDb();
+	PresstimeAvgDb = Band->GetResponseAvgDb();
+}
+
 void UEW_SonaQBandPopup::OnQualityCommit()
 {
 	if (Band->GetIsEnabled())
 	{
 		ViewModel->GetEvent_BandChanged().Broadcast(Band);
 	}
+}
+
+void UEW_SonaQBandPopup::OnMakeupGainCapture()
+{
+	PresstimeMakeupDb = Band->GetMakeupDb();
+	PresstimeAvgDb = Band->GetResponseAvgDb();
 }
 
 void UEW_SonaQBandPopup::OnMakeupGainCommit()
@@ -566,6 +600,20 @@ int32 UEW_SonaQBandPopup::NativePaint(const FPaintArgs&        Args,
 	                                  bParentEnabled);
 
 	return Result;
+}
+
+FReply UEW_SonaQBandPopup::NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+{
+	FReply Reply = Super::NativeOnKeyDown(InGeometry, InKeyEvent);
+	bIsAltKeyDown = InKeyEvent.IsAltDown();
+	return Reply;
+}
+
+FReply UEW_SonaQBandPopup::NativeOnKeyUp(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent)
+{
+	FReply Reply = Super::NativeOnKeyUp(InGeometry, InKeyEvent);
+	bIsAltKeyDown = InKeyEvent.IsAltDown();
+	return Reply;
 }
 
 void UEW_SonaQBandPopup::RefreshVisual()

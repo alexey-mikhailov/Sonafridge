@@ -9,6 +9,8 @@
 class SONAFRIDGE_API SToggleKnob final : public SLeafWidget
 {
 public:
+	DECLARE_DELEGATE_TwoParams(FValueChanged, float, const FPointerEvent&);
+
 	SLATE_BEGIN_ARGS(SToggleKnob)
 		: _Locked(false)
 		, _WheelStep(0.01f)
@@ -53,8 +55,8 @@ public:
 		SLATE_EVENT(FSimpleDelegate, NavelCaptureFinished)
 		SLATE_EVENT(FSimpleDelegate, ToggleStateRequested)
 		SLATE_EVENT(FSimpleDelegate, KnobClick)
-		SLATE_EVENT(FOnFloatValueChanged, KnobDeltaRequested)
-		SLATE_EVENT(FOnFloatValueChanged, NavelDeltaRequested)
+		SLATE_EVENT(FValueChanged, KnobDeltaRequested)
+		SLATE_EVENT(FValueChanged, NavelDeltaRequested)
 
 	SLATE_END_ARGS()
 
@@ -117,18 +119,18 @@ private:
 	TAttribute<UTexture*>    HoverIconAttribute;
 	TAttribute<float>        IconScaleAttribute;
 
-	FSimpleDelegate      KnobEntrance;
-	FSimpleDelegate      NavelEntrance;
-	FSimpleDelegate      KnobExit;
-	FSimpleDelegate      NavelExit;
-	FSimpleDelegate      KnobCaptureStarted;
-	FSimpleDelegate      KnobCaptureFinished;
-	FSimpleDelegate      NavelCaptureStarted;
-	FSimpleDelegate      NavelCaptureFinished;
-	FOnFloatValueChanged KnobDeltaRequested;
-	FOnFloatValueChanged NavelDeltaRequested;
-	FSimpleDelegate      ToggleStateRequested;
-	FSimpleDelegate      KnobClick;
+	FSimpleDelegate KnobEntrance;
+	FSimpleDelegate NavelEntrance;
+	FSimpleDelegate KnobExit;
+	FSimpleDelegate NavelExit;
+	FSimpleDelegate KnobCaptureStarted;
+	FSimpleDelegate KnobCaptureFinished;
+	FSimpleDelegate NavelCaptureStarted;
+	FSimpleDelegate NavelCaptureFinished;
+	FValueChanged   KnobDeltaRequested;
+	FValueChanged   NavelDeltaRequested;
+	FSimpleDelegate ToggleStateRequested;
+	FSimpleDelegate KnobClick;
 
 	TSharedPtr<SImage> Image;
 	FSlateBrush        Brush;

@@ -102,20 +102,24 @@ protected:
 	void OnBandSelectionChanged(TSharedPtr<FVM_SonaQBand> InBand);
 	void OnBandChanging(TSharedPtr<FVM_SonaQBand> InBand);
 	void OnBandChanged(TSharedPtr<FVM_SonaQBand> InBand);
-	void OnFrequencyDelta(float OldFrequency01, float NewFrequency01, bool& bInOutHaveAllHandlersAccepted);
-	void OnAmountDelta(float OldAmount01, float NewAmount01, bool& bInOutHaveAllHandlersAccepted);
-	void OnQualityDelta(float OldQuality01, float NewQuality01, bool& bInOutHaveAllHandlersAccepted);
-	void OnMakeupGainDelta(float OldMakeupGain01, float NewMakeupGain01, bool& bInOutHaveAllHandlersAccepted);
-	void OnListenDelta(float FrequencyDelta);
-	void OnBandTypeChanged(float BandTypeDeltaAsFloat);
-	void OnToggleNavelRemoveValueChanged(float QualityDelta01);
-	void OnToggleNavelOnOffValueChanged(float MakeupGainDelta01);
+	void OnFrequencyDelta(float OldFrequency01, float NewFrequency01, const FPointerEvent& InMouseEvent, bool& bInOutHaveAllHandlersAccepted);
+	void OnAmountDelta(float OldAmount01, float NewAmount01, const FPointerEvent& InMouseEvent, bool& bInOutHaveAllHandlersAccepted);
+	void OnQualityDelta(float OldQuality01, float NewQuality01, const FPointerEvent& InMouseEvent, bool& bInOutHaveAllHandlersAccepted);
+	void OnMakeupGainDelta(float OldMakeupGain01, float NewMakeupGain01, const FPointerEvent& InMouseEvent, bool& bInOutHaveAllHandlersAccepted);
+	void OnListenDelta(float FrequencyDelta, const FPointerEvent& InMouseEvent);
+	void OnBandTypeChanged(float BandTypeDeltaAsFloat, const FPointerEvent& InMouseEvent);
+	void OnToggleNavelRemoveValueChanged(float QualityDelta01, const FPointerEvent& InMouseEvent);
+	void OnToggleNavelOnOffValueChanged(float MakeupGainDelta01, const FPointerEvent& InMouseEvent);
 	void OnRemoveClick();
 	void OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNewValue);
 
+	void OnFrequencyCapture();
 	void OnFrequencyCommit();
+	void OnAmountCapture();
 	void OnAmountCommit();
+	void OnQualityCapture();
 	void OnQualityCommit();
+	void OnMakeupGainCapture();
 	void OnMakeupGainCommit();
 	void OnListenStarted();
 	void OnListenFinished();
@@ -135,6 +139,10 @@ protected:
 	                          int32                    LayerId,
 	                          const FWidgetStyle&      InWidgetStyle,
 	                          bool                     bParentEnabled) const override;
+
+	virtual FReply NativeOnKeyDown(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
+	virtual FReply NativeOnKeyUp(const FGeometry& InGeometry, const FKeyEvent& InKeyEvent) override;
+
 private:
 	void                  RefreshVisual();
 	static EEQBandType    GetBandTypeByPopupType(EBandPopupType InBandPopupType);
@@ -149,9 +157,13 @@ private:
 	TSharedPtr<FVM_SonaQBand> Band;
 	float                     BandPopupTypeFloat = 0.f;
 
+	float PresstimeMakeupDb = 0.f;
+	float PresstimeAvgDb = 0.f;
+
 	EEQBandType               BandTypeBeforeListenTime = EEQBandType::AttBand;
 	float                     BandMakeupBeforeListenTime = 0.f;
 	TArray<bool>              BandsActivityBeforeListenTime;
 
-	EBandPopupFocusMode       FocusMode = EBandPopupFocusMode::Frequency;
+	EBandPopupFocusMode FocusMode = EBandPopupFocusMode::Frequency;
+	bool                bIsAltKeyDown = false;
 };

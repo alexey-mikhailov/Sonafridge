@@ -171,11 +171,11 @@ FReply SToggleKnob::OnMouseWheel(const FGeometry& InGeometry, const FPointerEven
 
 	if (IsInsideKnob(MousePos))
 	{
-		KnobDeltaRequested.ExecuteIfBound(WheelStepAttribute.Get() * InMouseEvent.GetWheelDelta());
+		KnobDeltaRequested.ExecuteIfBound(WheelStepAttribute.Get() * InMouseEvent.GetWheelDelta(), InMouseEvent);
 	}
 	else if (IsInsideNavel(MousePos))
 	{
-		NavelDeltaRequested.ExecuteIfBound(WheelStepAttribute.Get() * InMouseEvent.GetWheelDelta());
+		NavelDeltaRequested.ExecuteIfBound(WheelStepAttribute.Get() * InMouseEvent.GetWheelDelta(), InMouseEvent);
 	}
 
 	return Reply;
@@ -313,7 +313,7 @@ void SToggleKnob::OnKnobDrag(FReply&              InOutReply,
 	                   ? ValueDelta = MouseFineSpeedAttribute.Get() * MouseDelta.Y * ScreensPerPxApprox
 	                   : ValueDelta = MouseFastSpeedAttribute.Get() * MouseDelta.Y * ScreensPerPxApprox;
 
-	KnobDeltaRequested.ExecuteIfBound(ValueDelta);
+	KnobDeltaRequested.ExecuteIfBound(ValueDelta, InMouseEvent);
 }
 
 void SToggleKnob::OnNavelDrag(FReply&              InOutReply,
@@ -330,7 +330,7 @@ void SToggleKnob::OnNavelDrag(FReply&              InOutReply,
 	                   ? ValueDelta = MouseFineSpeedAttribute.Get() * MouseDelta.Y * ScreensPerPxApprox
 	                   : ValueDelta = MouseFastSpeedAttribute.Get() * MouseDelta.Y * ScreensPerPxApprox;
 
-	NavelDeltaRequested.ExecuteIfBound(ValueDelta);
+	NavelDeltaRequested.ExecuteIfBound(ValueDelta, InMouseEvent);
 }
 
 void SToggleKnob::OnMouseCaptureLost(const FCaptureLostEvent& CaptureLostEvent)

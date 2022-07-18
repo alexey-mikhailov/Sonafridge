@@ -157,7 +157,7 @@ void UToggleKnob::OnKnobClick()
 	KnobClick.Broadcast();
 }
 
-void UToggleKnob::OnKnobDeltaRequested(float ValueDelta)
+void UToggleKnob::OnKnobDeltaRequested(float ValueDelta, const FPointerEvent& InMouseEvent)
 {
 	float NewValue01 = Value01 + ValueDelta;
 	NewValue01 = FMath::Clamp(NewValue01, 0.f, 1.f);
@@ -168,7 +168,7 @@ void UToggleKnob::OnKnobDeltaRequested(float ValueDelta)
 	}
 
 	bool bHaveAllHandlersAccepted = true;
-	KnobValueChanged.Broadcast(Value01, NewValue01, bHaveAllHandlersAccepted);
+	KnobValueChanged.Broadcast(Value01, NewValue01, InMouseEvent, bHaveAllHandlersAccepted);
 
 	if (bHaveAllHandlersAccepted)
 	{
@@ -176,9 +176,9 @@ void UToggleKnob::OnKnobDeltaRequested(float ValueDelta)
 	}
 }
 
-void UToggleKnob::OnNavelDeltaRequested(float ValueDelta)
+void UToggleKnob::OnNavelDeltaRequested(float ValueDelta, const FPointerEvent& InMouseEvent)
 {
-	NavelValueChanged.Broadcast(ValueDelta);
+	NavelValueChanged.Broadcast(ValueDelta, InMouseEvent);
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "SlateMaterialBrush.h"
 
-
 class SONAFRIDGE_API SNaveledKnob final : public SLeafWidget
 {
 public:
+	DECLARE_DELEGATE_TwoParams(FValueChanged, float, const FPointerEvent&);
+
 	SLATE_BEGIN_ARGS(SNaveledKnob)
 		: _Locked(false)
 		, _WheelStep(0.01f)
@@ -51,8 +52,8 @@ public:
 		SLATE_EVENT(FSimpleDelegate, NavelClick)
 		SLATE_EVENT(FSimpleDelegate, KnobDoubleClick)
 		SLATE_EVENT(FSimpleDelegate, NavelDoubleClick)
-		SLATE_EVENT(FOnFloatValueChanged, KnobDeltaRequested)
-		SLATE_EVENT(FOnFloatValueChanged, NavelDeltaRequested)
+		SLATE_EVENT(FValueChanged, KnobDeltaRequested)
+		SLATE_EVENT(FValueChanged, NavelDeltaRequested)
 
 	SLATE_END_ARGS()
 
@@ -114,20 +115,20 @@ private:
 	TAttribute<UTexture*>    HoverIconAttribute;
 	TAttribute<float>        IconScaleAttribute;
 
-	FSimpleDelegate      KnobEntrance;
-	FSimpleDelegate      NavelEntrance;
-	FSimpleDelegate      KnobExit;
-	FSimpleDelegate      NavelExit;
-	FSimpleDelegate      KnobCaptureStarted;
-	FSimpleDelegate      KnobCaptureFinished;
-	FSimpleDelegate      NavelCaptureStarted;
-	FSimpleDelegate      NavelCaptureFinished;
-	FOnFloatValueChanged KnobDeltaRequested;
-	FOnFloatValueChanged NavelDeltaRequested;
-	FSimpleDelegate      KnobClick;
-	FSimpleDelegate      NavelClick;
-	FSimpleDelegate      KnobDoubleClick;
-	FSimpleDelegate      NavelDoubleClick;
+	FSimpleDelegate KnobEntrance;
+	FSimpleDelegate NavelEntrance;
+	FSimpleDelegate KnobExit;
+	FSimpleDelegate NavelExit;
+	FSimpleDelegate KnobCaptureStarted;
+	FSimpleDelegate KnobCaptureFinished;
+	FSimpleDelegate NavelCaptureStarted;
+	FSimpleDelegate NavelCaptureFinished;
+	FValueChanged   KnobDeltaRequested;
+	FValueChanged   NavelDeltaRequested;
+	FSimpleDelegate KnobClick;
+	FSimpleDelegate NavelClick;
+	FSimpleDelegate KnobDoubleClick;
+	FSimpleDelegate NavelDoubleClick;
 
 	TSharedPtr<SImage> Image;
 	FSlateBrush        Brush;
