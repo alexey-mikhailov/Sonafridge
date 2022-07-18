@@ -638,6 +638,17 @@ EBandPopupType UEW_SonaQBandPopup::GetPopupTypeByBandType(EEQBandType InBandType
 
 	if (BandEnum && BandPopupEnum)
 	{
+		if (InBandType == EEQBandType::CutLowFast || 
+			InBandType == EEQBandType::CutLowButterworth)
+		{
+			return EBandPopupType::CutLow;
+		}
+		if (InBandType == EEQBandType::CutHighFast || 
+			InBandType == EEQBandType::CutHighButterworth)
+		{
+			return EBandPopupType::CutHigh;
+		}
+
 		FName Name = BandEnum->GetNameByValue(static_cast<int64>(InBandType));
 		return static_cast<EBandPopupType>(BandPopupEnum->GetValueByName(Name));
 	}
