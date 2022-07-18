@@ -149,6 +149,7 @@ private:
 	static EBandPopupType GetPopupTypeByBandType(EEQBandType InBandPopupType);
 	UTexture*             GetBandIconByType(EBandPopupType InBandPopup);
 	FVector2D             GetBandWPos();
+	void                  TryAutoMakeup(const FPointerEvent& InMouseEvent);
 
 	UPROPERTY()
 	UEW_SonaQ* RootWidget;

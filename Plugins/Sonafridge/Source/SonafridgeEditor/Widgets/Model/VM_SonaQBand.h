@@ -19,11 +19,14 @@ class SONAFRIDGEEDITOR_API FVM_SonaQBand final
 	
 	float A0 = 0.f, A1 = 0.f, A2 = 0.f, B0 = 0.f, B1 = 0.f, B2 = 0.f;
 
+	TArray<float> Response;
+	float ResponseAvgDb = 0.f;
+
 	bool bIsInitialized = false;
 	bool bIsEnabled = true;
 
 public:
-	FVM_SonaQBand() {}
+	FVM_SonaQBand();
 	~FVM_SonaQBand() = default;
 
 	void Init(float InSampleRate);
@@ -37,6 +40,8 @@ public:
 
 	/// Gives response coefficient at certain frequency. 1.f means no changes. 
 	float Dtft(float InFrequency) const;
+	/// Gives response coefficient at certain frequency index. 1.f means no changes.
+	float ResponseAtIndex(int32 Index) { return Response[Index]; }
 
 	EEQBandType GetType() const;
 	bool        GetIsEnabled() const;
@@ -44,9 +49,13 @@ public:
 	float       GetQuality() const;
 	float       GetAmountDb() const;
 	float       GetMakeupDb() const;
+	float       GetResponseAvgDb() const;
 
 private:
 	void Recalculate();
+
+	/// Gives response coefficient at certain frequency. 1.f means no changes. 
+	float DtftImpl(float InFrequency) const;
 
 	FORCEINLINE void LogIfUninitialized() const
 	{

@@ -256,6 +256,8 @@ void UEW_SonaQBandPopup::OnFrequencyDelta(float OldFrequency01,
 		Band->SetFrequency(NewFrequency);
 		TextBoxValue->SetText(FloatToText(NewFrequency, 1));
 		ViewModel->GetEvent_BandChanging().Broadcast(Band);
+
+		TryAutoMakeup(InMouseEvent);
 	}
 	else
 	{
@@ -274,6 +276,8 @@ void UEW_SonaQBandPopup::OnAmountDelta(float OldAmount01,
 		Band->SetAmountDb(NewAmountDb);
 		TextBoxValue->SetText(FloatToText(NewAmountDb, 2, ESignMode::Always));
 		ViewModel->GetEvent_BandChanging().Broadcast(Band);
+
+		TryAutoMakeup(InMouseEvent);
 	}
 	else
 	{
@@ -292,6 +296,8 @@ void UEW_SonaQBandPopup::OnQualityDelta(float OldQuality01,
 		Band->SetQuality(NewQuality);
 		TextBoxValue->SetText(FloatToText(NewQuality, 3));
 		ViewModel->GetEvent_BandChanging().Broadcast(Band);
+
+		TryAutoMakeup(InMouseEvent);
 	}
 	else
 	{
@@ -330,6 +336,8 @@ void UEW_SonaQBandPopup::OnListenDelta(float FrequencyDelta, const FPointerEvent
 		Band->SetFrequency(NewFrequency);
 		TextBoxValue->SetText(FloatToText(NewFrequency, 1));
 		ViewModel->GetEvent_BandChanging().Broadcast(Band);
+
+		TryAutoMakeup(InMouseEvent);
 	}
 }
 
@@ -355,6 +363,8 @@ void UEW_SonaQBandPopup::OnBandTypeChanged(float BandTypeDeltaAsFloat, const FPo
 			TextBoxValue->SetText(EnumText);
 
 			ViewModel->GetEvent_BandChanging().Broadcast(Band);
+
+			TryAutoMakeup(InMouseEvent);
 		}
 	}
 }
@@ -372,6 +382,8 @@ void UEW_SonaQBandPopup::OnToggleNavelRemoveValueChanged(float QualityDelta01, c
 		Band->SetQuality(NewQuality);
 		TextBoxValue->SetText(FloatToText(NewQuality, 3));
 		ViewModel->GetEvent_BandChanging().Broadcast(Band);
+
+		TryAutoMakeup(InMouseEvent);
 	}
 }
 
@@ -727,8 +739,8 @@ FVector2D UEW_SonaQBandPopup::GetBandWPos()
 		float NX = MathLogTool::TwentiethsToTribel(F);
 		float NY = Band->GetType() == EEQBandType::Notch
 		           ? 0.f
-		           : (UEW_SonaQ::DynamicMax - ViewModel->DtftDb(F)) / 
-		             (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
+		           : (FVM_SonaQ::DynamicMax - ViewModel->DtftDb(F)) / 
+		             (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
 
 		float WX = NX * RootWidget->GetLastSize().X;
 		float WY = NY * RootWidget->GetLastSize().Y;
@@ -737,5 +749,21 @@ FVector2D UEW_SonaQBandPopup::GetBandWPos()
 	}
 
 	return {};
+}
+
+void UEW_SonaQBandPopup::TryAutoMakeup(const FPointerEvent& InMouseEvent)
+{
+	if (!InMouseEvent.IsAltDown())
+	{
+		if (Band->GetType() == EEQBandType::AttBand)
+		{
+			Band->SetMakeupDb(PresstimeMakeupDb + 1.5f * (PresstimeAvgDb - Band->GetResponseAvgDb()));
+		}
+		else if (Band->GetType() == EEQBandType::AttLow ||
+				 Band->GetType() == EEQBandType::AttHigh)
+		{
+			Band->SetMakeupDb(PresstimeMakeupDb + 1.0f * (PresstimeAvgDb - Band->GetResponseAvgDb()));
+		}
+	}
 }
 

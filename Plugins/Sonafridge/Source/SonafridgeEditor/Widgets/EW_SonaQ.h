@@ -17,9 +17,6 @@ class SONAFRIDGEEDITOR_API UEW_SonaQ : public UEditorUtilityWidget
 	GENERATED_BODY()
 
 public:
-	static constexpr float DynamicMin = -48.f;
-	static constexpr float DynamicMax = +48.f;
-
 	UEW_SonaQ();
 	void Init(USFXPreset_SonaQ* InPreset);
 

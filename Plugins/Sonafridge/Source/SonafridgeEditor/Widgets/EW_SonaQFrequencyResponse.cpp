@@ -21,7 +21,7 @@ void UEW_SonaQFrequencyResponse::Init(UEW_SonaQ* InRootWidget, TSharedPtr<FVM_So
 	ViewModel->GetEvent_BandChanging().AddUObject(this, &UEW_SonaQFrequencyResponse::OnBandChanging);
 	ViewModel->GetEvent_BandChanged().AddUObject(this, &UEW_SonaQFrequencyResponse::OnBandChanged);
 	GridPointPairs.SetNumZeroed((7 + 10 + 10) + ((48.f + 42.f) / 6.f));
-	ResponsePoints.SetNumZeroed(Resolution);
+	ResponsePoints.SetNumZeroed(FVM_SonaQ::Resolution);
 	BakeGrid();
 	BakeResponse();
 }
@@ -77,8 +77,12 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseButtonDown(const FGeometry& InGe
 			PossessedBandIndex = Index;
 			PresstimeMousePos = MousePos;
 			PresstimeFrequency = Band->GetFrequency();
-			PresstimeNAmountDb = (UEW_SonaQ::DynamicMax - Band->GetAmountDb())
-			                   / (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
+			PresstimeMakeupDb = Band->GetMakeupDb();
+			PresstimeAvgDb = Band->GetResponseAvgDb();
+			PresstimeNAmount = (FVM_SonaQ::DynamicMax - Band->GetAmountDb())
+			                   / (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
+			PresstimeNMakeup = (FVM_SonaQ::DynamicMax - Band->GetMakeupDb())
+			                   / (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
 			Reply = Reply.CaptureMouse(TakeWidget());
 			break;
 		}
@@ -113,7 +117,18 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseButtonDoubleClick(const FGeometr
 
 	TSharedPtr<FVM_SonaQBand> Band = MakeShared<FVM_SonaQBand>();
 	Band->Init(SampleRate);
-	Band->SetType(EEQBandType::AttBand);
+	if (Frequency < 100.f)
+	{
+		Band->SetType(EEQBandType::AttLow);
+	}
+	else if (Frequency >= 100.f && Frequency < 4444.f)
+	{
+		Band->SetType(EEQBandType::AttBand);
+	}
+	else
+	{
+		Band->SetType(EEQBandType::AttHigh);
+	}
 	Band->SetFrequency(Frequency);
 	Band->SetQuality(.667f);
 	Band->SetAmountDb(0.f);
@@ -138,8 +153,37 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseMove(const FGeometry&     InGeom
 	FVector2D WDelta = MousePos - LastMousePos;
 	HoverBandIndex = -1;
 
-	bool bLeft = InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton);
-	bool bCtrl = InMouseEvent.IsControlDown();
+	bool bLeft =  InMouseEvent.IsMouseButtonDown(EKeys::LeftMouseButton);
+	bool bShift = InMouseEvent.IsShiftDown();
+	bool bCtrl =  InMouseEvent.IsControlDown();
+	bool bAlt =   InMouseEvent.IsAltDown();
+
+	// You cannot drag over several instances of this widget class.
+	// So, static context is justified. 
+	static bool bWasShiftPressed = bShift;
+	static bool bWasCtrlPressed = bCtrl;
+	static bool bWasAltPressed = bAlt;
+
+	if (PossessedBand)
+	{
+		if (!bWasShiftPressed && bShift || bWasShiftPressed && !bShift ||
+			!bWasCtrlPressed && bCtrl || bWasCtrlPressed && !bCtrl ||
+			!bWasAltPressed && bAlt || bWasAltPressed && !bAlt)
+		{
+			PresstimeMousePos = MousePos;
+			PresstimeFrequency = PossessedBand->GetFrequency();
+			PresstimeMakeupDb = PossessedBand->GetMakeupDb();
+			PresstimeAvgDb = PossessedBand->GetResponseAvgDb();
+			PresstimeNAmount = (FVM_SonaQ::DynamicMax - PossessedBand->GetAmountDb())
+			                 / (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
+			PresstimeNMakeup = (FVM_SonaQ::DynamicMax - PossessedBand->GetMakeupDb())
+			                 / (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
+		}
+	}
+
+	bWasShiftPressed = bShift;
+	bWasCtrlPressed = bCtrl;
+	bWasAltPressed = bAlt;
 
 	int32 Index = 0;
 	for (auto Band : ViewModel->GetBands())
@@ -159,7 +203,19 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseMove(const FGeometry&     InGeom
 
 	if (PossessedBand && PossessedBand->GetIsEnabled())
 	{
-		if (bCtrl)
+		if (bShift)
+		{
+			//
+			// Drag Makeup
+			//
+			
+			FVector2D WDiff = MousePos - PresstimeMousePos;
+			FVector2D NDiff = WDiff / LastSize;
+			float NNewY = PresstimeNMakeup + NDiff.Y;
+
+			PossessedBand->SetMakeupDb(FVM_SonaQ::DynamicMax - NNewY * (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin));
+		}
+		else if (bCtrl)
 		{
 			//
 			// Drag Quality
@@ -167,7 +223,23 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseMove(const FGeometry&     InGeom
 			
 			float QDelta = MathLogTool::HexabelToLinear(WDelta.Y / LastSize.Y);
 			PossessedBand->SetQuality(PossessedBand->GetQuality() * QDelta);
-			ViewModel->GetEvent_BandChanging().Broadcast(PossessedBand);
+
+			if (!bAlt)
+			{
+				//
+				// Auto makeup
+				// 
+
+				if (PossessedBand->GetType() == EEQBandType::AttBand)
+				{
+					PossessedBand->SetMakeupDb(PresstimeMakeupDb + 1.5f * (PresstimeAvgDb - PossessedBand->GetResponseAvgDb()));
+				}
+				else if (PossessedBand->GetType() == EEQBandType::AttLow ||
+						 PossessedBand->GetType() == EEQBandType::AttHigh)
+				{
+					PossessedBand->SetMakeupDb(PresstimeMakeupDb + 1.0f * (PresstimeAvgDb - PossessedBand->GetResponseAvgDb()));
+				}
+			}
 		}
 		else
 		{
@@ -179,21 +251,30 @@ FReply UEW_SonaQFrequencyResponse::NativeOnMouseMove(const FGeometry&     InGeom
 			FVector2D NDiff = WDiff / LastSize;
 			float FCoef = MathLogTool::TribelToLinear(NDiff.X);
 			float F = PresstimeFrequency * FCoef;
-			float NNewY = PresstimeNAmountDb + NDiff.Y;
+			float NNewY = PresstimeNAmount + NDiff.Y;
 
 			PossessedBand->SetFrequency(F);
+			PossessedBand->SetAmountDb(FVM_SonaQ::DynamicMax - NNewY * (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin));
 
-			if (PossessedBand->GetType() != EEQBandType::CutLowFast &&
-				PossessedBand->GetType() != EEQBandType::CutLowButterworth &&
-				PossessedBand->GetType() != EEQBandType::CutHighFast &&
-				PossessedBand->GetType() != EEQBandType::CutHighButterworth &&
-				PossessedBand->GetType() != EEQBandType::Notch)
+			if (!bAlt)
 			{
-				PossessedBand->SetAmountDb(UEW_SonaQ::DynamicMax - NNewY * (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin));
-			}
+				//
+				// Auto makeup
+				// 
 
-			ViewModel->GetEvent_BandChanging().Broadcast(PossessedBand);
+				if (PossessedBand->GetType() == EEQBandType::AttBand)
+				{
+					PossessedBand->SetMakeupDb(PresstimeMakeupDb + 1.5f * (PresstimeAvgDb - PossessedBand->GetResponseAvgDb()));
+				}
+				else if (PossessedBand->GetType() == EEQBandType::AttLow ||
+						 PossessedBand->GetType() == EEQBandType::AttHigh)
+				{
+					PossessedBand->SetMakeupDb(PresstimeMakeupDb + 1.0f * (PresstimeAvgDb - PossessedBand->GetResponseAvgDb()));
+				}
+			}
 		}
+
+		ViewModel->GetEvent_BandChanging().Broadcast(PossessedBand);
 	}
 
 	bWasLeftMouseButtonPressed = bLeft;
@@ -380,18 +461,18 @@ void UEW_SonaQFrequencyResponse::BakeResponse()
 	const float W = LastSize.X;
 	const float H = LastSize.Y;
 
-	for (int32 I = 0; I < Resolution; ++I)
+	for (int32 I = 0; I < FVM_SonaQ::Resolution; ++I)
 	{
-		auto Frequency = FMath::Exp(I * FLS + FLMin);
+		float Frequency = FMath::Exp(I * FVM_SonaQ::FLS + FVM_SonaQ::FLMin);
 		float Response = ViewModel->DtftDb(Frequency);
 
-		float Y = (Response              - UEW_SonaQ::DynamicMin)
-		        / (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
+		float Y = (FVM_SonaQ::DynamicMax - Response)
+		        / (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
 
 		ResponsePoints[I] = 
 		{
-			W * I * ResolutionStep,
-			H * (1.f - Y)
+			W * I * FVM_SonaQ::ResolutionStep,
+			H * Y
 		};
 	}
 
@@ -405,8 +486,8 @@ void UEW_SonaQFrequencyResponse::BakeResponse()
 		float Response = ViewModel->DtftDb(F);
 		float Y = Band->GetType() == EEQBandType::Notch
 		          ? .75f
-		          : (UEW_SonaQ::DynamicMax - Response) / 
-		            (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
+		          : (FVM_SonaQ::DynamicMax - Response) / 
+		            (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
 
 		if (BandPoints.Num() > Index)
 		{
@@ -425,8 +506,8 @@ FVector2D UEW_SonaQFrequencyResponse::GetBandWPos(TSharedPtr<FVM_SonaQBand> InBa
 		float NX = MathLogTool::TwentiethsToTribel(F);
 		float NY = InBand->GetType() == EEQBandType::Notch
 			? .75f
-			: (UEW_SonaQ::DynamicMax - ViewModel->DtftDb(F)) /
-			  (UEW_SonaQ::DynamicMax - UEW_SonaQ::DynamicMin);
+			: (FVM_SonaQ::DynamicMax - ViewModel->DtftDb(F)) /
+			  (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
 		
 		float WX = NX * LastSize.X;
 		float WY = NY * LastSize.Y;

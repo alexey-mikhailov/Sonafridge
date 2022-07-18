@@ -7,6 +7,22 @@
 class SONAFRIDGEEDITOR_API FVM_SonaQ
 {
 public:
+	static constexpr float FrequencyMin = 20.f;
+	static constexpr float FrequencyMax = 20000.f;
+	static constexpr float DynamicMin = -48.f;
+	static constexpr float DynamicMax = +48.f;
+	static constexpr int32 Resolution = 1000;
+	static constexpr float ResolutionStep = 1.f / Resolution;
+
+	/// Frequency logarithmic audible minimum. 
+	static const float FLMin;
+
+	/// Frequency logarithmic audible maximun. 
+	static const float FLMax;
+
+	/// Frequency logarithmic step. 
+	static const float FLS;
+
 	FVM_SonaQ();
 	void Init(float InSampleRate);
 	void SetBands(TArray<TSharedPtr<FVM_SonaQBand>> InBands);

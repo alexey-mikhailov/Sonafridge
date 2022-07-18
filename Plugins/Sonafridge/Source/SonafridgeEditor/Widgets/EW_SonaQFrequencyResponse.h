@@ -49,32 +49,24 @@ protected:
 	TArray<FVector2D> ResponsePoints;
 	TArray<FVector2D> BandPoints;
 
-	const int32 Resolution = 1000;
-	const float ResolutionStep = 1.f / Resolution;
-
-	/// Frequency logarithmic audible minimum. 
-	const float FLMin = FMath::Loge(20.f);
-
-	/// Frequency logarithmic audible maximun. 
-	const float FLMax = FMath::Loge(20000.f);
-
-	/// Frequency logarithmic step. 
-	const float FLS = (FLMax - FLMin) * ResolutionStep;
-
 	TSharedPtr<FVM_SonaQBand> PossessedBand;
-	int32 PossessedBandIndex = -1;
-	int32 HoverBandIndex = -1;
-	bool bWasLeftMouseButtonPressed = false;
-	float PresstimeFrequency = 0.f;
-	float PresstimeNAmountDb = 0.f;
+	int32                     PossessedBandIndex = -1;
+	int32                     HoverBandIndex = -1;
+	bool                      bWasLeftMouseButtonPressed = false;
+
+	float     PresstimeFrequency = 0.f;
+	float     PresstimeNAmount = 0.f;
+	float     PresstimeNMakeup = 0.f;
+	float     PresstimeMakeupDb = 0.f;
+	float     PresstimeAvgDb = 0.f;
 	FVector2D PresstimeMousePos;
 	FVector2D LastMousePos;
 
 private:
-	void      BakeGrid();
+	void BakeGrid();
 
 public:
-	void      BakeResponse();
+	void BakeResponse();
 
 private:
 	FVector2D GetBandWPos(TSharedPtr<FVM_SonaQBand> InBand);

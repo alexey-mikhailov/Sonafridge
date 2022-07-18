@@ -2,7 +2,13 @@
 
 #include "VM_SonaQBand.h"
 
+#include "VM_SonaQ.h"
 #include "Sonafridge/MathTools.h"
+
+FVM_SonaQBand::FVM_SonaQBand()
+{
+	Response.SetNumZeroed(FVM_SonaQ::Resolution + 1);
+}
 
 void FVM_SonaQBand::Init(float InSampleRate)
 {
@@ -27,7 +33,7 @@ void FVM_SonaQBand::SetIsEnabled(bool bInValue)
 void FVM_SonaQBand::SetFrequency(float Value)
 {
 	LogIfUninitialized();
-	Frequency = Value;
+	Frequency = FMath::Clamp(Value, FVM_SonaQ::FrequencyMin, FVM_SonaQ::FrequencyMax);
 	Recalculate();
 }
 
@@ -63,22 +69,12 @@ void FVM_SonaQBand::SetMakeupCoeff(float Value)
 
 float FVM_SonaQBand::Dtft(float InFrequency) const
 {
-	if (bIsEnabled)
-	{
-		auto InOmega = 2.f * PI * InFrequency / SampleRate;
-		FEcn Angle0 = FEcn(InOmega)^-0;
-		FEcn Angle1 = FEcn(InOmega)^-1;
-		FEcn Angle2 = FEcn(InOmega)^-2;
+	float Index = (FMath::Loge(InFrequency) - FVM_SonaQ::FLMin) / FVM_SonaQ::FLS;
 
-		return MakeupCoeff *
-		(
-			(B0 * Angle0 + B1 * Angle1 + B2 * Angle2) /
-			(A0 * Angle0 + A1 * Angle1 + A2 * Angle2)
-		)
-		.Radius;
-	}
-
-	return 1.f;
+	int32 Index1 = FMath::FloorToInt(Index);
+	int32 Index2 = FMath::CeilToInt(Index);
+	float Alpha = FMath::Frac(Index);
+	return FMath::Lerp(Response[Index1], Response[Index2], Alpha);;
 }
 
 EEQBandType FVM_SonaQBand::GetType() const
@@ -115,6 +111,12 @@ float FVM_SonaQBand::GetMakeupDb() const
 {
 	LogIfUninitialized();
 	return MakeupDb;
+}
+
+float FVM_SonaQBand::GetResponseAvgDb() const
+{
+	LogIfUninitialized();
+	return ResponseAvgDb;
 }
 
 void FVM_SonaQBand::Recalculate()
@@ -248,5 +250,89 @@ void FVM_SonaQBand::Recalculate()
 		B1 = -2.f * Cs;
 		B2 = 1.f;
 	}
+
+	// Bake response
+	ResponseAvgDb = 0.f;
+
+	if (Type == EEQBandType::AttBand)
+	{
+		float PrevResponse = 1.f;
+		for (int32 I = 0; I < FVM_SonaQ::Resolution + 1; ++I)
+		{
+			float F = FMath::Exp(I * FVM_SonaQ::FLS + FVM_SonaQ::FLMin);
+			float ThisResponse = DtftImpl(F);
+			float ThisRDb = MathLogTool::LinearToVigesibel(ThisResponse);
+			float PrevRDb = MathLogTool::LinearToVigesibel(PrevResponse);
+
+			float Alpha96Db = (ThisRDb - FVM_SonaQ::DynamicMin) / (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
+			ThisRDb *= 1.5f * Alpha96Db;
+			Alpha96Db = (PrevRDb - FVM_SonaQ::DynamicMin) / (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
+			PrevRDb *= 1.5f * Alpha96Db;
+
+			const float Diff = FMath::Abs(ThisRDb - PrevRDb);
+			ThisRDb *= 4.f * FMath::Pow(Diff, .5f);
+
+			ResponseAvgDb += ThisRDb;
+			PrevResponse = ThisResponse;
+			Response[I] = ThisResponse;
+		}
+	}
+	else if (Type == EEQBandType::AttLow || Type == EEQBandType::AttHigh)
+	{
+		for (int32 I = 0; I < FVM_SonaQ::Resolution + 1; ++I)
+		{
+			float F = FMath::Exp(I * FVM_SonaQ::FLS + FVM_SonaQ::FLMin);
+			float ThisResponse = DtftImpl(F);
+			float ThisRDb = MathLogTool::LinearToVigesibel(ThisResponse);
+
+			float Alpha96Db = (ThisRDb - FVM_SonaQ::DynamicMin) / (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
+			ThisRDb *= 2.f * Alpha96Db;
+
+			ResponseAvgDb += ThisRDb;
+			Response[I] = ThisResponse;
+		}
+	}
+	else
+	{
+		for (int32 I = 0; I < FVM_SonaQ::Resolution + 1; ++I)
+		{
+			float F = FMath::Exp(I * FVM_SonaQ::FLS + FVM_SonaQ::FLMin);
+			float ThisResponse = DtftImpl(F);
+			float ThisResponseDb = MathLogTool::LinearToVigesibel(ThisResponse);
+
+			ResponseAvgDb += ThisResponseDb;
+			Response[I] = ThisResponse;
+		}
+	}
+
+	if (bIsEnabled)
+	{
+		for (int32 I = 0; I < FVM_SonaQ::Resolution + 1; ++I)
+		{
+			Response[I] *= MakeupCoeff;
+		}
+	}
+
+	ResponseAvgDb /= FVM_SonaQ::Resolution + 1;
+}
+
+float FVM_SonaQBand::DtftImpl(float InFrequency) const
+{
+	if (bIsEnabled)
+	{
+		auto InOmega = 2.f * PI * InFrequency / SampleRate;
+		FEcn Angle0 = FEcn(InOmega)^-0;
+		FEcn Angle1 = FEcn(InOmega)^-1;
+		FEcn Angle2 = FEcn(InOmega)^-2;
+
+		return
+		(
+			(B0 * Angle0 + B1 * Angle1 + B2 * Angle2) /
+			(A0 * Angle0 + A1 * Angle1 + A2 * Angle2)
+		)
+		.Radius;
+	}
+
+	return 1.f;
 }
 

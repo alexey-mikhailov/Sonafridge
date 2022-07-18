@@ -4,6 +4,15 @@
 #include "AudioDevice.h"
 #include "Sonafridge/MathTools.h"
 
+/// Frequency logarithmic audible minimum. 
+const float FVM_SonaQ::FLMin = FMath::Loge(20.f);
+
+/// Frequency logarithmic audible maximun. 
+const float FVM_SonaQ::FLMax = FMath::Loge(20000.f);
+
+/// Frequency logarithmic step. 
+const float FVM_SonaQ::FLS = (FLMax - FLMin) * ResolutionStep;
+
 FVM_SonaQ::FVM_SonaQ()
 {
 	// We cannot obtain SampleRate from SFX due to encapsulation
