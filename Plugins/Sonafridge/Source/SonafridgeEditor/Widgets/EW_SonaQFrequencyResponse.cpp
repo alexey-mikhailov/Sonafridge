@@ -3,8 +3,8 @@
 #include "EW_SonaQFrequencyResponse.h"
 #include "EW_SonaQ.h"
 #include "Model/VM_SonaQ.h"
-#include "Sonafridge/ColorManagement/HSRColor.h"
-#include "Sonafridge/MathTools.h"
+#include "Sonafridge/Tools/HSRColor.h"
+#include "Sonafridge/Tools/MathTools.h"
 #include "Input/HittestGrid.h"
 #include "AudioDevice.h"
 

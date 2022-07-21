@@ -36,8 +36,6 @@ public:
 	void AddBand(TSharedPtr<FVM_SonaQBand> InBand);
 	void RemoveBand(TSharedPtr<FVM_SonaQBand> InBand);
 	void ResetBand(TSharedPtr<FVM_SonaQBand> InBand);
-	void Freeze();
-	void Unfreeze();
 
 	TSharedPtr<FVM_SonaQBand> GetSelectedBand() const { return SelectedBand; }
 	void                      SetSelectedBand(TSharedPtr<FVM_SonaQBand> InBand);

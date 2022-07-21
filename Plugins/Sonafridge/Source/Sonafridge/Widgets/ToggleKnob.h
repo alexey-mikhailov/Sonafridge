@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Sonafridge/ColorManagement/HSRColor.h"
+#include "Sonafridge/Tools/HSRColor.h"
 #include "Components/Widget.h"
 #include "CoreMinimal.h"
 #include "ToggleKnob.generated.h"

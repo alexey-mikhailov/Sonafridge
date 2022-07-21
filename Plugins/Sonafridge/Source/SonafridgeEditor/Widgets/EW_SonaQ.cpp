@@ -21,7 +21,7 @@ void UEW_SonaQ::Init(USFXPreset_SonaQ* InPreset)
 	}
 	else
 	{
-		UE_LOG(LogSonafridgeEditor, Error, TEXT("UEW_SonaQ::Init: InViewModel argument is not valid. "));
+		UE_LOG(LogSonafridgeEditor, Error, TEXT("UEW_SonaQ::Init: InPreset argument is not valid. "));
 	}
 }
 

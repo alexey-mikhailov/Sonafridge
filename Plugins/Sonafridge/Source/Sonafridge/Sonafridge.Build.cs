@@ -42,6 +42,7 @@ public class Sonafridge : ModuleRules
                 "Slate",
                 "SlateCore",
                 "Synthesis",
+                "AudioExtensions",
                 "UMG"
                 // ... add private dependencies that you statically link with here ...	
             }

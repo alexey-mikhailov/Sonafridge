@@ -8,6 +8,7 @@
 class FToolBarBuilder;
 class FMenuBuilder;
 class FUICommandList;
+class FAssetTypeActions_Base;
 
 class FSonafridgeEditorModule : public IModuleInterface
 {
@@ -24,6 +25,7 @@ private:
 	void                 RegisterMenus();
 	TSharedRef<SDockTab> OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs);
 
-	TSharedPtr<FUICommandList>            PluginCommands;
-	FSonafridgeContentBrowserMenuExtender ContentBrowserMenuExtender;
+	TSharedPtr<FUICommandList>                 PluginCommands;
+	FSonafridgeContentBrowserMenuExtender      ContentBrowserMenuExtender;
+	TArray<TSharedPtr<FAssetTypeActions_Base>> AssetActions;
 };

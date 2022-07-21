@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 
-class UEW_SonaQ;
-class USFXPreset_SonaQ;
+class UW_Clathrispace;
+class UClathrispaceSettings;
 
 /**
  * 
  */
-class SONAFRIDGEEDITOR_API FAssetEditor_SonaQ final : public FAssetEditorToolkit, public FGCObject
+class SONAFRIDGEEDITOR_API FAssetEditor_Clathrispace final : public FAssetEditorToolkit, public FGCObject
 {
 public:
-	FAssetEditor_SonaQ();
-	virtual ~FAssetEditor_SonaQ() override;
-	void    Init(TSharedPtr<IToolkitHost> InToolkitHost, USFXPreset_SonaQ* InSonaQPreset);
+	FAssetEditor_Clathrispace();
+	virtual ~FAssetEditor_Clathrispace() override;
+	void    Init(TSharedPtr<IToolkitHost> InToolkitHost, UClathrispaceSettings* InPreset);
 
 	// FAssetEditorToolkit interface
 
@@ -33,16 +33,16 @@ public:
 
 private:
 	TSharedRef<SDockTab> SpawnTab_Properties(const FSpawnTabArgs& Args);
-	TSharedRef<SDockTab> SpawnTab_SonaQWidget(const FSpawnTabArgs& Args);
+	TSharedRef<SDockTab> SpawnTab_ClathrispaceWidget(const FSpawnTabArgs& Args);
 
 	// UObjects that referenced by this asset editor. 
-	USFXPreset_SonaQ* SonaQPreset = nullptr;
-	UEW_SonaQ*        SonaQWidget = nullptr;
+	UClathrispaceSettings* ClathrispacePreset = nullptr;
+	UW_Clathrispace*       ClathrispaceWidget = nullptr;
 
 	TSharedPtr<IDetailsView> DetailsView;
 
 	static const FName Identifier;
 	static const FName ToolkitFName;
 	static const FName DetailsTabId;
-	static const FName SonaQTabId;
+	static const FName ClathrispaceTabId;
 };

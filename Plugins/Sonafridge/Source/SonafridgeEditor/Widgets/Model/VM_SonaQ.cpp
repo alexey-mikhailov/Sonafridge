@@ -2,7 +2,7 @@
 
 #include "VM_SonaQ.h"
 #include "AudioDevice.h"
-#include "Sonafridge/MathTools.h"
+#include "Sonafridge/Tools/MathTools.h"
 
 /// Frequency logarithmic audible minimum. 
 const float FVM_SonaQ::FLMin = FMath::Loge(20.f);
@@ -55,18 +55,6 @@ void FVM_SonaQ::ResetBand(TSharedPtr<FVM_SonaQBand> InBand)
 	InBand->SetQuality(1.f);
 	InBand->SetAmountDb(0.f);
 	InBand->SetMakeupDb(0.f);
-}
-
-void FVM_SonaQ::Freeze()
-{
-	// TODO: Optimize response calculation
-	// TODO: bIsFrozen = true ...
-}
-
-void FVM_SonaQ::Unfreeze()
-{
-	// TODO: Optimize response calculation
-	// TODO: bIsFrozen = false ...
 }
 
 void FVM_SonaQ::SetSelectedBand(TSharedPtr<FVM_SonaQBand> InBand)

@@ -3,6 +3,7 @@
 #include "SonafridgeEditor.h"
 
 #include "AssetActions/AssetTypeActions_SonaQ.h"
+#include "AssetActions/AssetTypeActions_Clathrispace.h"
 #include "SonafridgeStyle.h"
 #include "SonafridgeCommands.h"
 #include "Sonafridge/SonafridgeCommon.h"
@@ -50,13 +51,22 @@ void FSonafridgeEditorModule::StartupModule()
 	ContentBrowserMenuExtender.Startup();
 
 	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-	AssetTools.RegisterAssetTypeActions(MakeShared<FAssetTypeActions_SonaQ>());
+
+	auto SonaQActions = MakeShared<FAssetTypeActions_SonaQ>();
+	AssetTools.RegisterAssetTypeActions(SonaQActions);
+	AssetActions.Add(SonaQActions);
+
+	auto ClathrispaceActions = MakeShared<FAssetTypeActions_ClathrispaceSettings>();
+	AssetTools.RegisterAssetTypeActions(ClathrispaceActions);
+	AssetActions.Add(ClathrispaceActions);
 }
 
 void FSonafridgeEditorModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
+
+	AssetActions.Reset();
 
 	UToolMenus::UnRegisterStartupCallback(this);
 

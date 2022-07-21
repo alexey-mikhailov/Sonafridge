@@ -1,32 +1,32 @@
 // Sonafridge 2022
 
 
-#include "AssetEditor_SonaQ.h"
+#include "AssetEditor_Clathrispace.h"
 
-#include "Sonafridge/SignalProcessing/SFX_SonaQ.h"
-#include "SonafridgeEditor/Widgets/EW_SonaQ.h"
+#include "SonafridgeEditor/Widgets/W_Clathrispace.h"
+#include "Sonafridge/Attenuator/Clathrispace.h"
 #include "WidgetBlueprint.h"
 
-#define LOCTEXT_NAMESPACE "FAssetEditor_SonaQ"
+#define LOCTEXT_NAMESPACE "FAssetEditor_Clathrispace"
 
-const FName FAssetEditor_SonaQ::Identifier(TEXT( "AssetEditor_SonaQ"));
-const FName FAssetEditor_SonaQ::ToolkitFName(TEXT("AssetEditorToolkit_SonaQ"));
-const FName FAssetEditor_SonaQ::DetailsTabId(TEXT("AssetEditor_SonaQ_PropertiesTab"));
-const FName FAssetEditor_SonaQ::SonaQTabId(TEXT("AssetEditor_SonaQ_SonaQTab"));
+const FName FAssetEditor_Clathrispace::Identifier(TEXT("AssetEditor_Clathrispace"));
+const FName FAssetEditor_Clathrispace::ToolkitFName(TEXT("AssetEditorToolkit_Clathrispace"));
+const FName FAssetEditor_Clathrispace::DetailsTabId(TEXT("AssetEditor_Clathrispace_PropertiesTab"));
+const FName FAssetEditor_Clathrispace::ClathrispaceTabId(TEXT("AssetEditor_Clathrispace_ClathrispaceTab"));
 
-FAssetEditor_SonaQ::FAssetEditor_SonaQ()
+FAssetEditor_Clathrispace::FAssetEditor_Clathrispace()
 {
 }
 
-FAssetEditor_SonaQ::~FAssetEditor_SonaQ()
+FAssetEditor_Clathrispace::~FAssetEditor_Clathrispace()
 {
 }
 
-void FAssetEditor_SonaQ::Init(TSharedPtr<IToolkitHost> InToolkitHost, USFXPreset_SonaQ* InSonaQPreset)
+void FAssetEditor_Clathrispace::Init(TSharedPtr<IToolkitHost> InToolkitHost, UClathrispaceSettings* InPreset)
 {
 	EToolkitMode::Type Mode = InToolkitHost.IsValid() ? EToolkitMode::WorldCentric : EToolkitMode::Standalone;
 
-	SonaQPreset = InSonaQPreset;
+	ClathrispacePreset = InPreset;
 
 	FPropertyEditorModule& PropertyEditorModule = 
 		FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
@@ -41,7 +41,7 @@ void FAssetEditor_SonaQ::Init(TSharedPtr<IToolkitHost> InToolkitHost, USFXPreset
 	DetailsView = PropertyEditorModule.CreateDetailView(DetailsViewArgs);
 
 	const TSharedRef<FTabManager::FLayout> StandaloneDefaultLayout = 
-		FTabManager::NewLayout("Standalone_AssetEditor_SonaQ_Layout_v1")
+		FTabManager::NewLayout("Standalone_AssetEditor_Clathrispace_Layout_v1")
 		->AddArea
 	(
 		FTabManager::NewPrimaryArea() ->SetOrientation(Orient_Vertical)
@@ -65,7 +65,7 @@ void FAssetEditor_SonaQ::Init(TSharedPtr<IToolkitHost> InToolkitHost, USFXPreset
 					FTabManager::NewStack()
 					->SetHideTabWell(true)
 					->SetSizeCoefficient(0.33f)
-					->AddTab(SonaQTabId, ETabState::OpenedTab)
+					->AddTab(ClathrispaceTabId, ETabState::OpenedTab)
 				)
 			)
 			->Split
@@ -86,82 +86,82 @@ void FAssetEditor_SonaQ::Init(TSharedPtr<IToolkitHost> InToolkitHost, USFXPreset
 	                                     StandaloneDefaultLayout,
 	                                     bCreateDefaultStandaloneMenu,
 	                                     bCreateDefaultToolbar,
-	                                     { InSonaQPreset });
+	                                     { InPreset });
 
 	RegenerateMenusAndToolbars();
 
 	// Ensure all objects are transactable for undo/redo in the details panel
-	InSonaQPreset->SetFlags(RF_Transactional);
+	InPreset->SetFlags(RF_Transactional);
 
 	if (DetailsView.IsValid())
 	{
 		// Make sure details window is pointing to our object
-		DetailsView->SetObject(InSonaQPreset);
+		DetailsView->SetObject(InPreset);
 	}
 }
 
-FLinearColor FAssetEditor_SonaQ::GetWorldCentricTabColorScale() const
+FLinearColor FAssetEditor_Clathrispace::GetWorldCentricTabColorScale() const
 {
 	return FLinearColor(0.0f, 0.0f, 0.2f, 0.5f);
 }
 
-FName FAssetEditor_SonaQ::GetToolkitFName() const
+FName FAssetEditor_Clathrispace::GetToolkitFName() const
 {
-	return FName("SonaQPresetEditor");
+	return FName("ClathrispacePresetEditor");
 }
 
-FText FAssetEditor_SonaQ::GetBaseToolkitName() const
+FText FAssetEditor_Clathrispace::GetBaseToolkitName() const
 {
-	return LOCTEXT("AppLabel", "SonaQ Editor");
+	return LOCTEXT("AppLabel", "Clathrispace Editor");
 }
 
-FString FAssetEditor_SonaQ::GetWorldCentricTabPrefix() const
+FString FAssetEditor_Clathrispace::GetWorldCentricTabPrefix() const
 {
-	return LOCTEXT("WorldCentricTabPrefix", "SonaQ ").ToString();
+	return LOCTEXT("WorldCentricTabPrefix", "Clathrispace ").ToString();
 }
 
-void FAssetEditor_SonaQ::RegisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
+void FAssetEditor_Clathrispace::RegisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
 {
-	WorkspaceMenuCategory = InTabManager->AddLocalWorkspaceMenuCategory(LOCTEXT("WorkspaceMenu_SonaQEditor", "SonaQ Editor"));
+	WorkspaceMenuCategory = InTabManager->AddLocalWorkspaceMenuCategory(LOCTEXT("WorkspaceMenu_ClathrispaceEditor", "Clathrispace Editor"));
 
 	FAssetEditorToolkit::RegisterTabSpawners(InTabManager);
 
-	const FString    ClassName = SonaQPreset->GetClass()->GetName();
+	const FString    ClassName = ClathrispacePreset->GetClass()->GetName();
 	const FSlateIcon BPIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.CreateClassBlueprint");
 
-	InTabManager->RegisterTabSpawner(SonaQTabId,
-	                                 FOnSpawnTab::CreateSP(this, &FAssetEditor_SonaQ::SpawnTab_SonaQWidget))
+	InTabManager->RegisterTabSpawner(ClathrispaceTabId,
+	                                 FOnSpawnTab::CreateSP(this, &FAssetEditor_Clathrispace::SpawnTab_ClathrispaceWidget))
 	            .SetDisplayName(
 		            FText::Format(LOCTEXT("UserEditorTabFormat", "{0} Editor"), FText::FromString(ClassName)))
 	            .SetGroup(WorkspaceMenuCategory.ToSharedRef())
 	            .SetIcon(BPIcon);
 
 	InTabManager->RegisterTabSpawner(DetailsTabId,
-	                                 FOnSpawnTab::CreateSP(this, &FAssetEditor_SonaQ::SpawnTab_Properties))
+	                                 FOnSpawnTab::CreateSP(this, &FAssetEditor_Clathrispace::SpawnTab_Properties))
 	            .SetDisplayName(LOCTEXT("DetailsTab", "Details"))
 	            .SetGroup(WorkspaceMenuCategory.ToSharedRef())
 	            .SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.Tabs.Details"));
 }
 
-void FAssetEditor_SonaQ::UnregisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
+void FAssetEditor_Clathrispace::UnregisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
 {
-	InTabManager->UnregisterTabSpawner(SonaQTabId);
+	InTabManager->UnregisterTabSpawner(ClathrispaceTabId);
 	InTabManager->UnregisterTabSpawner(DetailsTabId);
 
 	FAssetEditorToolkit::UnregisterTabSpawners(InTabManager);
 }
 
-void FAssetEditor_SonaQ::AddReferencedObjects(FReferenceCollector& Collector)
+void FAssetEditor_Clathrispace::AddReferencedObjects(FReferenceCollector& Collector)
 {
-	Collector.AddReferencedObject(SonaQPreset);
+	Collector.AddReferencedObject(ClathrispaceWidget);
 }
 
-FString FAssetEditor_SonaQ::GetReferencerName() const
+FString FAssetEditor_Clathrispace::GetReferencerName() const
 {
-	return "SonaQ AssetEditor";
+	return "Clathrispace AssetEditor";
 }
 
-TSharedRef<SDockTab> FAssetEditor_SonaQ::SpawnTab_Properties(const FSpawnTabArgs& Args)
+TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_Properties(const FSpawnTabArgs& Args)
 {
 	check(Args.GetTabId() == DetailsTabId);
 
@@ -173,14 +173,14 @@ TSharedRef<SDockTab> FAssetEditor_SonaQ::SpawnTab_Properties(const FSpawnTabArgs
 		];
 }
 
-TSharedRef<SDockTab> FAssetEditor_SonaQ::SpawnTab_SonaQWidget(const FSpawnTabArgs& Args)
+TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathrispaceWidget(const FSpawnTabArgs& Args)
 {
 	const FText Label = FText::FromString(GetEditingObject()->GetName());
 
 	UWidgetBlueprint* Blueprint = LoadObject<UWidgetBlueprint>
 	(
 		nullptr,
-		TEXT("/Sonafridge/UI/EW_SonaQ.EW_SonaQ")
+		TEXT("/Sonafridge/UI/WBP_Clathrispace.WBP_Clathrispace")
 	);
 
 	UWorld* World = GEditor->GetEditorWorldContext().World();
@@ -189,14 +189,14 @@ TSharedRef<SDockTab> FAssetEditor_SonaQ::SpawnTab_SonaQWidget(const FSpawnTabArg
 	if (IsValid(Blueprint))
 	{
 		// Transient UWidget, which SWidget will be held by shared pointer. 
-		SonaQWidget = CreateWidget<UEW_SonaQ>
+		ClathrispaceWidget = CreateWidget<UW_Clathrispace>
 		(
 			World, static_cast<UClass*>(Blueprint->GeneratedClass)
 		);
 
-		SonaQWidget->Init(SonaQPreset);
+		ClathrispaceWidget->Init(ClathrispacePreset);
 
-		if (SonaQWidget)
+		if (ClathrispaceWidget)
 		{
 			return SNew(SDockTab)
 				.Label(Label)
@@ -206,7 +206,7 @@ TSharedRef<SDockTab> FAssetEditor_SonaQ::SpawnTab_SonaQWidget(const FSpawnTabArg
 					.BorderImage(FEditorStyle::GetBrush("ToolPanel.GroupBorder"))
 					.Padding(0.0f)
 					[
-						SonaQWidget->TakeWidget()
+						ClathrispaceWidget->TakeWidget()
 					]
 				];
 		}
@@ -218,7 +218,7 @@ TSharedRef<SDockTab> FAssetEditor_SonaQ::SpawnTab_SonaQWidget(const FSpawnTabArg
 		[
 			SNew(STextBlock)
 			.Text(LOCTEXT("InvalidPresetEditor",
-			              "No editor available for SonaQ Preset. Widget Blueprint not found."))
+			              "No editor available for Clathrispace Preset. Widget Blueprint not found."))
 		];
 }
 

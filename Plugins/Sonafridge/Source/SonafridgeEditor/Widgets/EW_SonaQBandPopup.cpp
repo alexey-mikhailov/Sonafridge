@@ -4,7 +4,7 @@
 
 #include "Sonafridge/Widgets/NaveledKnob.h"
 #include "Sonafridge/Widgets/ToggleKnob.h"
-#include "Sonafridge/MathTools.h"
+#include "Sonafridge/Tools/MathTools.h"
 #include "EW_SonaQ.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/EditableTextBox.h"

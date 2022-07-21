@@ -3,7 +3,7 @@
 #include "VM_SonaQBand.h"
 
 #include "VM_SonaQ.h"
-#include "Sonafridge/MathTools.h"
+#include "Sonafridge/Tools/MathTools.h"
 
 FVM_SonaQBand::FVM_SonaQBand()
 {

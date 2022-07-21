@@ -113,7 +113,7 @@ void FSonafridgeContentBrowserMenuExtender::AddMenuEntryForSonaQs(FMenuBuilder& 
 				static_cast<UClass*>(Blueprint->GeneratedClass)
 			);
 
-			// TODO: EW_SonaQ->Init(SonaQPreset);
+			EW_SonaQ->Init(SonaQPreset);
 
 			TSharedRef<SWindow> MyWindow = 
 			{
