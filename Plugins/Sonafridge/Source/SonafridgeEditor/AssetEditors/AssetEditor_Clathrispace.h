@@ -34,6 +34,7 @@ public:
 private:
 	TSharedRef<SDockTab> SpawnTab_Properties(const FSpawnTabArgs& Args);
 	TSharedRef<SDockTab> SpawnTab_ClathrispaceWidget(const FSpawnTabArgs& Args);
+	TSharedRef<SDockTab> SpawnTab_ClathriEar(const FSpawnTabArgs& Args);
 
 	// UObjects that referenced by this asset editor. 
 	UClathrispaceSettings* ClathrispacePreset = nullptr;
@@ -44,5 +45,5 @@ private:
 	static const FName Identifier;
 	static const FName ToolkitFName;
 	static const FName DetailsTabId;
-	static const FName ClathrispaceTabId;
+	static const FName ClathriEarTabId;
 };

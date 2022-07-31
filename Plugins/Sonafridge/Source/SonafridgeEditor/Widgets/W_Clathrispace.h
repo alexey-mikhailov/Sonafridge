@@ -7,6 +7,7 @@
 #include "Model/VM_SonaQ.h"
 #include "W_Clathrispace.generated.h"
 
+class UCanvasPanel;
 class UClathrispaceSettings;
 
 UCLASS()
@@ -21,6 +22,7 @@ public:
 
 protected:
 	virtual void  NativeConstruct() override;
+
 	void          OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize);
 	virtual int32 NativePaint(const FPaintArgs&        Args,
 	                          const FGeometry&         AllottedGeometry,
@@ -32,6 +34,9 @@ protected:
 
 	UPROPERTY()
 	UClathrispaceSettings* Settings;
+
+	UPROPERTY()
+	UCanvasPanel* Panel;
 
 private:
 	FVector2D LastSize;

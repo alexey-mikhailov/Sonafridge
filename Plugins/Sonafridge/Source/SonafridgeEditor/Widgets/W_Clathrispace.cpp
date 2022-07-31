@@ -5,6 +5,7 @@
 #include "Sonafridge/SonafridgeCommon.h"
 #include "Components/CanvasPanelSlot.h"
 #include "AudioDevice.h"
+#include "Components/CanvasPanel.h"
 
 void UW_Clathrispace::Init(UClathrispaceSettings* InSettings)
 {
@@ -46,12 +47,12 @@ void UW_Clathrispace::OnSizeChanged(const FVector2D& OldSize, const FVector2D& N
 }
 
 int32 UW_Clathrispace::NativePaint(const FPaintArgs&        Args,
-                             const FGeometry&         AllottedGeometry,
-                             const FSlateRect&        MyCullingRect,
-                             FSlateWindowElementList& OutDrawElements,
-                             int32                    LayerId,
-                             const FWidgetStyle&      InWidgetStyle,
-                             bool                     bParentEnabled) const
+                                   const FGeometry&         AllottedGeometry,
+                                   const FSlateRect&        MyCullingRect,
+                                   FSlateWindowElementList& OutDrawElements,
+                                   int32                    LayerId,
+                                   const FWidgetStyle&      InWidgetStyle,
+                                   bool                     bParentEnabled) const
 {
 	int32 Result = Super::NativePaint(Args,
 	                                  AllottedGeometry,

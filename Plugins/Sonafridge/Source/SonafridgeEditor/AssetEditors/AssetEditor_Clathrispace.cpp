@@ -3,6 +3,7 @@
 
 #include "AssetEditor_Clathrispace.h"
 
+#include "ClathrispaceEditorPreview.h"
 #include "SonafridgeEditor/Widgets/W_Clathrispace.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
 #include "WidgetBlueprint.h"
@@ -11,8 +12,9 @@
 
 const FName FAssetEditor_Clathrispace::Identifier(TEXT("AssetEditor_Clathrispace"));
 const FName FAssetEditor_Clathrispace::ToolkitFName(TEXT("AssetEditorToolkit_Clathrispace"));
+
 const FName FAssetEditor_Clathrispace::DetailsTabId(TEXT("AssetEditor_Clathrispace_PropertiesTab"));
-const FName FAssetEditor_Clathrispace::ClathrispaceTabId(TEXT("AssetEditor_Clathrispace_ClathrispaceTab"));
+const FName FAssetEditor_Clathrispace::ClathriEarTabId(TEXT("AssetEditor_Clathrispace_ClathriEarTab"));
 
 FAssetEditor_Clathrispace::FAssetEditor_Clathrispace()
 {
@@ -57,16 +59,10 @@ void FAssetEditor_Clathrispace::Init(TSharedPtr<IToolkitHost> InToolkitHost, UCl
 			FTabManager::NewSplitter()
 			->Split
 			(
-				FTabManager::NewSplitter()
+				FTabManager::NewStack()
+				->SetHideTabWell(true)
 				->SetSizeCoefficient(0.775f)
-				->SetOrientation(Orient_Vertical)
-				->Split
-				(
-					FTabManager::NewStack()
-					->SetHideTabWell(true)
-					->SetSizeCoefficient(0.33f)
-					->AddTab(ClathrispaceTabId, ETabState::OpenedTab)
-				)
+				->AddTab(ClathriEarTabId, ETabState::OpenedTab)
 			)
 			->Split
 			(
@@ -129,23 +125,22 @@ void FAssetEditor_Clathrispace::RegisterTabSpawners(const TSharedRef<FTabManager
 	const FString    ClassName = ClathrispacePreset->GetClass()->GetName();
 	const FSlateIcon BPIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.CreateClassBlueprint");
 
-	InTabManager->RegisterTabSpawner(ClathrispaceTabId,
-	                                 FOnSpawnTab::CreateSP(this, &FAssetEditor_Clathrispace::SpawnTab_ClathrispaceWidget))
-	            .SetDisplayName(
-		            FText::Format(LOCTEXT("UserEditorTabFormat", "{0} Editor"), FText::FromString(ClassName)))
+	InTabManager->RegisterTabSpawner(ClathriEarTabId,
+	                                 FOnSpawnTab::CreateSP(this, &FAssetEditor_Clathrispace::SpawnTab_ClathriEar))
+	            .SetDisplayName(LOCTEXT("ClathriEarTabName", "ClathriEar"))
 	            .SetGroup(WorkspaceMenuCategory.ToSharedRef())
 	            .SetIcon(BPIcon);
 
 	InTabManager->RegisterTabSpawner(DetailsTabId,
 	                                 FOnSpawnTab::CreateSP(this, &FAssetEditor_Clathrispace::SpawnTab_Properties))
-	            .SetDisplayName(LOCTEXT("DetailsTab", "Details"))
+	            .SetDisplayName(LOCTEXT("DetailsTabName", "Details"))
 	            .SetGroup(WorkspaceMenuCategory.ToSharedRef())
 	            .SetIcon(FSlateIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.Tabs.Details"));
 }
 
 void FAssetEditor_Clathrispace::UnregisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
 {
-	InTabManager->UnregisterTabSpawner(ClathrispaceTabId);
+	InTabManager->UnregisterTabSpawner(ClathriEarTabId);
 	InTabManager->UnregisterTabSpawner(DetailsTabId);
 
 	FAssetEditorToolkit::UnregisterTabSpawners(InTabManager);
@@ -219,6 +214,17 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathrispaceWidget(cons
 			SNew(STextBlock)
 			.Text(LOCTEXT("InvalidPresetEditor",
 			              "No editor available for Clathrispace Preset. Widget Blueprint not found."))
+		];
+}
+
+TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathriEar(const FSpawnTabArgs& Args)
+{
+	check(Args.GetTabId() == ClathriEarTabId);
+
+	return SNew(SDockTab)
+		.Label(LOCTEXT("ClathriEarTabTitle", "ClathriEar"))
+		[
+			SNew(SClathrispaceViewport)
 		];
 }
 
