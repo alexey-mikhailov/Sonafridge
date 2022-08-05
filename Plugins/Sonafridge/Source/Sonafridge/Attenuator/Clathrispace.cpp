@@ -1,12 +1,130 @@
 #include "Clathrispace.h"
 
+#include "Sonafridge/Tools/MathTools.h"
+
 UClathrispaceSettings::UClathrispaceSettings()
 {
+	EarData.EarPinsL.Add
+	({
+		FVector::LeftVector,
+		100.f, 0.f, 1.f, 0.f,
+		667.f, 0.f, 1.f, 0.f,
+		4444.f, 0.f, 1.f, 0.f,
+	});
+	EarData.EarPinsL.Add
+	({
+		FVector::RightVector,
+		100.f, 0.f, 1.f, 0.f,
+		667.f, 0.f, 1.f, 0.f,
+		4444.f, 0.f, 1.f, 0.f,
+	});
+	EarData.EarPinsL.Add
+	({
+		FVector::UpVector,
+		100.f, 0.f, 1.f, 0.f,
+		667.f, 0.f, 1.f, 0.f,
+		4444.f, 0.f, 1.f, 0.f,
+	});
+	EarData.EarPinsL.Add
+	({
+		FVector::DownVector,
+		100.f, 0.f, 1.f, 0.f,
+		667.f, 0.f, 1.f, 0.f,
+		4444.f, 0.f, 1.f, 0.f,
+	});
+	EarData.EarPinsL.Add
+	({
+		FVector::ForwardVector,
+		100.f, 0.f, 1.f, 0.f,
+		667.f, 0.f, 1.f, 0.f,
+		4444.f, 0.f, 1.f, 0.f,
+	});
+	EarData.EarPinsL.Add
+	({
+		FVector::BackwardVector,
+		100.f, 0.f, 1.f, 0.f,
+		667.f, 0.f, 1.f, 0.f,
+		4444.f, 0.f, 1.f, 0.f,
+	});
+	EarData.EarPinsR.Add
+	({
+		FVector::RightVector,
+		100.f, 0.f, 1.f, 0.f,
+		667.f, 0.f, 1.f, 0.f,
+		4444.f, 0.f, 1.f, 0.f,
+	});
+	EarData.EarPinsR.Add
+	({
+		FVector::LeftVector,
+		100.f, 0.f, 1.f, 0.f,
+		667.f, 0.f, 1.f, 0.f,
+		4444.f, 0.f, 1.f, 0.f,
+	});
+	EarData.EarPinsR.Add
+	({
+		FVector::UpVector,
+		100.f, 0.f, 1.f, 0.f,
+		667.f, 0.f, 1.f, 0.f,
+		4444.f, 0.f, 1.f, 0.f,
+	});
+	EarData.EarPinsR.Add
+	({
+		FVector::DownVector,
+		100.f, 0.f, 1.f, 0.f,
+		667.f, 0.f, 1.f, 0.f,
+		4444.f, 0.f, 1.f, 0.f,
+	});
+	EarData.EarPinsR.Add
+	({
+		FVector::ForwardVector,
+		100.f, 0.f, 1.f, 0.f,
+		667.f, 0.f, 1.f, 0.f,
+		4444.f, 0.f, 1.f, 0.f,
+	});
+	EarData.EarPinsR.Add
+	({
+		FVector::BackwardVector,
+		100.f, 0.f, 1.f, 0.f,
+		667.f, 0.f, 1.f, 0.f,
+		4444.f, 0.f, 1.f, 0.f,
+	});
 }
 
 bool UClathrispaceSettings::CanEditChange(const FProperty* InProperty) const
 {
 	return Super::CanEditChange(InProperty);
+}
+
+void UClathrispaceSettings::CopyLeftToRight()
+{
+	EarData.EarPositionR = EarData.EarPositionL;
+	MathTool::ReflectVectorY(EarData.EarPositionR);
+
+	EarData.EarPinsR.SetNum(EarData.EarPinsL.Num());
+	for (int32 Index = 0; Index < EarData.EarPinsL.Num(); ++Index)
+	{
+		FEarPin& LeftPin  = EarData.EarPinsL[Index];
+		FEarPin& RightPin = EarData.EarPinsR[Index];
+
+		RightPin = LeftPin;
+		MathTool::ReflectVectorY(RightPin.Direction);
+	}
+}
+
+void UClathrispaceSettings::CopyRightToLeft()
+{
+	EarData.EarPositionL = EarData.EarPositionR;
+	MathTool::ReflectVectorY(EarData.EarPositionL);
+
+	EarData.EarPinsL.SetNum(EarData.EarPinsR.Num());
+	for (int32 Index = 0; Index < EarData.EarPinsR.Num(); ++Index)
+	{
+		FEarPin& LeftPin = EarData.EarPinsL[Index];
+		FEarPin& RightPin = EarData.EarPinsR[Index];
+
+		LeftPin = RightPin;
+		MathTool::ReflectVectorY(LeftPin.Direction);
+	}
 }
 
 TAudioSpatializationPtr FClathrispaceFactory::CreateNewSpatializationPlugin(FAudioDevice* OwningDevice)

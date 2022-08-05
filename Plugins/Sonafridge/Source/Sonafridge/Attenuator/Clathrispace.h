@@ -8,6 +8,7 @@
 #include "Clathrispace.generated.h"
 
 class FClathrispace;
+class FClathrispacePreviewScene;
 
 
 USTRUCT(BlueprintType)
@@ -59,10 +60,10 @@ struct FClathriEarData
 	GENERATED_BODY();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector EarPositionL = { -6.f, 0.f, 0.f };
+	FVector EarPositionL = { 0.f, -8.f, 0.f };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector EarPositionR = { +6.f, 0.f, 0.f };
+	FVector EarPositionR = { 0.f, +8.f, 0.f };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FEarPin> EarPinsL;
@@ -102,26 +103,39 @@ public:
 	virtual bool CanEditChange(const FProperty* InProperty) const override;
 #endif
 
-	UPROPERTY(GlobalConfig, EditAnywhere, Category = "ClathrispaceSettings")
+	UPROPERTY(GlobalConfig, EditAnywhere, Category = "Clathri Ear (Spatializer)", DisplayName = "Enabled")
 	bool bSpatializationEnabled;
 
-	UPROPERTY(GlobalConfig, EditAnywhere, Category = "ClathrispaceSettings")
+	UPROPERTY(GlobalConfig, EditAnywhere, Category = "Clathri Maze (Occluder)", DisplayName = "Enabled")
 	bool bOcclusionEnabled;
 
-	UPROPERTY(GlobalConfig, EditAnywhere, Category = "ClathrispaceSettings")
+	UPROPERTY(GlobalConfig, EditAnywhere, Category = "Clathrium (Reverb)", DisplayName="Enabled")
 	bool bReverbEnabled;
+
+	FClathriEarData&  GetEarData()  { return EarData; }
+	FClathriMazeData& GetMazeData() { return MazeData; }
+	FClathriumData&   GetRoomData() { return RoomData; }
+
+	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Clathri Ear (Spatializer)")
+	void CopyLeftToRight();
+
+	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Clathri Ear (Spatializer)")
+	void CopyRightToLeft();
 
 protected:
 	friend FClathrispace;
-	UPROPERTY(GlobalConfig, EditAnywhere, Category = "ClathrispaceSettings")
+	friend FClathrispacePreviewScene;
+	UPROPERTY(GlobalConfig, EditAnywhere, Category = "Clathri Ear (Spatializer)")
 	FClathriEarData EarData;
 
 	friend FClathrispace;
-	UPROPERTY(GlobalConfig, EditAnywhere, Category = "ClathrispaceSettings")
+	friend FClathrispacePreviewScene;
+	UPROPERTY(GlobalConfig, EditAnywhere, Category = "Clathri Ear (Spatializer)")
 	FClathriMazeData MazeData;
 
 	friend FClathrispace;
-	UPROPERTY(GlobalConfig, EditAnywhere, Category = "ClathrispaceSettings")
+	friend FClathrispacePreviewScene;
+	UPROPERTY(GlobalConfig, EditAnywhere, Category = "Clathri Ear (Spatializer)")
 	FClathriumData RoomData;
 };
 
@@ -167,7 +181,7 @@ public:
 
 private:
 	bool   bInitialized = false;
-	uint32 NumberOfOutputs;
+	uint32 NumberOfOutputs = 2;
 	uint32 SampleRate = {};
 	uint32 BufferLength = {};
 
