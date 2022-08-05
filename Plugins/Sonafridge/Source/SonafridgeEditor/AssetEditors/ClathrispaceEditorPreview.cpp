@@ -5,12 +5,12 @@
 #include "EditorModeManager.h"
 #include "SonafridgeEditor/AssetEditors/ClathrispacePreviewScene.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
+#include "Sonafridge/Tools/MathTools.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Editor/UnrealEdEngine.h"
 #include "Kismet/GameplayStatics.h"
 #include "UnrealEdGlobals.h"
 #include "Engine/Selection.h"
-#include "Sonafridge/Tools/MathTools.h"
 
 
 FClathrispaceViewportClient::FClathrispaceViewportClient(FEditorModeTools* InModeTools,
@@ -51,8 +51,12 @@ void FClathrispaceViewportClient::ProcessClick(FSceneView& View,
 {
 	SetWidgetMode(FWidget::WM_Rotate);
 
-	const FViewportClick Click(&View, this, Key, Event, HitX, HitY);
-	GUnrealEd->ComponentVisManager.HandleClick(this, HitProxy, Click);
+	if (ClathriEarScene && IsValid(ClathriEarScene->HelmetComp))
+	{
+		TSharedPtr<FHelmetVisualizer> Visualizer = ClathriEarScene->HelmetComp->GetVisualizer();
+		const FViewportClick Click(&View, this, Key, Event, HitX, HitY);
+		Visualizer->ProcessClick(this, HitProxy, Click);
+	}
 }
 
 bool FClathrispaceViewportClient::InputKey(FViewport*  InViewport,
@@ -69,7 +73,11 @@ bool FClathrispaceViewportClient::InputKey(FViewport*  InViewport,
 	                                               AmountDepressed,
 	                                               bGamepad);
 
-	bResult |= GUnrealEd->ComponentVisManager.HandleInputKey(this, InViewport, Key, Event);;
+	if (ClathriEarScene && IsValid(ClathriEarScene->HelmetComp))
+	{
+		TSharedPtr<FHelmetVisualizer> Visualizer = ClathriEarScene->HelmetComp->GetVisualizer();
+		bResult |= Visualizer->HandleInputKey(InViewport, ControllerId, Key, Event, AmountDepressed, bGamepad);
+	}
 
 	return bResult;
 }
@@ -80,11 +88,13 @@ bool FClathrispaceViewportClient::InputWidgetDelta(FViewport*      InViewport,
                                                    FRotator&       Rot,
                                                    FVector&        Scale)
 {
-	if (GUnrealEd->ComponentVisManager.HandleInputDelta(this, InViewport, Drag, Rot, Scale))
+	if (ClathriEarScene && IsValid(ClathriEarScene->HelmetComp))
 	{
-		GUnrealEd->RedrawLevelEditingViewports();
-		Invalidate();
-		return true;
+		if (Widget->IsDragging())
+		{
+			TSharedPtr<FHelmetVisualizer> Visualizer = ClathriEarScene->HelmetComp->GetVisualizer();
+			return Visualizer->HandleInputDelta(this, InViewport, Drag, Rot, Scale);
+		}
 	}
 
 	return false;
@@ -136,15 +146,12 @@ void FClathrispaceViewportClient::Draw(const FSceneView* View, FPrimitiveDrawInt
 {
 	FEditorViewportClient::Draw(View, PDI);
 
-	if (IsValid(ClathriEarScene->HelmetComp))
+	if (ClathriEarScene && IsValid(ClathriEarScene->HelmetComp))
 	{
 		const FName Name = UClathrispaceHelmetComponent::StaticClass()->GetFName();
-		TSharedPtr<FComponentVisualizer> Visualizer = GUnrealEd->FindComponentVisualizer(Name);
 
-		if (Visualizer)
-		{
-			Visualizer->DrawVisualization(ClathriEarScene->HelmetComp, View, PDI);
-		}
+		TSharedPtr<FHelmetVisualizer> Visualizer = ClathriEarScene->HelmetComp->GetVisualizer();
+		Visualizer->Draw(ClathriEarScene->HelmetComp, View, PDI);
 	}
 }
 
@@ -192,7 +199,7 @@ void SClathrispaceViewport::Construct(const FArguments& InArgs)
 
 TSharedPtr<FExtender> SClathrispaceViewport::GetExtenders() const
 {
-	TSharedPtr<FExtender> Result(MakeShareable(new FExtender));
+	TSharedPtr<FExtender> Result(MakeShared<FExtender>());
 	return Result;
 }
 

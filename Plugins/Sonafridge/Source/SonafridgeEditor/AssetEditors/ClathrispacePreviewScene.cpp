@@ -74,9 +74,9 @@ FHelmetVisualizer::FHelmetVisualizer()
 	SphereCake = PrimitiveBakery::BuildSphere(1.5f, 2);
 }
 
-void FHelmetVisualizer::DrawVisualization(const UActorComponent*   Component,
-                                          const FSceneView*        View,
-                                          FPrimitiveDrawInterface* PDI)
+void FHelmetVisualizer::Draw(const UActorComponent*   Component,
+                             const FSceneView*        View,
+                             FPrimitiveDrawInterface* PDI)
 {
 	if (const UClathrispaceHelmetComponent* Helmet = Cast<UClathrispaceHelmetComponent>(Component))
 	{
@@ -131,13 +131,13 @@ void FHelmetVisualizer::DrawVisualization(const UActorComponent*   Component,
 	}
 }
 
-bool FHelmetVisualizer::VisProxyHandleClick(FEditorViewportClient* InViewportClient,
-                                            HComponentVisProxy*    VisProxy,
-                                            const FViewportClick&  Click)
+bool FHelmetVisualizer::ProcessClick(FEditorViewportClient* InViewportClient,
+                                     HHitProxy*             HitProxy,
+                                     const FViewportClick&  Click)
 {
-	if (VisProxy && VisProxy->Component.IsValid())
+	if (HitProxy)
 	{
-		if (const HEarPinProxy* EarPinProxy = static_cast<HEarPinProxy*>(VisProxy))
+		if (const HEarPinProxy* EarPinProxy = static_cast<HEarPinProxy*>(HitProxy))
 		{
 			SelectedPinIndex = EarPinProxy->Index;
 		}
@@ -149,13 +149,8 @@ bool FHelmetVisualizer::VisProxyHandleClick(FEditorViewportClient* InViewportCli
 		return true;
 	}
 
-	return false;
-}
-
-void FHelmetVisualizer::EndEditing()
-{
-	// It does not work when user clicked in empty space. 
 	SelectedPinIndex = INDEX_NONE;
+	return false;
 }
 
 bool FHelmetVisualizer::HandleInputDelta(FEditorViewportClient* ViewportClient,
@@ -202,6 +197,11 @@ bool FHelmetVisualizer::HandleInputDelta(FEditorViewportClient* ViewportClient,
 					EarData.EarPinsL[SelectedPinIndex].Direction = NewDirection;
 				}
 			}
+
+			if (!DeltaRotate.IsNearlyZero())
+			{
+				Settings->MarkPackageDirty();
+			}
 		}
 
 		bHandled = true;
@@ -210,17 +210,36 @@ bool FHelmetVisualizer::HandleInputDelta(FEditorViewportClient* ViewportClient,
 	return bHandled;
 }
 
-bool FHelmetVisualizer::GetWidgetLocation(const FEditorViewportClient* ViewportClient,
-                                          FVector&                     OutLocation) const
+bool FHelmetVisualizer::HandleInputKey(FViewport*  Viewport,
+                                       int32       ControllerId,
+                                       FKey        Key,
+                                       EInputEvent Event,
+                                       float       AmountDepressed,
+                                       bool        bGamepad)
 {
-	UActorComponent* EditedComponent = GetEditedComponent();
-
-	if (IsValid(HelmetComponent) && 
-		EditedComponent == HelmetComponent && 
-		SelectedPinIndex != INDEX_NONE)
+	if (Key == EKeys::Delete)
 	{
-		OutLocation = FVector::ZeroVector;
-		return true;
+		if (IsValid(HelmetComponent) && SelectedPinIndex != INDEX_NONE)
+		{
+			if (UClathrispaceSettings* Settings = HelmetComponent->GetSettings())
+			{
+				TArray<FEarPin>& LeftPins = Settings->GetEarData().EarPinsL;
+				if (LeftPins.Num() > SelectedPinIndex)
+				{
+					LeftPins.RemoveAt(SelectedPinIndex);
+				}
+
+				TArray<FEarPin>& RightPins = Settings->GetEarData().EarPinsR;
+				if (RightPins.Num() > SelectedPinIndex)
+				{
+					RightPins.RemoveAt(SelectedPinIndex);
+				}
+
+				SelectedPinIndex = INDEX_NONE;
+				Settings->MarkPackageDirty();
+				return true;
+			}
+		}
 	}
 
 	return false;

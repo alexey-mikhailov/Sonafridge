@@ -62,23 +62,12 @@ void FSonafridgeEditorModule::StartupModule()
 	auto ClathrispaceActions = MakeShared<FAssetTypeActions_ClathrispaceSettings>();
 	AssetTools.RegisterAssetTypeActions(ClathrispaceActions);
 	AssetActions.Add(ClathrispaceActions);
-
-	const TSharedPtr<FHelmetVisualizer> Visualizer = MakeShared<FHelmetVisualizer>();
-	FName Name = UClathrispaceHelmetComponent::StaticClass()->GetFName();
-	GUnrealEd->RegisterComponentVisualizer(Name, Visualizer);
-	Visualizer->OnRegister();
 }
 
 void FSonafridgeEditorModule::ShutdownModule()
 {
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-	// we call this function before unloading the module.
-
-	FName Name = UClathrispaceHelmetComponent::StaticClass()->GetFName();
-	if (!Name.IsNone())
-	{
-		GUnrealEd->UnregisterComponentVisualizer(Name);
-	}
+	// This function may be called during shutdown to clean up your module.
+	// For modules that support dynamic reloading, we call this function before unloading the module.
 
 	AssetActions.Reset();
 

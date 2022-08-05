@@ -32,6 +32,56 @@ private:
 };
 
 
+struct HEarPinProxy : HComponentVisProxy
+{
+	DECLARE_HIT_PROXY();
+
+	HEarPinProxy(const UActorComponent* InComponent, int32 InTargetIndex)
+	    : HComponentVisProxy(InComponent)
+	    , Index(InTargetIndex)
+	{
+	}
+
+	int32 Index;
+};
+
+
+class FHelmetVisualizer
+{
+public:
+	FHelmetVisualizer();
+
+	void Draw(const UActorComponent*   Component,
+	          const FSceneView*        View,
+	          FPrimitiveDrawInterface* PDI);
+
+	bool ProcessClick(FEditorViewportClient* InViewportClient,
+	                  HHitProxy*             HitProxy,
+	                  const FViewportClick&  Click);
+
+	bool HandleInputDelta(FEditorViewportClient* ViewportClient,
+	                      FViewport*             Viewport,
+	                      FVector&               DeltaTranslate,
+	                      FRotator&              DeltaRotate,
+	                      FVector&               DeltaScale);
+
+	bool HandleInputKey(FViewport*  Viewport,
+	                    int32       ControllerId,
+	                    FKey        Key,
+	                    EInputEvent Event,
+	                    float       AmountDepressed,
+	                    bool        bGamepad);
+
+
+protected:
+	UClathrispaceHelmetComponent* HelmetComponent = nullptr;
+
+private:
+	int32          SelectedPinIndex = INDEX_NONE;
+	FPrimitiveCake SphereCake;
+};
+
+
 UCLASS(Blueprintable)
 class SONAFRIDGEEDITOR_API UClathrispaceHelmetComponent : public UStaticMeshComponent
 {
@@ -40,6 +90,7 @@ class SONAFRIDGEEDITOR_API UClathrispaceHelmetComponent : public UStaticMeshComp
 public:
 	void Init(UClathrispaceSettings* InSettings);
 	UClathrispaceSettings* GetSettings() const { return Settings; }
+	TSharedPtr<FHelmetVisualizer> GetVisualizer() const { return Visualizer;  }
 
 	UMaterialInstanceDynamic* GetOrdinaryEarPinMaterial() const { return OrdinaryEarPinMaterial; }
 	UMaterialInstanceDynamic* GetSelectedEarPinMaterial() const { return SelectedEarPinMaterial; }
@@ -55,53 +106,6 @@ private:
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* SelectedEarPinMaterial = nullptr;
-};
 
-
-struct HEarPinProxy : HComponentVisProxy
-{
-	DECLARE_HIT_PROXY();
-
-	HEarPinProxy(const UActorComponent* InComponent, int32 InTargetIndex)
-	    : HComponentVisProxy(InComponent)
-	    , Index(InTargetIndex)
-	{
-	}
-
-	int32 Index;
-};
-
-
-class FHelmetVisualizer : public FComponentVisualizer
-{
-public:
-	FHelmetVisualizer();
-
-	virtual void DrawVisualization(const UActorComponent*   Component,
-	                               const FSceneView*        View,
-	                               FPrimitiveDrawInterface* PDI) override;
-
-	virtual bool VisProxyHandleClick(FEditorViewportClient* InViewportClient,
-	                                 HComponentVisProxy*    VisProxy,
-	                                 const FViewportClick&  Click) override;
-
-	virtual void EndEditing() override;
-
-	virtual bool HandleInputDelta(FEditorViewportClient* ViewportClient,
-	                              FViewport*             Viewport,
-	                              FVector&               DeltaTranslate,
-	                              FRotator&              DeltaRotate,
-	                              FVector&               DeltaScale) override;
-
-	virtual bool GetWidgetLocation(const FEditorViewportClient* ViewportClient,
-	                               FVector&                     OutLocation) const override;
-
-	virtual UActorComponent* GetEditedComponent() const override { return HelmetComponent; }
-	
-protected:
-	UClathrispaceHelmetComponent* HelmetComponent = nullptr;
-
-private:
-	int32          SelectedPinIndex = INDEX_NONE;
-	FPrimitiveCake SphereCake;
+	TSharedPtr<FHelmetVisualizer> Visualizer = MakeShared<FHelmetVisualizer>();
 };
