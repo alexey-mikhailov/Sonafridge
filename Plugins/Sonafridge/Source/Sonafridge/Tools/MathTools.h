@@ -308,4 +308,23 @@ struct MathLogTool final
 	}
 };
 
+class SONAFRIDGE_API MathTool
+{
+public:
+	static void ReflectVectorX(FVector& InOutVector)
+	{
+		InOutVector.X = -InOutVector.X;
+	}
+
+	static void ReflectVectorY(FVector& InOutVector)
+	{
+		InOutVector.Y = -InOutVector.Y;
+	}
+
+	static void ReflectVectorZ(FVector& InOutVector)
+	{
+		InOutVector.Z = -InOutVector.Z;
+	}
+};
+
 
