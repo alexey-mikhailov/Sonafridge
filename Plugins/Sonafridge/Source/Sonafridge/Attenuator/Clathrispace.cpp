@@ -109,6 +109,8 @@ void UClathrispaceSettings::CopyLeftToRight()
 		RightPin = LeftPin;
 		MathTool::ReflectVectorY(RightPin.Direction);
 	}
+
+	MarkPackageDirty();
 }
 
 void UClathrispaceSettings::CopyRightToLeft()
@@ -125,6 +127,8 @@ void UClathrispaceSettings::CopyRightToLeft()
 		LeftPin = RightPin;
 		MathTool::ReflectVectorY(LeftPin.Direction);
 	}
+
+	MarkPackageDirty();
 }
 
 TAudioSpatializationPtr FClathrispaceFactory::CreateNewSpatializationPlugin(FAudioDevice* OwningDevice)

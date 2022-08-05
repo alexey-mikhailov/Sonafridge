@@ -4,6 +4,7 @@
 
 #include "AssetActions/AssetTypeActions_SonaQ.h"
 #include "AssetActions/AssetTypeActions_Clathrispace.h"
+#include "Widgets/EW_SonaQ.h"
 #include "SonafridgeStyle.h"
 #include "SonafridgeCommands.h"
 #include "Sonafridge/SonafridgeCommon.h"
@@ -13,7 +14,9 @@
 #include "AssetToolsModule.h"
 #include "LevelEditor.h"
 #include "ToolMenus.h"
-#include "Widgets/EW_SonaQ.h"
+#include "AssetEditors/ClathrispacePreviewScene.h"
+#include "Editor/UnrealEdEngine.h"
+#include "UnrealEdGlobals.h"
 
 #define LOCTEXT_NAMESPACE "Sonafridge"
 
@@ -59,12 +62,23 @@ void FSonafridgeEditorModule::StartupModule()
 	auto ClathrispaceActions = MakeShared<FAssetTypeActions_ClathrispaceSettings>();
 	AssetTools.RegisterAssetTypeActions(ClathrispaceActions);
 	AssetActions.Add(ClathrispaceActions);
+
+	const TSharedPtr<FHelmetVisualizer> Visualizer = MakeShared<FHelmetVisualizer>();
+	FName Name = UClathrispaceHelmetComponent::StaticClass()->GetFName();
+	GUnrealEd->RegisterComponentVisualizer(Name, Visualizer);
+	Visualizer->OnRegister();
 }
 
 void FSonafridgeEditorModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
+
+	FName Name = UClathrispaceHelmetComponent::StaticClass()->GetFName();
+	if (!Name.IsNone())
+	{
+		GUnrealEd->UnregisterComponentVisualizer(Name);
+	}
 
 	AssetActions.Reset();
 

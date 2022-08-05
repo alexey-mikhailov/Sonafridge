@@ -224,7 +224,7 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathriEar(const FSpawn
 	return SNew(SDockTab)
 		.Label(LOCTEXT("ClathriEarTabTitle", "ClathriEar"))
 		[
-			SNew(SClathrispaceViewport)
+			SNew(SClathrispaceViewport).Settings(ClathrispacePreset)
 		];
 }
 

@@ -4,7 +4,6 @@
 #include "EW_SonaQFrequencyResponse.h"
 #include "EW_SonaQBandPopup.h"
 #include "Sonafridge/SignalProcessing/SFX_SonaQ.h"
-#include "Sonafridge/SonafridgeCommon.h"
 #include "Components/CanvasPanelSlot.h"
 #include "AudioDevice.h"
 

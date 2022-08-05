@@ -38,10 +38,10 @@ void FAssetTypeActions_ClathrispaceSettings::OpenAssetEditor(const TArray<UObjec
 {
 	for (auto ObjIt = InObjects.CreateConstIterator(); ObjIt; ++ObjIt)
 	{
-		if (auto SonaQPreset = Cast<UClathrispaceSettings>(*ObjIt))
+		if (UClathrispaceSettings* const Preset = Cast<UClathrispaceSettings>(*ObjIt))
 		{
-			TSharedRef<FAssetEditor_Clathrispace> Editor = MakeShared<FAssetEditor_Clathrispace>();
-			Editor->Init(InToolkitHost, SonaQPreset);
+			const TSharedRef<FAssetEditor_Clathrispace> Editor = MakeShared<FAssetEditor_Clathrispace>();
+			Editor->Init(InToolkitHost, Preset);
 		}
 	}
 }

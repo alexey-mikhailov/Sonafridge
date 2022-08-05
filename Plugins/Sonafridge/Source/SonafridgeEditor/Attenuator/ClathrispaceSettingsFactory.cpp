@@ -1,3 +1,5 @@
+// Sonafridge 2022
+
 #include "ClathrispaceSettingsFactory.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
 #include "UObject/ObjectMacros.h"

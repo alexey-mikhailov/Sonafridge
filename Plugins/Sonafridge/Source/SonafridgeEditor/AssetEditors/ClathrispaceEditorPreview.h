@@ -7,17 +7,9 @@
 #include "SEditorViewport.h"
 
 
-class UHeadMeshComponent;
-
-
-class FClathrispacePreviewScene final : public FPreviewScene
-{
-public:
-	explicit FClathrispacePreviewScene(ConstructionValues CVS);
-
-	UStaticMesh*        HeadMesh;
-	UStaticMeshComponent* HeadMeshComp;
-};
+class FClathrispacePreviewScene;
+class SClathrispaceViewport;
+class UClathrispaceSettings;
 
 
 class FClathrispaceViewportClient final : public FEditorViewportClient
@@ -27,18 +19,54 @@ public:
 	                            FPreviewScene*                   InPreviewScene         = nullptr,
 	                            const TWeakPtr<SEditorViewport>& InEditorViewportWidget = nullptr);
 
-	virtual void Activated(FViewport* InViewport, const FWindowActivateEvent& InActivateEvent) override;
-	virtual void ReceivedFocus(FViewport* InViewport) override;
-	virtual bool ShouldOrbitCamera() const override;
+	//
+	// FViewportClient interface
+	// 
+
+	virtual void ProcessClick(FSceneView& View,
+	                          HHitProxy*  HitProxy,
+	                          FKey        Key,
+	                          EInputEvent Event,
+	                          uint32      HitX,
+	                          uint32      HitY) override;
+
+	virtual bool InputKey(FViewport* Viewport,
+	                      int32 ControllerId,
+	                      FKey Key,
+	                      EInputEvent Event,
+	                      float AmountDepressed,
+	                      bool bGamepad) override;
+
+	virtual bool InputWidgetDelta(FViewport*      InViewport,
+	                              EAxisList::Type CurrentAxis,
+	                              FVector&        Drag,
+	                              FRotator&       Rot,
+	                              FVector&        Scale) override;
+
 	virtual void MouseMove(FViewport* Viewport, int32 x, int32 y) override;
 	virtual void CapturedMouseMove(FViewport* InViewport, int32 InMouseX, int32 InMouseY) override;
-
 	virtual void Draw(FViewport* InViewport, FCanvas* Canvas) override;
 
+	virtual FVector GetWidgetLocation() const override;
+
+	//
+	// FViewElementDrawer interface
+	//
+
+	virtual void Draw(const FSceneView* View, FPrimitiveDrawInterface* PDI) override;
+
+	//
+	// FEditorViewportClient interface
+	//
+
 	virtual void Tick(float DeltaSeconds) override;
+	virtual bool ShouldOrbitCamera() const override;
 
 private:
-	FClathrispacePreviewScene* ClathriEarScene;
+	FClathrispacePreviewScene* ClathriEarScene = nullptr;
+
+	friend SClathrispaceViewport;
+	UClathrispaceSettings* Settings = nullptr;
 };
 
 
@@ -46,6 +74,9 @@ class SClathrispaceViewport : public SEditorViewport, public ICommonEditorViewpo
 {
 public:
 	SLATE_BEGIN_ARGS(SClathrispaceViewport) {}
+
+		SLATE_ATTRIBUTE(UClathrispaceSettings*, Settings)
+
 	SLATE_END_ARGS()
 
 	SClathrispaceViewport();
@@ -68,8 +99,8 @@ protected:
 	virtual TSharedRef<FEditorViewportClient> MakeEditorViewportClient() override;
 
 private:
-	TSharedPtr<FEditorViewportClient> LevelViewportClient;
+	TSharedPtr<FClathrispaceViewportClient> ViewportClient;
+	TSharedPtr<FClathrispacePreviewScene>   PreviewScene;
 
-	/** The scene for this viewport. */
-	TSharedPtr<FClathrispacePreviewScene> PreviewScene;
+	TAttribute<UClathrispaceSettings*> Settings;
 };

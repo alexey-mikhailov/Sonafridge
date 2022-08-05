@@ -2,36 +2,16 @@
 
 #include "ClathrispaceEditorPreview.h"
 
+#include "EditorModeManager.h"
+#include "SonafridgeEditor/AssetEditors/ClathrispacePreviewScene.h"
+#include "Sonafridge/Attenuator/Clathrispace.h"
 #include "Components/DirectionalLightComponent.h"
-#include "GameFramework/WorldSettings.h"
+#include "Editor/UnrealEdEngine.h"
+#include "Kismet/GameplayStatics.h"
+#include "UnrealEdGlobals.h"
+#include "Engine/Selection.h"
+#include "Sonafridge/Tools/MathTools.h"
 
-FClathrispacePreviewScene::FClathrispacePreviewScene(ConstructionValues CVS)
-{
-	// World setting
-	GetWorld()->GetWorldSettings()->NotifyBeginPlay();
-	GetWorld()->GetWorldSettings()->NotifyMatchStarted();
-	GetWorld()->GetWorldSettings()->SetActorHiddenInGame(false);
-	GetWorld()->bBegunPlay = true;
-
-	// Set light options 
-	DirectionalLight->SetRelativeLocation(FVector(1024.f, 1024.f, 2048.f));
-	DirectionalLight->SetRelativeRotation(FRotator{ -45.f, -135.f, 0.f });
-	DirectionalLight->SetRelativeScale3D(FVector(15.f));
-	DirectionalLight->LightSourceAngle = 180.f;
-
-	SetLightBrightness(4.f);
-	DirectionalLight->InvalidateLightingCache();
-	DirectionalLight->RecreateRenderState_Concurrent();
-
-	// Test head
-	HeadMesh = LoadObject<UStaticMesh>(NULL, TEXT("/Sonafridge/Meshes/TestHead/TestHalfHead.TestHalfHead"), NULL, LOAD_None, NULL);
-	HeadMeshComp = NewObject<UStaticMeshComponent>();
-	HeadMeshComp->SetStaticMesh(HeadMesh);
-	AddComponent(HeadMeshComp, FTransform::Identity);
-
-	// Do not place it before AddComponent because it won't affect on. 
-	HeadMeshComp->SetRelativeScale3D({ -1.f , 1.f, 1.f });
-}
 
 FClathrispaceViewportClient::FClathrispaceViewportClient(FEditorModeTools* InModeTools,
                                                          FPreviewScene*    InPreviewScene,
@@ -43,7 +23,7 @@ FClathrispaceViewportClient::FClathrispaceViewportClient(FEditorModeTools* InMod
 	ClathriEarScene = static_cast<FClathrispacePreviewScene*>(InPreviewScene);
 
 	SetViewLocation(FVector::ZeroVector);
-	SetViewRotation(FRotator(-45.0f, -135.0f, 0.0f));
+	SetViewRotation(FRotator(-45.0f, 135.0f, 0.0f));
 	SetViewLocationForOrbiting(FVector::ZeroVector, 45.f);
 	bSetListenerPosition = false;
 	EngineShowFlags.DisableAdvancedFeatures();
@@ -60,25 +40,54 @@ FClathrispaceViewportClient::FClathrispaceViewportClient(FEditorModeTools* InMod
 	DrawHelper.GridColorMajor = FColor(72, 72, 72);
 	DrawHelper.GridColorMinor = FColor(64, 64, 64);
 	DrawHelper.PerspectiveGridSize = HALF_WORLD_MAX1;
-
-	// Don't want to display the widget in this viewport
-	Widget->SetDefaultVisibility(false);
 }
 
-void FClathrispaceViewportClient::Activated(FViewport*                  InViewport,
-                                            const FWindowActivateEvent& InActivateEvent)
+void FClathrispaceViewportClient::ProcessClick(FSceneView& View,
+                                               HHitProxy*  HitProxy,
+                                               FKey        Key,
+                                               EInputEvent Event,
+                                               uint32      HitX,
+                                               uint32      HitY)
 {
-	FEditorViewportClient::Activated(Viewport, InActivateEvent);
+	SetWidgetMode(FWidget::WM_Rotate);
+
+	const FViewportClick Click(&View, this, Key, Event, HitX, HitY);
+	GUnrealEd->ComponentVisManager.HandleClick(this, HitProxy, Click);
 }
 
-void FClathrispaceViewportClient::ReceivedFocus(FViewport* InViewport)
+bool FClathrispaceViewportClient::InputKey(FViewport*  InViewport,
+                                           int32       ControllerId,
+                                           FKey        Key,
+                                           EInputEvent Event,
+                                           float       AmountDepressed,
+                                           bool        bGamepad)
 {
-	FEditorViewportClient::ReceivedFocus(InViewport);
+	bool bResult = FEditorViewportClient::InputKey(InViewport,
+	                                               ControllerId,
+	                                               Key,
+	                                               Event,
+	                                               AmountDepressed,
+	                                               bGamepad);
+
+	bResult |= GUnrealEd->ComponentVisManager.HandleInputKey(this, InViewport, Key, Event);;
+
+	return bResult;
 }
 
-bool FClathrispaceViewportClient::ShouldOrbitCamera() const
+bool FClathrispaceViewportClient::InputWidgetDelta(FViewport*      InViewport,
+                                                   EAxisList::Type CurrentAxis,
+                                                   FVector&        Drag,
+                                                   FRotator&       Rot,
+                                                   FVector&        Scale)
 {
-	return true;
+	if (GUnrealEd->ComponentVisManager.HandleInputDelta(this, InViewport, Drag, Rot, Scale))
+	{
+		GUnrealEd->RedrawLevelEditingViewports();
+		Invalidate();
+		return true;
+	}
+
+	return false;
 }
 
 void FClathrispaceViewportClient::MouseMove(FViewport* InViewport, int32 x, int32 y)
@@ -92,19 +101,51 @@ void FClathrispaceViewportClient::CapturedMouseMove(FViewport* InViewport,
 {
 	FEditorViewportClient::CapturedMouseMove(InViewport, InMouseX, InMouseY);
 
-	float ViewYaw = GetViewRotation().Yaw;
-	ViewYaw = FMath::Frac(ViewYaw / 360.f);
+	FVector ViewLocation = GetViewLocation();
 
-	if (ClathriEarScene && IsValid(ClathriEarScene->HeadMeshComp))
+	if (ClathriEarScene && IsValid(ClathriEarScene->HelmetComp))
 	{
-		float Scale = ViewYaw < 0.f || ViewYaw >= .5f ? -1.f : 1.f;
-		ClathriEarScene->HeadMeshComp->SetRelativeScale3D({ Scale, 1.f, 1.f });
+		EVisibleSide VisibleSide = ViewLocation.Y < 0.f
+			                           ? EVisibleSide::Left
+			                           : EVisibleSide::Right;
+
+		FVector Location = VisibleSide == EVisibleSide::Left
+			                   ? Settings->GetEarData().EarPositionL
+			                   : Settings->GetEarData().EarPositionR;
+
+		MathTool::ReflectVectorY(Location);
+
+		float Scale = VisibleSide == EVisibleSide::Left ? -1.f : 1.f;
+		ClathriEarScene->HelmetComp->SetRelativeLocation(Location);
+		ClathriEarScene->HelmetComp->SetRelativeScale3D({ 1.f, Scale, 1.f });
+		ClathriEarScene->HelmetComp->VisibleSide = VisibleSide;
 	}
 }
 
 void FClathrispaceViewportClient::Draw(FViewport* InViewport, FCanvas* Canvas)
 {
 	FEditorViewportClient::Draw(InViewport, Canvas);
+}
+
+FVector FClathrispaceViewportClient::GetWidgetLocation() const
+{
+	return FVector::ZeroVector;
+}
+
+void FClathrispaceViewportClient::Draw(const FSceneView* View, FPrimitiveDrawInterface* PDI)
+{
+	FEditorViewportClient::Draw(View, PDI);
+
+	if (IsValid(ClathriEarScene->HelmetComp))
+	{
+		const FName Name = UClathrispaceHelmetComponent::StaticClass()->GetFName();
+		TSharedPtr<FComponentVisualizer> Visualizer = GUnrealEd->FindComponentVisualizer(Name);
+
+		if (Visualizer)
+		{
+			Visualizer->DrawVisualization(ClathriEarScene->HelmetComp, View, PDI);
+		}
+	}
 }
 
 void FClathrispaceViewportClient::Tick(float DeltaSeconds)
@@ -118,7 +159,12 @@ void FClathrispaceViewportClient::Tick(float DeltaSeconds)
 	}
 }
 
-TSharedRef<class SEditorViewport> SClathrispaceViewport::GetViewportWidget()
+bool FClathrispaceViewportClient::ShouldOrbitCamera() const
+{
+	return true;
+}
+
+TSharedRef<SEditorViewport> SClathrispaceViewport::GetViewportWidget()
 {
 	return SharedThis(this);
 }
@@ -131,6 +177,17 @@ SClathrispaceViewport::SClathrispaceViewport()
 void SClathrispaceViewport::Construct(const FArguments& InArgs)
 {
 	SEditorViewport::Construct({});
+	Settings = InArgs._Settings;
+	
+	if (UClathrispaceSettings* SettingsValue = Settings.Get())
+	{
+		PreviewScene->SetSettings(SettingsValue);
+		ViewportClient->Settings = SettingsValue;
+
+		FVector Location = SettingsValue->GetEarData().EarPositionL;
+		MathTool::ReflectVectorY(Location);
+		PreviewScene->HelmetComp->SetRelativeLocation(Location);
+	}
 }
 
 TSharedPtr<FExtender> SClathrispaceViewport::GetExtenders() const
@@ -145,12 +202,18 @@ void SClathrispaceViewport::OnFloatingButtonClicked()
 
 TSharedRef<FEditorViewportClient> SClathrispaceViewport::MakeEditorViewportClient()
 {
-	LevelViewportClient = MakeShareable(new FClathrispaceViewportClient(nullptr, PreviewScene.Get(), SharedThis(this)));
-	LevelViewportClient->bSetListenerPosition = false;
-	LevelViewportClient->ViewportType = LVT_Perspective;
-	LevelViewportClient->SetRealtime(true);
+	ViewportClient = MakeShared<FClathrispaceViewportClient>
+	(
+		nullptr,
+		PreviewScene.Get(),
+		SharedThis(this)
+	);
 
-	return LevelViewportClient.ToSharedRef();
+	ViewportClient->bSetListenerPosition = false;
+	ViewportClient->ViewportType         = LVT_Perspective;
+	ViewportClient->SetRealtime(true);
+
+	return ViewportClient.ToSharedRef();
 }
 
 
