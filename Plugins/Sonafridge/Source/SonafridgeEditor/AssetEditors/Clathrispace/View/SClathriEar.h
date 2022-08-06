@@ -35,6 +35,7 @@ protected:
 	//
 
 	virtual TSharedRef<FEditorViewportClient> MakeEditorViewportClient() override;
+	virtual TSharedPtr<SWidget> MakeViewportToolbar() override;
 
 private:
 	TSharedPtr<FClathrispaceViewportClient> ViewportClient;
@@ -42,3 +43,4 @@ private:
 
 	TAttribute<UClathrispaceSettings*> Settings;
 };
+

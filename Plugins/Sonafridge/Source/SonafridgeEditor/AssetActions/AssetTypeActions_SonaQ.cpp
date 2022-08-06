@@ -3,7 +3,7 @@
 
 #include "AssetTypeActions_SonaQ.h"
 #include "Sonafridge/SignalProcessing/SFX_SonaQ.h"
-#include "SonafridgeEditor/AssetEditors/AssetEditor_SonaQ.h"
+#include "SonafridgeEditor/AssetEditors/SonaQ/AssetEditor_SonaQ.h"
 
 FAssetTypeActions_SonaQ::FAssetTypeActions_SonaQ()
 {

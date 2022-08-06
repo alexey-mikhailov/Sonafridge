@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "EditorUtilityWidget.h"
-#include "Model/VM_SonaQ.h"
+#include "SonafridgeEditor/AssetEditors/SonaQ/ViewModel/VM_SonaQ.h"
 #include "EW_SonaQ.generated.h"
 
 class USFXPreset_SonaQ;

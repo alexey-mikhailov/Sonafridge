@@ -3,8 +3,8 @@
 
 #include "AssetEditor_Clathrispace.h"
 
-#include "SonafridgeEditor/Widgets/ClathriEar/W_ClathriQ.h"
-#include "SonafridgeEditor/Widgets/ClathriEar/SClathriEar.h"
+#include "SonafridgeEditor/AssetEditors/Clathrispace/View/W_ClathriQ.h"
+#include "SonafridgeEditor/AssetEditors/Clathrispace/View/SClathriEar.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
 #include "WidgetBlueprint.h"
 

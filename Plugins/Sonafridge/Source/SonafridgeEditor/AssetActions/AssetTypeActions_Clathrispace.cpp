@@ -2,7 +2,7 @@
 
 #include "AssetTypeActions_Clathrispace.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
-#include "SonafridgeEditor/AssetEditors/AssetEditor_Clathrispace.h"
+#include "SonafridgeEditor/AssetEditors/Clathrispace/AssetEditor_Clathrispace.h"
 
 #define LOCTEXT_NAMESPACE "Sonafridge"
 

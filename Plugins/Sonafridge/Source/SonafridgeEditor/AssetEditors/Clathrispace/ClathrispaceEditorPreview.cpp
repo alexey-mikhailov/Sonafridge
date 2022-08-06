@@ -3,7 +3,7 @@
 #include "ClathrispaceEditorPreview.h"
 
 #include "EditorModeManager.h"
-#include "SonafridgeEditor/AssetEditors/ClathrispacePreviewScene.h"
+#include "SonafridgeEditor/AssetEditors/Clathrispace/ClathrispacePreviewScene.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
 #include "Sonafridge/Tools/MathTools.h"
 #include "Components/DirectionalLightComponent.h"

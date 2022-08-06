@@ -9,7 +9,7 @@ Goals
 Concept
 -------
 
-- Place View Model layer inside this folder (`Widgets/Model`). 
+- Place View Model layer inside this folder (`../ViewModel`).
 - Suppose View from `Widget` folder is named as you want to. 
 - Create View Model class, name it like `FVM_...(PartOfNameOfViewClass)` or `FViewModel_...(PartOfNameOfViewClass)`. 
 - Names of View and View Model should be visually coupled (`UEditorWidget_...` <-> `FViewModel_...`, or `UEW_...` <-> `FVM_...` for instance). 

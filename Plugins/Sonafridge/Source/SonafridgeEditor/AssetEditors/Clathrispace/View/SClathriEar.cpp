@@ -4,8 +4,8 @@
 
 #include "Sonafridge/Attenuator/Clathrispace.h"
 #include "Sonafridge/Tools/MathTools.h"
-#include "SonafridgeEditor/AssetEditors/ClathrispaceEditorPreview.h"
-#include "SonafridgeEditor/AssetEditors/ClathrispacePreviewScene.h"
+#include "SonafridgeEditor/AssetEditors/Clathrispace/ClathrispaceEditorPreview.h"
+#include "SonafridgeEditor/AssetEditors/Clathrispace/ClathrispacePreviewScene.h"
 
 
 TSharedRef<SEditorViewport> SClathriEar::GetViewportWidget()
@@ -60,5 +60,8 @@ TSharedRef<FEditorViewportClient> SClathriEar::MakeEditorViewportClient()
 	return ViewportClient.ToSharedRef();
 }
 
-
+TSharedPtr<SWidget> SClathriEar::MakeViewportToolbar()
+{
+	return SNew(SCommonEditorViewportToolbarBase, SharedThis(this)).Cursor(EMouseCursor::Default);
+}
 

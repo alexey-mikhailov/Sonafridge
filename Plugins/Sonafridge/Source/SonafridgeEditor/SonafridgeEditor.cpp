@@ -4,7 +4,7 @@
 
 #include "AssetActions/AssetTypeActions_SonaQ.h"
 #include "AssetActions/AssetTypeActions_Clathrispace.h"
-#include "Widgets/SonaQ/EW_SonaQ.h"
+#include "SonafridgeEditor/AssetEditors/SonaQ/View/EW_SonaQ.h"
 #include "SonafridgeStyle.h"
 #include "SonafridgeCommands.h"
 #include "Sonafridge/SonafridgeCommon.h"

@@ -4,7 +4,7 @@
 #include "AssetEditor_SonaQ.h"
 
 #include "Sonafridge/SignalProcessing/SFX_SonaQ.h"
-#include "SonafridgeEditor/Widgets/SonaQ/EW_SonaQ.h"
+#include "SonafridgeEditor/AssetEditors/SonaQ/View/EW_SonaQ.h"
 #include "WidgetBlueprint.h"
 
 #define LOCTEXT_NAMESPACE "FAssetEditor_SonaQ"

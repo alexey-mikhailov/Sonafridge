@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Model/VM_SonaQBand.h"
+#include "SonafridgeEditor/AssetEditors/SonaQ/ViewModel/VM_SonaQBand.h"
 #include "EditorUtilityWidget.h"
 #include "CoreMinimal.h"
 #include "EW_SonaQBandPopup.generated.h"
