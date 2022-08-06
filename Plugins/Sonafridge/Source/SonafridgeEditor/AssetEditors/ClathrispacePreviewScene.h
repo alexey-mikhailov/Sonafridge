@@ -2,8 +2,8 @@
 
 #pragma once
 
+#include "SonafridgeEditor/Tools/PrimitiveBakery.h"
 #include "ComponentVisualizer.h"
-#include "Tools/PrimitiveBakery.h"
 #include "ClathrispacePreviewScene.generated.h"
 
 class UClathrispaceSettings;

@@ -3,8 +3,8 @@
 
 #include "AssetEditor_Clathrispace.h"
 
-#include "ClathrispaceEditorPreview.h"
 #include "SonafridgeEditor/Widgets/ClathriEar/W_ClathriQ.h"
+#include "SonafridgeEditor/Widgets/ClathriEar/SClathriEar.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
 #include "WidgetBlueprint.h"
 
@@ -223,10 +223,10 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathriEar(const FSpawn
 	check(Args.GetTabId() == ClathriEarTabId);
 
 	return SNew(SDockTab)
-		.Label(LOCTEXT("ClathriEarTabTitle", "ClathriEar"))
-		[
-			SNew(SClathriEar).Settings(ClathrispacePreset)
-		];
+		   .Label(LOCTEXT("ClathriEarTabTitle", "ClathriEar"))
+		   [
+	           SNew(SClathriEar).Settings(ClathrispacePreset)
+		   ];
 }
 
 #undef LOCTEXT_NAMESPACE

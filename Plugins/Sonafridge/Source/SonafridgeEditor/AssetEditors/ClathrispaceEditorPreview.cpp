@@ -9,7 +9,6 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Editor/UnrealEdEngine.h"
 #include "Kismet/GameplayStatics.h"
-#include "UnrealEdGlobals.h"
 #include "Engine/Selection.h"
 
 
@@ -170,57 +169,4 @@ bool FClathrispaceViewportClient::ShouldOrbitCamera() const
 {
 	return true;
 }
-
-TSharedRef<SEditorViewport> SClathriEar::GetViewportWidget()
-{
-	return SharedThis(this);
-}
-
-SClathriEar::SClathriEar()
-	: PreviewScene(MakeShared<FClathrispacePreviewScene>(FPreviewScene::ConstructionValues()))
-{
-}
-
-void SClathriEar::Construct(const FArguments& InArgs)
-{
-	SEditorViewport::Construct({});
-	Settings = InArgs._Settings;
-	
-	if (UClathrispaceSettings* SettingsValue = Settings.Get())
-	{
-		PreviewScene->SetSettings(SettingsValue);
-		ViewportClient->Settings = SettingsValue;
-
-		FVector Location = SettingsValue->GetEarData().EarPositionL;
-		MathTool::ReflectVectorY(Location);
-		PreviewScene->HelmetComp->SetRelativeLocation(Location);
-	}
-}
-
-TSharedPtr<FExtender> SClathriEar::GetExtenders() const
-{
-	TSharedPtr<FExtender> Result(MakeShared<FExtender>());
-	return Result;
-}
-
-void SClathriEar::OnFloatingButtonClicked()
-{
-}
-
-TSharedRef<FEditorViewportClient> SClathriEar::MakeEditorViewportClient()
-{
-	ViewportClient = MakeShared<FClathrispaceViewportClient>
-	(
-		nullptr,
-		PreviewScene.Get(),
-		SharedThis(this)
-	);
-
-	ViewportClient->bSetListenerPosition = false;
-	ViewportClient->ViewportType         = LVT_Perspective;
-	ViewportClient->SetRealtime(true);
-
-	return ViewportClient.ToSharedRef();
-}
-
 

@@ -4,13 +4,13 @@
 
 #include "ClathrispaceEditorPreview.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
+#include "SonafridgeEditor/Tools/PrimitiveBakery.h"
 #include "Sonafridge/Tools/HSRColor.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/LineBatchComponent.h"
 #include "GameFramework/WorldSettings.h"
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Materials/MaterialInstanceDynamic.h"
-#include "Tools/PrimitiveBakery.h"
 
 IMPLEMENT_HIT_PROXY(HEarPinProxy, HComponentVisProxy);
 
