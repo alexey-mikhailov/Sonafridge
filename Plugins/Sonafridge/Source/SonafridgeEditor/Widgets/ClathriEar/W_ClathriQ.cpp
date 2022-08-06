@@ -1,13 +1,13 @@
 // Sonafridge 2022
 
-#include "W_Clathrispace.h"
+#include "W_ClathriQ.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
 #include "Sonafridge/SonafridgeCommon.h"
 #include "Components/CanvasPanelSlot.h"
 #include "AudioDevice.h"
 #include "Components/CanvasPanel.h"
 
-void UW_Clathrispace::Init(UClathrispaceSettings* InSettings)
+void UW_ClathriQ::Init(UClathrispaceSettings* InSettings)
 {
 	if (IsValid(InSettings))
 	{
@@ -15,11 +15,11 @@ void UW_Clathrispace::Init(UClathrispaceSettings* InSettings)
 	}
 	else
 	{
-		UE_LOG(LogSonafridgeEditor, Error, TEXT("UW_Clathrispace::Init: InSettings argument is not valid. "));
+		UE_LOG(LogSonafridgeEditor, Error, TEXT("UW_ClathriQ::Init: InSettings argument is not valid. "));
 	}
 }
 
-void UW_Clathrispace::NativeConstruct()
+void UW_ClathriQ::NativeConstruct()
 {
 	Super::NativeConstruct();
 
@@ -42,11 +42,11 @@ void UW_Clathrispace::NativeConstruct()
 	}
 }
 
-void UW_Clathrispace::OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize)
+void UW_ClathriQ::OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize)
 {
 }
 
-int32 UW_Clathrispace::NativePaint(const FPaintArgs&        Args,
+int32 UW_ClathriQ::NativePaint(const FPaintArgs&        Args,
                                    const FGeometry&         AllottedGeometry,
                                    const FSlateRect&        MyCullingRect,
                                    FSlateWindowElementList& OutDrawElements,
@@ -62,7 +62,7 @@ int32 UW_Clathrispace::NativePaint(const FPaintArgs&        Args,
 	                                  InWidgetStyle,
 	                                  bParentEnabled);
 
-	UW_Clathrispace* MutableThis = const_cast<UW_Clathrispace*>(this);
+	UW_ClathriQ* MutableThis = const_cast<UW_ClathriQ*>(this);
 	FVector2D  Size = AllottedGeometry.GetLocalSize();
 
 	if (Size != LastSize)

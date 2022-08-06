@@ -1,7 +1,7 @@
 // Sonafridge 2022
 
 #include "ContentBrowserMenuExtender.h"
-#include "Widgets/EW_SonaQ.h"
+#include "Widgets/SonaQ/EW_SonaQ.h"
 #include "Sonafridge/SignalProcessing/SFX_SonaQ.h"
 #include "WidgetBlueprint.h"
 #include "ContentBrowserModule.h"

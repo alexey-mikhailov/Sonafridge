@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 
-class UW_Clathrispace;
+class UW_ClathriQ;
 class UClathrispaceSettings;
 
 /**
@@ -38,7 +38,7 @@ private:
 
 	// UObjects that referenced by this asset editor. 
 	UClathrispaceSettings* ClathrispacePreset = nullptr;
-	UW_Clathrispace*       ClathrispaceWidget = nullptr;
+	UW_ClathriQ*           ClathrispaceWidget = nullptr;
 
 	TSharedPtr<IDetailsView> DetailsView;
 

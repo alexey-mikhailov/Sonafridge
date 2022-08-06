@@ -4,7 +4,7 @@
 
 #include "AssetActions/AssetTypeActions_SonaQ.h"
 #include "AssetActions/AssetTypeActions_Clathrispace.h"
-#include "Widgets/EW_SonaQ.h"
+#include "Widgets/SonaQ/EW_SonaQ.h"
 #include "SonafridgeStyle.h"
 #include "SonafridgeCommands.h"
 #include "Sonafridge/SonafridgeCommon.h"
@@ -14,9 +14,6 @@
 #include "AssetToolsModule.h"
 #include "LevelEditor.h"
 #include "ToolMenus.h"
-#include "AssetEditors/ClathrispacePreviewScene.h"
-#include "Editor/UnrealEdEngine.h"
-#include "UnrealEdGlobals.h"
 
 #define LOCTEXT_NAMESPACE "Sonafridge"
 

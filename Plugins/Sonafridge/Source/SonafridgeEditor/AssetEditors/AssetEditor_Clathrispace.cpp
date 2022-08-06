@@ -4,7 +4,7 @@
 #include "AssetEditor_Clathrispace.h"
 
 #include "ClathrispaceEditorPreview.h"
-#include "SonafridgeEditor/Widgets/W_Clathrispace.h"
+#include "SonafridgeEditor/Widgets/ClathriEar/W_ClathriQ.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
 #include "WidgetBlueprint.h"
 
@@ -184,7 +184,7 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathrispaceWidget(cons
 	if (IsValid(Blueprint))
 	{
 		// Transient UWidget, which SWidget will be held by shared pointer. 
-		ClathrispaceWidget = CreateWidget<UW_Clathrispace>
+		ClathrispaceWidget = CreateWidget<UW_ClathriQ>
 		(
 			World, static_cast<UClass*>(Blueprint->GeneratedClass)
 		);
@@ -217,6 +217,7 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathrispaceWidget(cons
 		];
 }
 
+// TODO: Rename it, because tab is named as ClathriEar, but widget named as Clathrispace. 
 TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathriEar(const FSpawnTabArgs& Args)
 {
 	check(Args.GetTabId() == ClathriEarTabId);
@@ -224,7 +225,7 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathriEar(const FSpawn
 	return SNew(SDockTab)
 		.Label(LOCTEXT("ClathriEarTabTitle", "ClathriEar"))
 		[
-			SNew(SClathrispaceViewport).Settings(ClathrispacePreset)
+			SNew(SClathriEar).Settings(ClathrispacePreset)
 		];
 }
 

@@ -4,14 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "EditorUtilityWidget.h"
-#include "Model/VM_SonaQ.h"
-#include "W_Clathrispace.generated.h"
+#include "W_ClathriQ.generated.h"
 
 class UCanvasPanel;
 class UClathrispaceSettings;
 
 UCLASS()
-class SONAFRIDGEEDITOR_API UW_Clathrispace : public UUserWidget
+class SONAFRIDGEEDITOR_API UW_ClathriQ : public UUserWidget
 {
 	GENERATED_BODY()
 

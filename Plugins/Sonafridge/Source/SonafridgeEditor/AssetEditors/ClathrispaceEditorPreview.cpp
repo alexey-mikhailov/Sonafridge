@@ -171,17 +171,17 @@ bool FClathrispaceViewportClient::ShouldOrbitCamera() const
 	return true;
 }
 
-TSharedRef<SEditorViewport> SClathrispaceViewport::GetViewportWidget()
+TSharedRef<SEditorViewport> SClathriEar::GetViewportWidget()
 {
 	return SharedThis(this);
 }
 
-SClathrispaceViewport::SClathrispaceViewport()
+SClathriEar::SClathriEar()
 	: PreviewScene(MakeShared<FClathrispacePreviewScene>(FPreviewScene::ConstructionValues()))
 {
 }
 
-void SClathrispaceViewport::Construct(const FArguments& InArgs)
+void SClathriEar::Construct(const FArguments& InArgs)
 {
 	SEditorViewport::Construct({});
 	Settings = InArgs._Settings;
@@ -197,17 +197,17 @@ void SClathrispaceViewport::Construct(const FArguments& InArgs)
 	}
 }
 
-TSharedPtr<FExtender> SClathrispaceViewport::GetExtenders() const
+TSharedPtr<FExtender> SClathriEar::GetExtenders() const
 {
 	TSharedPtr<FExtender> Result(MakeShared<FExtender>());
 	return Result;
 }
 
-void SClathrispaceViewport::OnFloatingButtonClicked()
+void SClathriEar::OnFloatingButtonClicked()
 {
 }
 
-TSharedRef<FEditorViewportClient> SClathrispaceViewport::MakeEditorViewportClient()
+TSharedRef<FEditorViewportClient> SClathriEar::MakeEditorViewportClient()
 {
 	ViewportClient = MakeShared<FClathrispaceViewportClient>
 	(

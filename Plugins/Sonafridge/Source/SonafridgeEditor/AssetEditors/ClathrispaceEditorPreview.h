@@ -8,7 +8,7 @@
 
 
 class FClathrispacePreviewScene;
-class SClathrispaceViewport;
+class SClathriEar;
 class UClathrispaceSettings;
 
 
@@ -65,21 +65,21 @@ public:
 private:
 	FClathrispacePreviewScene* ClathriEarScene = nullptr;
 
-	friend SClathrispaceViewport;
+	friend SClathriEar;
 	UClathrispaceSettings* Settings = nullptr;
 };
 
 
-class SClathrispaceViewport : public SEditorViewport, public ICommonEditorViewportToolbarInfoProvider
+class SClathriEar : public SEditorViewport, public ICommonEditorViewportToolbarInfoProvider
 {
 public:
-	SLATE_BEGIN_ARGS(SClathrispaceViewport) {}
+	SLATE_BEGIN_ARGS(SClathriEar) {}
 
 		SLATE_ATTRIBUTE(UClathrispaceSettings*, Settings)
 
 	SLATE_END_ARGS()
 
-	SClathrispaceViewport();
+	SClathriEar();
 
 	void Construct(const FArguments& InArgs);
 
