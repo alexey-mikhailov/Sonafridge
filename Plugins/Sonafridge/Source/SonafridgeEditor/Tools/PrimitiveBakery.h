@@ -21,5 +21,6 @@ public:
 	static void DrawSphere(FPrimitiveDrawInterface*  PDI,
 	                       const FPrimitiveCake&     Cake,
 	                       const FMatrix&            Matrix,
-	                       const UMaterialInterface* Material);
+	                       const UMaterialInterface* Material,
+	                       const FHitProxyId         HitProxyId);
 };

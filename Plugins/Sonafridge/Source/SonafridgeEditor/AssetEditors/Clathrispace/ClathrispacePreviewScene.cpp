@@ -100,9 +100,14 @@ void FHelmetVisualizer::Draw(const UActorComponent*   Component,
 															   ? Helmet->GetSelectedEarPinMaterial()
 															   : Helmet->GetOrdinaryEarPinMaterial();
 
-					PDI->SetHitProxy(new HEarPinProxy(Helmet, Index));
+					HEarPinProxy* DanglingProxy = new HEarPinProxy(Helmet, Index);
+					PDI->SetHitProxy(DanglingProxy);
 					PDI->DrawLine(Origin, EndPos, HSR(.62f, .667f, .5f), 0);
-					PrimitiveBakery::DrawSphere(PDI, SphereCake, FTranslationMatrix(EndPos), Material);
+					PrimitiveBakery::DrawSphere(PDI,
+					                            SphereCake,
+					                            FTranslationMatrix(EndPos),
+					                            Material,
+					                            DanglingProxy->Id);
 					PDI->SetHitProxy(nullptr);
 				}
 			}
@@ -119,9 +124,14 @@ void FHelmetVisualizer::Draw(const UActorComponent*   Component,
 						? Helmet->GetSelectedEarPinMaterial()
 						: Helmet->GetOrdinaryEarPinMaterial();
 
-					PDI->SetHitProxy(new HEarPinProxy(Helmet, Index));
+					HEarPinProxy* DanglingProxy = new HEarPinProxy(Helmet, Index);
+					PDI->SetHitProxy(DanglingProxy);
 					PDI->DrawLine(Origin, EndPos, HSR(.62f, .667f, .5f), 0);
-					PrimitiveBakery::DrawSphere(PDI, SphereCake, FTranslationMatrix(EndPos), Material);
+					PrimitiveBakery::DrawSphere(PDI,
+					                            SphereCake,
+					                            FTranslationMatrix(EndPos),
+					                            Material,
+					                            DanglingProxy->Id);
 					PDI->SetHitProxy(nullptr);
 				}
 			}

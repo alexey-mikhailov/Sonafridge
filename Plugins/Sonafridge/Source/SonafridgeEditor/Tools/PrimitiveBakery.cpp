@@ -81,7 +81,8 @@ FPrimitiveCake PrimitiveBakery::BuildSphere(float Radius,
 void PrimitiveBakery::DrawSphere(FPrimitiveDrawInterface*  PDI,
                                  const FPrimitiveCake&     Cake,
                                  const FMatrix&            Matrix,
-                                 const UMaterialInterface* Material)
+                                 const UMaterialInterface* Material,
+                                 const FHitProxyId         HitProxyId)
 {
 	if (!PDI)
 	{
@@ -94,5 +95,5 @@ void PrimitiveBakery::DrawSphere(FPrimitiveDrawInterface*  PDI,
 	FDynamicMeshBuilder MeshBuilder(FeatureLevel);
 	MeshBuilder.AddVertices(Cake.Vertices);
 	MeshBuilder.AddTriangles(Cake.Indices);
-	MeshBuilder.Draw(PDI, Matrix, Material->GetRenderProxy(), SDPG_Foreground);
+	MeshBuilder.Draw(PDI, Matrix, Material->GetRenderProxy(), SDPG_Foreground, false, true, HitProxyId);
 }
