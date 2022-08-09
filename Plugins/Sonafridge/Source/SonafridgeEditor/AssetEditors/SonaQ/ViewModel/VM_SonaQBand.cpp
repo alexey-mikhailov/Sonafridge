@@ -74,7 +74,7 @@ float FVM_SonaQBand::Dtft(float InFrequency) const
 	int32 Index1 = FMath::FloorToInt(Index);
 	int32 Index2 = FMath::CeilToInt(Index);
 	float Alpha = FMath::Frac(Index);
-	return FMath::Lerp(Response[Index1], Response[Index2], Alpha);;
+	return FMath::Lerp(Response[Index1], Response[Index2], Alpha);
 }
 
 EEQBandType FVM_SonaQBand::GetType() const
@@ -261,18 +261,18 @@ void FVM_SonaQBand::Recalculate()
 		{
 			float F = FMath::Exp(I * FVM_SonaQ::FLS + FVM_SonaQ::FLMin);
 			float ThisResponse = DtftImpl(F);
-			float ThisRDb = MathLogTool::LinearToVigesibel(ThisResponse);
-			float PrevRDb = MathLogTool::LinearToVigesibel(PrevResponse);
+			float ThisDb = MathLogTool::LinearToVigesibel(ThisResponse);
+			float PrevDb = MathLogTool::LinearToVigesibel(PrevResponse);
 
-			float Alpha96Db = (ThisRDb - FVM_SonaQ::DynamicMin) / (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
-			ThisRDb *= 1.5f * Alpha96Db;
-			Alpha96Db = (PrevRDb - FVM_SonaQ::DynamicMin) / (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
-			PrevRDb *= 1.5f * Alpha96Db;
+			float Alpha96Db = (ThisDb - FVM_SonaQ::DynamicMin) / (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
+			ThisDb *= 1.5f * Alpha96Db;
+			Alpha96Db = (PrevDb - FVM_SonaQ::DynamicMin) / (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
+			PrevDb *= 1.5f * Alpha96Db;
 
-			const float Diff = FMath::Abs(ThisRDb - PrevRDb);
-			ThisRDb *= 4.f * FMath::Pow(Diff, .5f);
+			const float Diff = FMath::Abs(ThisDb - PrevDb);
+			ThisDb *= 4.f * FMath::Pow(Diff, .5f);
 
-			ResponseAvgDb += ThisRDb;
+			ResponseAvgDb += ThisDb;
 			PrevResponse = ThisResponse;
 			Response[I] = ThisResponse;
 		}
@@ -283,12 +283,12 @@ void FVM_SonaQBand::Recalculate()
 		{
 			float F = FMath::Exp(I * FVM_SonaQ::FLS + FVM_SonaQ::FLMin);
 			float ThisResponse = DtftImpl(F);
-			float ThisRDb = MathLogTool::LinearToVigesibel(ThisResponse);
+			float ThisDb = MathLogTool::LinearToVigesibel(ThisResponse);
 
-			float Alpha96Db = (ThisRDb - FVM_SonaQ::DynamicMin) / (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
-			ThisRDb *= 2.f * Alpha96Db;
+			float Alpha96Db = (ThisDb - FVM_SonaQ::DynamicMin) / (FVM_SonaQ::DynamicMax - FVM_SonaQ::DynamicMin);
+			ThisDb *= 2.f * Alpha96Db;
 
-			ResponseAvgDb += ThisRDb;
+			ResponseAvgDb += ThisDb;
 			Response[I] = ThisResponse;
 		}
 	}
@@ -320,10 +320,10 @@ float FVM_SonaQBand::DtftImpl(float InFrequency) const
 {
 	if (bIsEnabled)
 	{
-		auto InOmega = 2.f * PI * InFrequency / SampleRate;
-		FEcn Angle0 = FEcn(InOmega)^-0;
-		FEcn Angle1 = FEcn(InOmega)^-1;
-		FEcn Angle2 = FEcn(InOmega)^-2;
+		float Omega = 2.f * PI * InFrequency / SampleRate;
+		FEcn  Angle0 = FEcn(Omega) ^ -0;
+		FEcn  Angle1 = FEcn(Omega) ^ -1;
+		FEcn  Angle2 = FEcn(Omega) ^ -2;
 
 		return
 		(
