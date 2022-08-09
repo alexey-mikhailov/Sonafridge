@@ -40,8 +40,8 @@ protected:
 	                           const FWidgetStyle&      InWidgetStyle,
 	                           bool                     bParentEnabled) const override;
 
-	UPROPERTY()
-	UEW_SonaQ* RootWidget;
+	UPROPERTY(Transient)
+	UEW_SonaQ* RootWidget = nullptr;
 
 	TSharedPtr<FVM_SonaQ> ViewModel;
 	float SampleRate = 44100.f;

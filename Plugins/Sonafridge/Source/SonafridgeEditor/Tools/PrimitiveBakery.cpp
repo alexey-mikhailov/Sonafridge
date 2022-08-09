@@ -19,7 +19,6 @@ TArray<FVector> TesselateQuad(const FVector& V1,
 
 	if (Order == 0)
 	{
-		const FColor C0 = FColor::White;
 		return { V1, V2, V3, V3, V2, V4 };
 	}
 

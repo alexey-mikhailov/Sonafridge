@@ -151,8 +151,8 @@ private:
 	FVector2D             GetBandWPos();
 	void                  TryAutoMakeup(const FPointerEvent& InMouseEvent);
 
-	UPROPERTY()
-	UEW_SonaQ* RootWidget;
+	UPROPERTY(Transient)
+	UEW_SonaQ* RootWidget = nullptr;
 
 	TSharedPtr<FVM_SonaQ>     ViewModel;
 	TSharedPtr<FVM_SonaQBand> Band;

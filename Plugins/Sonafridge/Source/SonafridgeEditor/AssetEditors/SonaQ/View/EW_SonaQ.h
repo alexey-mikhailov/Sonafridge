@@ -36,8 +36,8 @@ protected:
 	                          const FWidgetStyle&      InWidgetStyle,
 	                          bool                     bParentEnabled) const override;
 
-	UPROPERTY()
-	USFXPreset_SonaQ* Preset;
+	UPROPERTY(Transient)
+	USFXPreset_SonaQ* Preset = nullptr;
 
 	TSharedPtr<FVM_SonaQ> ViewModel;
 

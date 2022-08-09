@@ -514,5 +514,5 @@ FVector2D UEW_SonaQFrequencyResponse::GetBandWPos(TSharedPtr<FVM_SonaQBand> InBa
 		return { WX, WY };
 	}
 
-	return {};
+	return FVector2D::ZeroVector;
 }

@@ -748,7 +748,7 @@ FVector2D UEW_SonaQBandPopup::GetBandWPos()
 		return { WX, WY };
 	}
 
-	return {};
+	return FVector2D::ZeroVector;
 }
 
 void UEW_SonaQBandPopup::TryAutoMakeup(const FPointerEvent& InMouseEvent)
