@@ -22,6 +22,8 @@ struct FEarPin
 	// Low-shelf filter
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bBand1Enabled = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Band1Frequency = 100.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Band1AmountDb = 0.f;
@@ -33,6 +35,8 @@ struct FEarPin
 	// Band-cut filter
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bBand2Enabled = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Band2Frequency = 667.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Band2AmountDb = 0.f;
@@ -43,6 +47,8 @@ struct FEarPin
 
 	// High-shelf filter
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bBand3Enabled = true;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Band3Frequency = 4444.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

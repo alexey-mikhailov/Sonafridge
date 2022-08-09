@@ -7,86 +7,86 @@ UClathrispaceSettings::UClathrispaceSettings()
 	EarData.EarPinsL.Add
 	({
 		FVector::LeftVector,
-		100.f, 0.f, 1.f, 0.f,
-		667.f, 0.f, 1.f, 0.f,
-		4444.f, 0.f, 1.f, 0.f,
+		true, 100.f, 0.f, 1.f, 0.f,
+		true, 667.f, 0.f, 1.f, 0.f,
+		true, 4444.f, 0.f, 1.f, 0.f,
 	});
 	EarData.EarPinsL.Add
 	({
 		FVector::RightVector,
-		100.f, 0.f, 1.f, 0.f,
-		667.f, 0.f, 1.f, 0.f,
-		4444.f, 0.f, 1.f, 0.f,
+		true, 100.f, 0.f, 1.f, 0.f,
+		true, 667.f, 0.f, 1.f, 0.f,
+		true, 4444.f, 0.f, 1.f, 0.f,
 	});
 	EarData.EarPinsL.Add
 	({
 		FVector::UpVector,
-		100.f, 0.f, 1.f, 0.f,
-		667.f, 0.f, 1.f, 0.f,
-		4444.f, 0.f, 1.f, 0.f,
+		true, 100.f, 0.f, 1.f, 0.f,
+		true, 667.f, 0.f, 1.f, 0.f,
+		true, 4444.f, 0.f, 1.f, 0.f,
 	});
 	EarData.EarPinsL.Add
 	({
 		FVector::DownVector,
-		100.f, 0.f, 1.f, 0.f,
-		667.f, 0.f, 1.f, 0.f,
-		4444.f, 0.f, 1.f, 0.f,
+		true, 100.f, 0.f, 1.f, 0.f,
+		true, 667.f, 0.f, 1.f, 0.f,
+		true, 4444.f, 0.f, 1.f, 0.f,
 	});
 	EarData.EarPinsL.Add
 	({
 		FVector::ForwardVector,
-		100.f, 0.f, 1.f, 0.f,
-		667.f, 0.f, 1.f, 0.f,
-		4444.f, 0.f, 1.f, 0.f,
+		true, 100.f, 0.f, 1.f, 0.f,
+		true, 667.f, 0.f, 1.f, 0.f,
+		true, 4444.f, 0.f, 1.f, 0.f,
 	});
 	EarData.EarPinsL.Add
 	({
 		FVector::BackwardVector,
-		100.f, 0.f, 1.f, 0.f,
-		667.f, 0.f, 1.f, 0.f,
-		4444.f, 0.f, 1.f, 0.f,
+		true, 100.f, 0.f, 1.f, 0.f,
+		true, 667.f, 0.f, 1.f, 0.f,
+		true, 4444.f, 0.f, 1.f, 0.f,
 	});
 	EarData.EarPinsR.Add
 	({
 		FVector::RightVector,
-		100.f, 0.f, 1.f, 0.f,
-		667.f, 0.f, 1.f, 0.f,
-		4444.f, 0.f, 1.f, 0.f,
+		true, 100.f, 0.f, 1.f, 0.f,
+		true, 667.f, 0.f, 1.f, 0.f,
+		true, 4444.f, 0.f, 1.f, 0.f,
 	});
 	EarData.EarPinsR.Add
 	({
 		FVector::LeftVector,
-		100.f, 0.f, 1.f, 0.f,
-		667.f, 0.f, 1.f, 0.f,
-		4444.f, 0.f, 1.f, 0.f,
+		true, 100.f, 0.f, 1.f, 0.f,
+		true, 667.f, 0.f, 1.f, 0.f,
+		true, 4444.f, 0.f, 1.f, 0.f,
 	});
 	EarData.EarPinsR.Add
 	({
 		FVector::UpVector,
-		100.f, 0.f, 1.f, 0.f,
-		667.f, 0.f, 1.f, 0.f,
-		4444.f, 0.f, 1.f, 0.f,
+		true, 100.f, 0.f, 1.f, 0.f,
+		true, 667.f, 0.f, 1.f, 0.f,
+		true, 4444.f, 0.f, 1.f, 0.f,
 	});
 	EarData.EarPinsR.Add
 	({
 		FVector::DownVector,
-		100.f, 0.f, 1.f, 0.f,
-		667.f, 0.f, 1.f, 0.f,
-		4444.f, 0.f, 1.f, 0.f,
+		true, 100.f, 0.f, 1.f, 0.f,
+		true, 667.f, 0.f, 1.f, 0.f,
+		true, 4444.f, 0.f, 1.f, 0.f,
 	});
 	EarData.EarPinsR.Add
 	({
 		FVector::ForwardVector,
-		100.f, 0.f, 1.f, 0.f,
-		667.f, 0.f, 1.f, 0.f,
-		4444.f, 0.f, 1.f, 0.f,
+		true, 100.f, 0.f, 1.f, 0.f,
+		true, 667.f, 0.f, 1.f, 0.f,
+		true, 4444.f, 0.f, 1.f, 0.f,
 	});
 	EarData.EarPinsR.Add
 	({
 		FVector::BackwardVector,
-		100.f, 0.f, 1.f, 0.f,
-		667.f, 0.f, 1.f, 0.f,
-		4444.f, 0.f, 1.f, 0.f,
+		true, 100.f, 0.f, 1.f, 0.f,
+		true, 667.f, 0.f, 1.f, 0.f,
+		true, 4444.f, 0.f, 1.f, 0.f,
 	});
 }
 
