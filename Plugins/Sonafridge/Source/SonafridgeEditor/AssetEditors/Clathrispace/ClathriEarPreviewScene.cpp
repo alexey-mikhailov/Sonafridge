@@ -11,6 +11,7 @@
 #include "GameFramework/WorldSettings.h"
 #include "Kismet/KismetMaterialLibrary.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Sonafridge/Tools/MathTools.h"
 
 IMPLEMENT_HIT_PROXY(HEarPinProxy, HComponentVisProxy);
 
@@ -42,153 +43,143 @@ FClathriEarPreviewScene::FClathriEarPreviewScene(ConstructionValues CVS)
 	HelmetComp->SetRelativeScale3D({ 1.f, -1.f, 1.f });
 }
 
-void FClathriEarPreviewScene::SetSettings(UClathrispaceSettings* InSettings)
+void FClathriEarPreviewScene::Init(UClathrispaceSettings* InSettings)
 {
 	Settings = InSettings;
 	HelmetComp->Init(InSettings);
 }
 
-void UClathriEarHelmetComponent::Init(UClathrispaceSettings* InSettings)
+UClathriEarHelmetComponent::UClathriEarHelmetComponent()
 {
-	Settings = InSettings;
-
-	OrdinaryEarPinMaterial = UKismetMaterialLibrary::CreateDynamicMaterialInstance
+	OrdinaryPinMaterial = UKismetMaterialLibrary::CreateDynamicMaterialInstance
 	(
 		this,
 		GEngine->EmissiveMeshMaterial
 	);
 
-	OrdinaryEarPinMaterial->SetVectorParameterValue("Color", HSR(.62f, 1.f, .15f));
-
-	SelectedEarPinMaterial = UKismetMaterialLibrary::CreateDynamicMaterialInstance
+	SelectedPinMaterial = UKismetMaterialLibrary::CreateDynamicMaterialInstance
 	(
 		this,
 		GEngine->EmissiveMeshMaterial
 	);
 
-	SelectedEarPinMaterial->SetVectorParameterValue("Color", HSR(.62f, 1.f, .5));
+	OrdinaryPinMaterial->SetVectorParameterValue("Color", HSR(.62f, 1.f, .15f));
+	SelectedPinMaterial->SetVectorParameterValue("Color", HSR(.62f, 1.f, .5));
 }
 
-FClathriEarVisualizer::FClathriEarVisualizer()
+void UClathriEarHelmetComponent::Init(UClathrispaceSettings* InSettings)
 {
+	FVector Location = InSettings->GetEarData().EarPositionL;
+	MathTool::ReflectVectorY(Location);
+	SetRelativeLocation(Location);
+}
+
+FClathriEarVisualizer::FClathriEarVisualizer(const TWeakObjectPtr<UMaterialInstanceDynamic>& InOrdinaryPinMaterial,
+                                             const TWeakObjectPtr<UMaterialInstanceDynamic>& InSelectedPinMaterial)
+{
+	OrdinaryPinMaterial = InOrdinaryPinMaterial;
+	SelectedPinMaterial = InSelectedPinMaterial;
 	SphereCake = PrimitiveBakery::BuildSphere(1.5f, 2);
 }
 
-void FClathriEarVisualizer::Draw(const UActorComponent*   Component,
-                                 const FSceneView*        View,
-                                 FPrimitiveDrawInterface* PDI)
+void FClathriEarVisualizer::Draw(const FClathriEarViewportClient*  InViewportClient,
+                                 const FSceneView*                 View,
+                                 FPrimitiveDrawInterface*          PDI)
 {
-	if (const UClathriEarHelmetComponent* Helmet = Cast<UClathriEarHelmetComponent>(Component))
+	UClathrispaceSettings* Settings = InViewportClient->GetSettings();
+
+	if (IsValid(Settings))
 	{
-		UClathrispaceSettings* Settings = Helmet->GetSettings();
-		FVector Origin = Helmet->GetComponentLocation();
+		FClathriEarData& EarData = Settings->GetEarData();
 
-		if (IsValid(Settings))
+		if (InViewportClient->GetVisibleSide() == EVisibleSide::Left)
 		{
-			FClathriEarData& EarData = Settings->GetEarData();
-
-			if (Helmet->VisibleSide == EVisibleSide::Left)
+			for (int32 Index = 0; Index < EarData.EarPinsL.Num(); ++Index)
 			{
-				Origin += EarData.EarPositionL;
+				const FEarPin Pin = EarData.EarPinsL[Index];
+				const FVector EndPos = 25.f * Pin.Direction;
 
-				for (int32 Index = 0; Index < EarData.EarPinsL.Num(); ++Index)
-				{
-					const FEarPin Pin = EarData.EarPinsL[Index];
-					const FVector EndPos = Origin + 25.f * Pin.Direction;
+				const UMaterialInstanceDynamic* Material = Index == SelectedPinIndex
+				                                           ? SelectedPinMaterial.Get()
+				                                           : OrdinaryPinMaterial.Get();
 
-					const UMaterialInstanceDynamic* Material = Index == SelectedPinIndex
-															   ? Helmet->GetSelectedEarPinMaterial()
-															   : Helmet->GetOrdinaryEarPinMaterial();
-
-					HEarPinProxy* DanglingProxy = new HEarPinProxy(Helmet, Index);
-					PDI->SetHitProxy(DanglingProxy);
-					PDI->DrawLine(Origin, EndPos, HSR(.62f, .667f, .5f), 0);
-					PrimitiveBakery::DrawSphere(PDI,
-					                            SphereCake,
-					                            FTranslationMatrix(EndPos),
-					                            Material,
-					                            DanglingProxy->Id);
-					PDI->SetHitProxy(nullptr);
-				}
-			}
-			else
-			{
-				Origin += EarData.EarPositionR;
-
-				for (int32 Index = 0; Index < EarData.EarPinsR.Num(); ++Index)
-				{
-					const FEarPin Pin = EarData.EarPinsR[Index];
-					const FVector EndPos = Origin  + 25.f * Pin.Direction;
-
-					const UMaterialInstanceDynamic* Material = Index == SelectedPinIndex
-						? Helmet->GetSelectedEarPinMaterial()
-						: Helmet->GetOrdinaryEarPinMaterial();
-
-					HEarPinProxy* DanglingProxy = new HEarPinProxy(Helmet, Index);
-					PDI->SetHitProxy(DanglingProxy);
-					PDI->DrawLine(Origin, EndPos, HSR(.62f, .667f, .5f), 0);
-					PrimitiveBakery::DrawSphere(PDI,
-					                            SphereCake,
-					                            FTranslationMatrix(EndPos),
-					                            Material,
-					                            DanglingProxy->Id);
-					PDI->SetHitProxy(nullptr);
-				}
+				HEarPinProxy* DanglingProxy = new HEarPinProxy(Index);
+				PDI->SetHitProxy(DanglingProxy);
+				PDI->DrawLine(FVector::ZeroVector, EndPos, HSR(.62f, .667f, .5f), 0);
+				PrimitiveBakery::DrawSphere(PDI,
+											SphereCake,
+											FTranslationMatrix(EndPos),
+											Material,
+											DanglingProxy->Id);
+				PDI->SetHitProxy(nullptr);
 			}
 		}
+		else
+		{
+			for (int32 Index = 0; Index < EarData.EarPinsR.Num(); ++Index)
+			{
+				const FEarPin Pin = EarData.EarPinsR[Index];
+				const FVector EndPos = 25.f * Pin.Direction;
 
-		HelmetComponent = const_cast<UClathriEarHelmetComponent*>(Helmet);
+				const UMaterialInstanceDynamic* Material = Index == SelectedPinIndex
+				                                           ? SelectedPinMaterial.Get()
+				                                           : OrdinaryPinMaterial.Get();
+
+				HEarPinProxy* DanglingProxy = new HEarPinProxy(Index);
+				PDI->SetHitProxy(DanglingProxy);
+				PDI->DrawLine(FVector::ZeroVector, EndPos, HSR(.62f, .667f, .5f), 0);
+				PrimitiveBakery::DrawSphere(PDI,
+				                            SphereCake,
+				                            FTranslationMatrix(EndPos),
+				                            Material,
+				                            DanglingProxy->Id);
+				PDI->SetHitProxy(nullptr);
+			}
+		}
 	}
 }
 
-bool FClathriEarVisualizer::ProcessClick(FEditorViewportClient* InViewportClient,
-                                         HHitProxy*             HitProxy,
-                                         const FViewportClick&  Click)
+bool FClathriEarVisualizer::ProcessClick(FClathriEarViewportClient* InViewportClient,
+                                         HHitProxy*                 HitProxy,
+                                         const FViewportClick&      Click)
 {
 	if (HitProxy)
 	{
 		if (const HEarPinProxy* EarPinProxy = HitProxyCast<HEarPinProxy>(HitProxy))
 		{
-			SelectedPinIndex = EarPinProxy->Index;
+			SelectedPinIndex = EarPinProxy->PinIndex;
 		}
 		else
 		{
 			SelectedPinIndex = INDEX_NONE;
 		}
 
-		if (FClathriEarViewportClient* Client = (FClathriEarViewportClient*)(InViewportClient))
-		{
-			Client->GetEvent_PinIndexChanged().Broadcast(SelectedPinIndex);
-		}
+		InViewportClient->GetEvent_PinIndexChanged().Broadcast(SelectedPinIndex);
 
 		return true;
 	}
 
 	SelectedPinIndex = INDEX_NONE;
-
-	if (FClathriEarViewportClient* Client = (FClathriEarViewportClient*)(InViewportClient))
-	{
-		Client->GetEvent_PinIndexChanged().Broadcast(SelectedPinIndex);
-	}
+	InViewportClient->GetEvent_PinIndexChanged().Broadcast(SelectedPinIndex);
 
 	return false;
 }
 
-bool FClathriEarVisualizer::HandleInputDelta(FEditorViewportClient* ViewportClient,
-                                             FViewport*             Viewport,
-                                             FVector&               DeltaTranslate,
-                                             FRotator&              DeltaRotate,
-                                             FVector&               DeltaScale)
+bool FClathriEarVisualizer::HandleInputDelta(const FClathriEarViewportClient* InViewportClient,
+                                             FViewport*                 InViewport,
+                                             FVector&                   DeltaTranslate,
+                                             FRotator&                  DeltaRotate,
+                                             FVector&                   DeltaScale)
 {
 	bool bHandled = false;
 
-	if (IsValid(HelmetComponent) && SelectedPinIndex != INDEX_NONE)
+	if (SelectedPinIndex != INDEX_NONE)
 	{
-		if (UClathrispaceSettings* Settings = HelmetComponent->GetSettings())
+		if (UClathrispaceSettings* Settings = InViewportClient->GetSettings())
 		{
 			FClathriEarData& EarData = Settings->GetEarData();
 
-			if (HelmetComponent->VisibleSide == EVisibleSide::Left)
+			if (InViewportClient->GetVisibleSide() == EVisibleSide::Left)
 			{
 				if (EarData.EarPinsL.Num() > SelectedPinIndex)
 				{
@@ -221,7 +212,10 @@ bool FClathriEarVisualizer::HandleInputDelta(FEditorViewportClient* ViewportClie
 
 			if (!DeltaRotate.IsNearlyZero())
 			{
-				Settings->MarkPackageDirty();
+				if (Settings->MarkPackageDirty())
+				{
+					UE_LOG(LogSonafridgeEditor, Error, TEXT("FClathriEarVisualizer::HandleInputDelta: Could not mark package dirty. "));
+				}
 			}
 		}
 
@@ -231,7 +225,8 @@ bool FClathriEarVisualizer::HandleInputDelta(FEditorViewportClient* ViewportClie
 	return bHandled;
 }
 
-bool FClathriEarVisualizer::HandleInputKey(FViewport*  Viewport,
+bool FClathriEarVisualizer::HandleInputKey(const FClathriEarViewportClient* InViewportClient,
+										   FViewport*  Viewport,
                                            int32       ControllerId,
                                            FKey        Key,
                                            EInputEvent Event,
@@ -240,9 +235,9 @@ bool FClathriEarVisualizer::HandleInputKey(FViewport*  Viewport,
 {
 	if (Key == EKeys::Delete)
 	{
-		if (IsValid(HelmetComponent) && SelectedPinIndex != INDEX_NONE)
+		if (SelectedPinIndex != INDEX_NONE)
 		{
-			if (UClathrispaceSettings* Settings = HelmetComponent->GetSettings())
+			if (UClathrispaceSettings* Settings = InViewportClient->GetSettings())
 			{
 				TArray<FEarPin>& LeftPins = Settings->GetEarData().EarPinsL;
 				if (LeftPins.Num() > SelectedPinIndex)
@@ -257,7 +252,12 @@ bool FClathriEarVisualizer::HandleInputKey(FViewport*  Viewport,
 				}
 
 				SelectedPinIndex = INDEX_NONE;
-				Settings->MarkPackageDirty();
+
+				if (Settings->MarkPackageDirty())
+				{
+					UE_LOG(LogSonafridgeEditor, Error, TEXT("FClathriEarVisualizer::HandleInputKey: Could not mark package dirty. "));
+				}
+
 				return true;
 			}
 		}

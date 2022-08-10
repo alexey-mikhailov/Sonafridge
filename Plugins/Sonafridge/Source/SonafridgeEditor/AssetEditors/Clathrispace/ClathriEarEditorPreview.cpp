@@ -9,7 +9,6 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Editor/UnrealEdEngine.h"
 #include "Kismet/GameplayStatics.h"
-#include "Engine/Selection.h"
 
 
 FClathriEarViewportClient::FClathriEarViewportClient(FEditorModeTools*                InModeTools,
@@ -40,7 +39,13 @@ FClathriEarViewportClient::FClathriEarViewportClient(FEditorModeTools*          
 	DrawHelper.GridColorMinor = FColor(64, 64, 64);
 	DrawHelper.PerspectiveGridSize = HALF_WORLD_MAX1;
 
-	Visualizer = MakeShared<FClathriEarVisualizer>();
+	Visualizer = MakeShared<FClathriEarVisualizer>(ClathriEarScene->HelmetComp->OrdinaryPinMaterial, 
+												   ClathriEarScene->HelmetComp->SelectedPinMaterial);
+}
+
+void FClathriEarViewportClient::Init(UClathrispaceSettings* InSettings)
+{
+	Settings = InSettings;
 }
 
 void FClathriEarViewportClient::ProcessClick(FSceneView& View,
@@ -75,7 +80,7 @@ bool FClathriEarViewportClient::InputKey(FViewport*  InViewport,
 
 	if (ClathriEarScene && IsValid(ClathriEarScene->HelmetComp))
 	{
-		bResult |= Visualizer->HandleInputKey(InViewport, ControllerId, Key, Event, AmountDepressed, bGamepad);
+		bResult |= Visualizer->HandleInputKey(this, InViewport, ControllerId, Key, Event, AmountDepressed, bGamepad);
 	}
 
 	return bResult;
@@ -113,9 +118,9 @@ void FClathriEarViewportClient::CapturedMouseMove(FViewport* InViewport,
 
 	if (ClathriEarScene && IsValid(ClathriEarScene->HelmetComp))
 	{
-		EVisibleSide VisibleSide = ViewLocation.Y < 0.f
-			                           ? EVisibleSide::Left
-			                           : EVisibleSide::Right;
+		VisibleSide = ViewLocation.Y < 0.f
+		              ? EVisibleSide::Left
+		              : EVisibleSide::Right;
 
 		FVector Location = VisibleSide == EVisibleSide::Left
 			                   ? Settings->GetEarData().EarPositionL
@@ -126,7 +131,6 @@ void FClathriEarViewportClient::CapturedMouseMove(FViewport* InViewport,
 		float Scale = VisibleSide == EVisibleSide::Left ? -1.f : 1.f;
 		ClathriEarScene->HelmetComp->SetRelativeLocation(Location);
 		ClathriEarScene->HelmetComp->SetRelativeScale3D({ 1.f, Scale, 1.f });
-		ClathriEarScene->HelmetComp->VisibleSide = VisibleSide;
 	}
 }
 
@@ -146,7 +150,7 @@ void FClathriEarViewportClient::Draw(const FSceneView* View, FPrimitiveDrawInter
 
 	if (ClathriEarScene && IsValid(ClathriEarScene->HelmetComp))
 	{
-		Visualizer->Draw(ClathriEarScene->HelmetComp, View, PDI);
+		Visualizer->Draw(this, View, PDI);
 	}
 }
 

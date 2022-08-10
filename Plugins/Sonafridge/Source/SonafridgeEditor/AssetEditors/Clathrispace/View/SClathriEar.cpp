@@ -3,7 +3,6 @@
 #include "SClathriEar.h"
 
 #include "Sonafridge/Attenuator/Clathrispace.h"
-#include "Sonafridge/Tools/MathTools.h"
 #include "SonafridgeEditor/AssetEditors/Clathrispace/ClathriEarEditorPreview.h"
 #include "SonafridgeEditor/AssetEditors/Clathrispace/ClathriEarPreviewScene.h"
 
@@ -25,12 +24,8 @@ void SClathriEar::Construct(const FArguments& InArgs)
 
 	if (UClathrispaceSettings* SettingsValue = Settings.Get())
 	{
-		PreviewScene->SetSettings(SettingsValue);
-		ViewportClient->Settings = SettingsValue;
-
-		FVector Location = SettingsValue->GetEarData().EarPositionL;
-		MathTool::ReflectVectorY(Location);
-		PreviewScene->HelmetComp->SetRelativeLocation(Location);
+		PreviewScene->Init(SettingsValue);
+		ViewportClient->Init(SettingsValue);
 	}
 }
 

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ClathriEarPreviewScene.h"
 #include "SCommonEditorViewportToolbarBase.h"
 #include "SEditorViewport.h"
 
@@ -19,6 +20,11 @@ public:
 	FClathriEarViewportClient(FEditorModeTools*                InModeTools,
 	                          FPreviewScene*                   InPreviewScene = nullptr,
 	                          const TWeakPtr<SEditorViewport>& InEditorViewportWidget = nullptr);
+
+	void Init(UClathrispaceSettings* InSettings);
+
+	UClathrispaceSettings* GetSettings() const { return Settings; }
+	EVisibleSide GetVisibleSide() const { return VisibleSide; }
 
 	//
 	// FViewportClient interface
@@ -64,16 +70,16 @@ public:
 	virtual bool ShouldOrbitCamera() const override;
 
 	DECLARE_EVENT_OneParam(FClathrispaceViewportClient, FPinIndexChanged, int32)
+
+
 	FPinIndexChanged& GetEvent_PinIndexChanged() { return PinIndexChanged; }
 
 private:
-	FClathriEarPreviewScene* ClathriEarScene = nullptr;
-
-	friend SClathriEar;
-	UClathrispaceSettings* Settings = nullptr;
-
+	UClathrispaceSettings*            Settings = nullptr;
+	FClathriEarPreviewScene*          ClathriEarScene = nullptr;
 	TSharedPtr<FClathriEarVisualizer> Visualizer;
 
 	FPinIndexChanged PinIndexChanged;
+	EVisibleSide     VisibleSide = EVisibleSide::Left;
 };
 

@@ -6,6 +6,7 @@
 #include "ComponentVisualizer.h"
 #include "ClathriEarPreviewScene.generated.h"
 
+class FClathriEarViewportClient;
 class UClathrispaceSettings;
 class UClathriEarHelmetComponent;
 
@@ -21,10 +22,10 @@ class FClathriEarPreviewScene final : public FPreviewScene
 {
 public:
 	explicit FClathriEarPreviewScene(ConstructionValues CVS);
-	void     SetSettings(UClathrispaceSettings* InSettings);
+	void     Init(UClathrispaceSettings* InSettings);
 
-	UStaticMesh*                  HelmetMesh     = nullptr;
-	UClathriEarHelmetComponent* HelmetComp     = nullptr;
+	UStaticMesh*                HelmetMesh = nullptr;
+	UClathriEarHelmetComponent* HelmetComp = nullptr;
 
 private:
 	// No need to pin it. Life time of Settings is longer.
@@ -32,40 +33,40 @@ private:
 };
 
 
-struct HEarPinProxy : HComponentVisProxy
+struct HEarPinProxy : HHitProxy
 {
 	DECLARE_HIT_PROXY();
 
-	HEarPinProxy(const UActorComponent* InComponent, int32 InTargetIndex)
-	    : HComponentVisProxy(InComponent)
-	    , Index(InTargetIndex)
+	HEarPinProxy(int32 InPinIndex) : PinIndex(InPinIndex)
 	{
 	}
 
-	int32 Index;
+	int32 PinIndex;
 };
 
 
 class FClathriEarVisualizer
 {
 public:
-	FClathriEarVisualizer();
+	FClathriEarVisualizer(const TWeakObjectPtr<UMaterialInstanceDynamic>& InOrdinaryPinMaterial, 
+						  const TWeakObjectPtr<UMaterialInstanceDynamic>& InSelectedPinMaterial);
 
-	void Draw(const UActorComponent*   Component,
-	          const FSceneView*        View,
-	          FPrimitiveDrawInterface* PDI);
+	void Draw(const FClathriEarViewportClient*  InViewportClient,
+	          const FSceneView*                 View,
+	          FPrimitiveDrawInterface*          PDI);
 
-	bool ProcessClick(FEditorViewportClient* InViewportClient,
+	bool ProcessClick(FClathriEarViewportClient* InViewportClient,
 	                  HHitProxy*             HitProxy,
 	                  const FViewportClick&  Click);
 
-	bool HandleInputDelta(FEditorViewportClient* ViewportClient,
-	                      FViewport*             Viewport,
+	bool HandleInputDelta(const FClathriEarViewportClient* InViewportClient,
+	                      FViewport*             InViewport,
 	                      FVector&               DeltaTranslate,
 	                      FRotator&              DeltaRotate,
 	                      FVector&               DeltaScale);
 
-	bool HandleInputKey(FViewport*  Viewport,
+	bool HandleInputKey(const FClathriEarViewportClient* InViewportClient,
+						FViewport*  Viewport,
 	                    int32       ControllerId,
 	                    FKey        Key,
 	                    EInputEvent Event,
@@ -73,7 +74,8 @@ public:
 	                    bool        bGamepad);
 
 protected:
-	UClathriEarHelmetComponent* HelmetComponent = nullptr;
+	TWeakObjectPtr<UMaterialInstanceDynamic> OrdinaryPinMaterial = nullptr;
+	TWeakObjectPtr<UMaterialInstanceDynamic> SelectedPinMaterial = nullptr;
 
 private:
 	int32          SelectedPinIndex = INDEX_NONE;
@@ -87,21 +89,12 @@ class SONAFRIDGEEDITOR_API UClathriEarHelmetComponent : public UStaticMeshCompon
 	GENERATED_BODY()
 
 public:
+	UClathriEarHelmetComponent();
 	void Init(UClathrispaceSettings* InSettings);
-	UClathrispaceSettings* GetSettings() const { return Settings; }
 
-	UMaterialInstanceDynamic* GetOrdinaryEarPinMaterial() const { return OrdinaryEarPinMaterial; }
-	UMaterialInstanceDynamic* GetSelectedEarPinMaterial() const { return SelectedEarPinMaterial; }
+	UPROPERTY(Transient)
+	UMaterialInstanceDynamic* OrdinaryPinMaterial = nullptr;
 
-	EVisibleSide VisibleSide = EVisibleSide::Left;
-
-private:
-	UPROPERTY()
-	UClathrispaceSettings* Settings = nullptr;
-
-	UPROPERTY()
-	UMaterialInstanceDynamic* OrdinaryEarPinMaterial = nullptr;
-
-	UPROPERTY()
-	UMaterialInstanceDynamic* SelectedEarPinMaterial = nullptr;
+	UPROPERTY(Transient)
+	UMaterialInstanceDynamic* SelectedPinMaterial = nullptr;
 };
