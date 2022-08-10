@@ -147,7 +147,7 @@ bool FHelmetVisualizer::ProcessClick(FEditorViewportClient* InViewportClient,
 {
 	if (HitProxy)
 	{
-		if (const HEarPinProxy* EarPinProxy = static_cast<HEarPinProxy*>(HitProxy))
+		if (const HEarPinProxy* EarPinProxy = HitProxyCast<HEarPinProxy>(HitProxy))
 		{
 			SelectedPinIndex = EarPinProxy->Index;
 		}
@@ -156,10 +156,21 @@ bool FHelmetVisualizer::ProcessClick(FEditorViewportClient* InViewportClient,
 			SelectedPinIndex = INDEX_NONE;
 		}
 
+		if (FClathrispaceViewportClient* CVC = (FClathrispaceViewportClient*)(InViewportClient))
+		{
+			CVC->GetEvent_PinIndexChanged().Broadcast(SelectedPinIndex);
+		}
+
 		return true;
 	}
 
 	SelectedPinIndex = INDEX_NONE;
+
+	if (FClathrispaceViewportClient* CVC = (FClathrispaceViewportClient*)(InViewportClient))
+	{
+		CVC->GetEvent_PinIndexChanged().Broadcast(SelectedPinIndex);
+	}
+
 	return false;
 }
 

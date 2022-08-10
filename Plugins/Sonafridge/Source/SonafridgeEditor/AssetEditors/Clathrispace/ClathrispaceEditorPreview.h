@@ -62,10 +62,15 @@ public:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual bool ShouldOrbitCamera() const override;
 
+	DECLARE_EVENT_OneParam(FClathrispaceViewportClient, FPinIndexChanged, int32)
+	FPinIndexChanged& GetEvent_PinIndexChanged() { return PinIndexChanged; }
+
 private:
 	FClathrispacePreviewScene* ClathriEarScene = nullptr;
 
 	friend SClathriEar;
 	UClathrispaceSettings* Settings = nullptr;
+
+	FPinIndexChanged PinIndexChanged;
 };
 

@@ -5,6 +5,7 @@
 
 #include "SonafridgeEditor/AssetEditors/Clathrispace/View/W_ClathriQ.h"
 #include "SonafridgeEditor/AssetEditors/Clathrispace/View/SClathriEar.h"
+#include "SonafridgeEditor/AssetEditors/Clathrispace/ClathrispaceEditorPreview.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
 #include "WidgetBlueprint.h"
 
@@ -14,6 +15,8 @@ const FName FAssetEditor_Clathrispace::Identifier(TEXT("AssetEditor_Clathrispace
 const FName FAssetEditor_Clathrispace::ToolkitFName(TEXT("AssetEditorToolkit_Clathrispace"));
 
 const FName FAssetEditor_Clathrispace::ClathriEarTabId(TEXT("AssetEditor_Clathrispace_ClathriEarTab"));
+const FName FAssetEditor_Clathrispace::ClathriQTabId(TEXT("AssetEditor_Clathrispace_ClathriQTab"));
+const FName FAssetEditor_Clathrispace::DetailsTabId(TEXT("AssetEditor_Clathrispace_PropertiesTab"));
 
 FAssetEditor_Clathrispace::FAssetEditor_Clathrispace()
 {
@@ -23,10 +26,11 @@ FAssetEditor_Clathrispace::~FAssetEditor_Clathrispace()
 {
 }
 
-void FAssetEditor_Clathrispace::Init(TSharedPtr<IToolkitHost> InToolkitHost, UClathrispaceSettings* InPreset)
+void FAssetEditor_Clathrispace::Init(TSharedPtr<IToolkitHost> InToolkitHost, UClathrispaceSettings* InSettings)
 {
 	EToolkitMode::Type Mode = InToolkitHost.IsValid() ? EToolkitMode::WorldCentric : EToolkitMode::Standalone;
 
+	ClathrispaceSettings = InSettings;
 
 	FPropertyEditorModule& PropertyEditorModule = 
 		FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
@@ -57,10 +61,29 @@ void FAssetEditor_Clathrispace::Init(TSharedPtr<IToolkitHost> InToolkitHost, UCl
 			FTabManager::NewSplitter()
 			->Split
 			(
+				FTabManager::NewSplitter()->SetOrientation(Orient_Vertical)
+				->SetSizeCoefficient(.667f)
+				->Split
+				(
+					FTabManager::NewStack()
+					->SetHideTabWell(true)
+					->SetSizeCoefficient(0.667f)
+					->AddTab(ClathriEarTabId, ETabState::OpenedTab)
+				)
+				->Split
+				(
+					FTabManager::NewStack()
+					->SetHideTabWell(true)
+					->SetSizeCoefficient(0.333f)
+					->AddTab(ClathriQTabId, ETabState::OpenedTab)
+				)
 			)
 			->Split
 			(
 				FTabManager::NewStack()
+				->SetHideTabWell(true)
+				->SetSizeCoefficient(.333f)
+				->AddTab(DetailsTabId, ETabState::OpenedTab)
 			)
 		)
 	);
@@ -74,17 +97,17 @@ void FAssetEditor_Clathrispace::Init(TSharedPtr<IToolkitHost> InToolkitHost, UCl
 	                                     StandaloneDefaultLayout,
 	                                     bCreateDefaultStandaloneMenu,
 	                                     bCreateDefaultToolbar,
-	                                     { InPreset });
+	                                     { InSettings });
 
 	RegenerateMenusAndToolbars();
 
 	// Ensure all objects are transactable for undo/redo in the details panel
-	InPreset->SetFlags(RF_Transactional);
+	InSettings->SetFlags(RF_Transactional);
 
 	if (DetailsView.IsValid())
 	{
 		// Make sure details window is pointing to our object
-		DetailsView->SetObject(InPreset);
+		DetailsView->SetObject(InSettings);
 	}
 }
 
@@ -122,6 +145,12 @@ void FAssetEditor_Clathrispace::RegisterTabSpawners(const TSharedRef<FTabManager
 	            .SetGroup(WorkspaceMenuCategory.ToSharedRef())
 	            .SetIcon(BPIcon);
 
+	InTabManager->RegisterTabSpawner(ClathriQTabId,
+	                                 FOnSpawnTab::CreateSP(this, &FAssetEditor_Clathrispace::SpawnTab_ClathriQ))
+	            .SetDisplayName(LOCTEXT("ClathriQTabName", "ClathriQ"))
+	            .SetGroup(WorkspaceMenuCategory.ToSharedRef())
+	            .SetIcon(BPIcon);
+
 	InTabManager->RegisterTabSpawner(DetailsTabId,
 	                                 FOnSpawnTab::CreateSP(this, &FAssetEditor_Clathrispace::SpawnTab_Properties))
 	            .SetDisplayName(LOCTEXT("DetailsTabName", "Details"))
@@ -132,6 +161,7 @@ void FAssetEditor_Clathrispace::RegisterTabSpawners(const TSharedRef<FTabManager
 void FAssetEditor_Clathrispace::UnregisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
 {
 	InTabManager->UnregisterTabSpawner(ClathriEarTabId);
+	InTabManager->UnregisterTabSpawner(ClathriQTabId);
 	InTabManager->UnregisterTabSpawner(DetailsTabId);
 
 	FAssetEditorToolkit::UnregisterTabSpawners(InTabManager);
@@ -159,6 +189,7 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_Properties(const FSpawn
 		];
 }
 
+TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathriQ(const FSpawnTabArgs& Args)
 {
 	const FText Label = FText::FromString(GetEditingObject()->GetName());
 
@@ -179,6 +210,7 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_Properties(const FSpawn
 			World, static_cast<UClass*>(Blueprint->GeneratedClass)
 		);
 
+		ClathrispaceWidget->Init(ClathrispaceSettings, PinIndexChanged);
 
 		if (ClathrispaceWidget)
 		{
@@ -211,10 +243,22 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathriEar(const FSpawn
 {
 	check(Args.GetTabId() == ClathriEarTabId);
 
+	TSharedRef<SClathriEar>           ClathriEar = SNew(SClathriEar).Settings(ClathrispaceSettings);
+	if (TSharedPtr<FClathrispaceViewportClient> CVC = ClathriEar->GetOwnViewportClient())
+	{
+		CVC->GetEvent_PinIndexChanged().AddRaw(this, &FAssetEditor_Clathrispace::OnPinIndexChanged);
+	}
+
 	return SNew(SDockTab)
 		   .Label(LOCTEXT("ClathriEarTabTitle", "ClathriEar"))
 		   [
+	           ClathriEar
 		   ];
+}
+
+void FAssetEditor_Clathrispace::OnPinIndexChanged(int32 NewPinIndex)
+{
+	PinIndexChanged.ExecuteIfBound(NewPinIndex);
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -110,7 +110,10 @@ void UClathrispaceSettings::CopyLeftToRight()
 		MathTool::ReflectVectorY(RightPin.Direction);
 	}
 
-	MarkPackageDirty();
+	if (!MarkPackageDirty())
+	{
+		UE_LOG(LogSonafridge, Error, TEXT("UClathrispaceSettings::CopyLeftToRight: Could not mark package dirty. "));
+	}
 }
 
 void UClathrispaceSettings::CopyRightToLeft()
@@ -128,7 +131,16 @@ void UClathrispaceSettings::CopyRightToLeft()
 		MathTool::ReflectVectorY(LeftPin.Direction);
 	}
 
-	MarkPackageDirty();
+	if (!MarkPackageDirty())
+	{
+		UE_LOG(LogSonafridge, Error, TEXT("UClathrispaceSettings::CopyRightToLeft: Could not mark package dirty. "));
+	}
+}
+
+void UClathrispaceSettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	ExternallyChanged.Broadcast();
 }
 
 TAudioSpatializationPtr FClathrispaceFactory::CreateNewSpatializationPlugin(FAudioDevice* OwningDevice)

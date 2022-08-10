@@ -21,6 +21,8 @@ public:
 
 	void Construct(const FArguments& InArgs);
 
+	FORCEINLINE TSharedPtr<FClathrispaceViewportClient> GetOwnViewportClient() const { return ViewportClient; }
+
 	// 
 	// Toolbar interface
 	// 
@@ -35,7 +37,7 @@ protected:
 	//
 
 	virtual TSharedRef<FEditorViewportClient> MakeEditorViewportClient() override;
-	virtual TSharedPtr<SWidget> MakeViewportToolbar() override;
+	virtual TSharedPtr<SWidget>               MakeViewportToolbar() override;
 
 private:
 	TSharedPtr<FClathrispaceViewportClient> ViewportClient;

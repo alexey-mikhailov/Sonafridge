@@ -128,7 +128,12 @@ public:
 	UFUNCTION(BlueprintCallable, CallInEditor, Category = "Clathri Ear (Spatializer)")
 	void CopyRightToLeft();
 
+	DECLARE_EVENT(UClathrispaceSettings, FExternallyChanged);
+	FExternallyChanged& GetEvent_ExternallyChanged() { return ExternallyChanged; }
+
 protected:
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+
 	friend FClathrispace;
 	friend FClathrispacePreviewScene;
 	UPROPERTY(GlobalConfig, EditAnywhere, Category = "Clathri Ear (Spatializer)")
@@ -143,6 +148,8 @@ protected:
 	friend FClathrispacePreviewScene;
 	UPROPERTY(GlobalConfig, EditAnywhere, Category = "Clathri Ear (Spatializer)")
 	FClathriumData RoomData;
+
+	FExternallyChanged ExternallyChanged;
 };
 
 

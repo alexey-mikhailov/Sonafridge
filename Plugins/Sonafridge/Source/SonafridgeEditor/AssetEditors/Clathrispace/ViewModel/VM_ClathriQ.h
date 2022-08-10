@@ -8,6 +8,7 @@ class UClathrispaceSettings;
 class SONAFRIDGEEDITOR_API FVM_ClathriQ
 {
 public:
+	static constexpr int32 BandCount = 3;
 	static constexpr float FrequencyMin = 20.f;
 	static constexpr float FrequencyMax = 20000.f;
 	static constexpr float DynamicMin = -48.f;
@@ -25,27 +26,27 @@ public:
 	static const float FLS;
 
 	FVM_ClathriQ();
-	void Init(UClathrispaceSettings* InSettings, float InSampleRate);
+	void Init(UClathrispaceSettings*  InSettings,
+	          TDelegate<void(int32)>& InPinIndexChanged,
+	          float                   InSampleRate);
 
-	void SetEnabled_Band1(bool bEnabled);
-	void SetFrequency_Band1(float InFrequency);
-	void SetAmountDb_Band1(float InAmountDb);
-	void SetQuality_Band1(float InQuality);
-	void SetMakeupDb_Band1(float InMakeupDb);
-	void SetEnabled_Band2(bool bEnabled);
-	void SetFrequency_Band2(float InFrequency);
-	void SetAmountDb_Band2(float InAmountDb);
-	void SetQuality_Band2(float InQuality);
-	void SetMakeupDb_Band2(float InMakeupDb);
-	void SetEnabled_Band3(bool bEnabled);
-	void SetFrequency_Band3(float InFrequency);
-	void SetAmountDb_Band3(float InAmountDb);
-	void SetQuality_Band3(float InQuality);
-	void SetMakeupDb_Band3(float InMakeupDb);
-
-	bool  GetIsEnabled() const { return bIsEnabled; }
 	float GetSampleRate() const { return SampleRate; }
 
+	void SetIsEnabled(int32 BandIndex, bool bEnabled);
+	void SetFrequency(int32 BandIndex, float InFrequency);
+	void SetAmountDb(int32 BandIndex, float InAmountDb);
+	void SetQuality(int32 BandIndex, float InQuality);
+	void SetMakeupDb(int32 BandIndex, float InMakeupDb);
+
+	bool  GetIsEnabled(int32 BandIndex);
+	float GetFrequency(int32 BandIndex);
+	float GetAmountDb(int32 BandIndex);
+	float GetQuality(int32 BandIndex);
+	float GetMakeupDb(int32 BandIndex);
+
+	float GetResponseAvgDb(int32 BandIndex);
+
+	bool GetIsEnabled() const { return bIsEnabled; }
 	void SetIsEnabled(bool bNewValue) { bIsEnabled = bNewValue; }
 
 	int32 GetSelectedBandIndex() const { return SelectedBandIndex; }
@@ -54,24 +55,28 @@ public:
 	float Dtft(float InFrequency) const;
 	float DtftDb(float InFrequency) const;
 
-	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandSelectionChanged, int32)
+	FEarPin* PullDataContext() const;
+	void     PushDataContext();
+
+	DECLARE_EVENT_OneParam(FVM_ClathriQ, FPinIndexChanged, int32)
+	FPinIndexChanged& GetEvent_PinIndexChanged() { return PinIndexChanged; }
+
+	DECLARE_EVENT_OneParam(FVM_ClathriQ, FBandSelectionChanged, int32)
 	FBandSelectionChanged& GetEvent_BandSelectionChanged() { return BandSelectionChanged; }
 
-	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandChanging, int32);
+	DECLARE_EVENT_OneParam(FVM_ClathriQ, FBandChanging, int32);
 	FBandChanging& GetEvent_BandChanging() { return BandChanging; }
 
-	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandChanged, int32);
+	DECLARE_EVENT_OneParam(FVM_ClathriQ, FBandChanged, int32);
 	FBandChanged& GetEvent_BandChanged() { return BandChanged; }
 
 private:
 	void Recalculate();
 
-	FEarPin* PullDataContext() const;
-	void     PushDataContext();
-
 	TWeakObjectPtr<UClathrispaceSettings> Settings = nullptr;
 	int32                                 PinIndex = INDEX_NONE;
-	
+
+	FPinIndexChanged      PinIndexChanged;	
 	FBandSelectionChanged BandSelectionChanged;
 	FBandChanging         BandChanging;
 	FBandChanged          BandChanged;
@@ -81,6 +86,8 @@ private:
 	int32 SelectedBandIndex = INDEX_NONE;
 
 	TArray<float> Response;
-	float ResponseAvgDb = 0.f;
+	float ResponseAvgDb_Band1 = 0.f;
+	float ResponseAvgDb_Band2 = 0.f;
+	float ResponseAvgDb_Band3 = 0.f;
 };
 

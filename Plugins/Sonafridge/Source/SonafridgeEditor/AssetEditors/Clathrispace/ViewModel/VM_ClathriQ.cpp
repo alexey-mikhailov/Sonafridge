@@ -29,147 +29,257 @@ FVM_ClathriQ::FVM_ClathriQ()
 		SampleRate = 48000.f;
 	}
 
-	Response.SetNumZeroed(Resolution + 1);
+	Response.SetNum(Resolution + 1);
+	for (int32 Index = 0; Index < Resolution + 1; ++Index) Response[Index] = 1.f;
 }
 
-void FVM_ClathriQ::Init(UClathrispaceSettings* InSettings, float InSampleRate)
+void FVM_ClathriQ::Init(UClathrispaceSettings*  InSettings,
+                        TDelegate<void(int32)>& InPinIndexChanged,
+                        float                   InSampleRate)
 {
+	InPinIndexChanged.BindLambda([this](int32 NewPinIndex)
+	{
+		PinIndex = NewPinIndex;
+		Recalculate();
+		PinIndexChanged.Broadcast(NewPinIndex);
+	});
+
 	Settings = InSettings;
 	SampleRate = InSampleRate;
 }
 
-void FVM_ClathriQ::SetEnabled_Band1(bool bEnabled)
+void FVM_ClathriQ::SetIsEnabled(int32 BandIndex, bool bEnabled)
 {
 	if (FEarPin* Pin = PullDataContext())
 	{
-		Pin->bBand1Enabled = bEnabled;
+		switch (BandIndex)
+		{
+			case 0:	Pin->bBand1Enabled = bEnabled; break;
+			case 1:	Pin->bBand2Enabled = bEnabled; break;
+			case 2:	Pin->bBand3Enabled = bEnabled; break;
+			default:
+			{
+				UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::SetIsEnabled: Argument BandIndex is out of range. "));
+			}
+		}
+		
 		Recalculate();
+	}
+	else
+	{
+		UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::SetIsEnabled: Could not get data context. "));
 	}
 }
 
-void FVM_ClathriQ::SetFrequency_Band1(float InFrequency)
+void FVM_ClathriQ::SetFrequency(int32 BandIndex, float InFrequency)
 {
 	if (FEarPin* Pin = PullDataContext())
 	{
-		Pin->Band1Frequency = InFrequency;
+		switch (BandIndex)
+		{
+			case 0:	Pin->Band1Frequency = InFrequency; break;
+			case 1:	Pin->Band2Frequency = InFrequency; break;
+			case 2:	Pin->Band3Frequency = InFrequency; break;
+			default:
+			{
+				UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::SetFrequency: Argument BandIndex is out of range. "));
+			}
+		}
+		
 		Recalculate();
+	}
+	else
+	{
+		UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::SetFrequency: Could not get data context. "));
 	}
 }
 
-void FVM_ClathriQ::SetAmountDb_Band1(float InAmountDb)
+void FVM_ClathriQ::SetAmountDb(int32 BandIndex, float InAmountDb)
 {
 	if (FEarPin* Pin = PullDataContext())
 	{
-		Pin->Band1AmountDb = InAmountDb;
+		switch (BandIndex)
+		{
+			case 0:	Pin->Band1AmountDb = InAmountDb; break;
+			case 1:	Pin->Band2AmountDb = InAmountDb; break;
+			case 2:	Pin->Band3AmountDb = InAmountDb; break;
+			default:
+			{
+				UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::SetAmountDb: Argument BandIndex is out of range. "));
+			}
+		}
+		
 		Recalculate();
+	}
+	else
+	{
+		UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::SetAmountDb: Could not get data context. "));
 	}
 }
 
-void FVM_ClathriQ::SetQuality_Band1(float InQuality)
+void FVM_ClathriQ::SetQuality(int32 BandIndex, float InQuality)
 {
 	if (FEarPin* Pin = PullDataContext())
 	{
-		Pin->Band1Quality = InQuality;
+		switch (BandIndex)
+		{
+			case 0:	Pin->Band1Quality = InQuality; break;
+			case 1:	Pin->Band2Quality = InQuality; break;
+			case 2:	Pin->Band3Quality = InQuality; break;
+			default:
+			{
+				UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::SetQuality: Argument BandIndex is out of range. "));
+			}
+		}
+		
 		Recalculate();
+	}
+	else
+	{
+		UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::SetQuality: Could not get data context. "));
 	}
 }
 
-void FVM_ClathriQ::SetMakeupDb_Band1(float InMakeupDb)
+void FVM_ClathriQ::SetMakeupDb(int32 BandIndex, float InMakeupDb)
 {
 	if (FEarPin* Pin = PullDataContext())
 	{
-		Pin->Band1MakeupDb = InMakeupDb;
+		switch (BandIndex)
+		{
+			case 0:	Pin->Band1MakeupDb = InMakeupDb; break;
+			case 1:	Pin->Band2MakeupDb = InMakeupDb; break;
+			case 2:	Pin->Band3MakeupDb = InMakeupDb; break;
+			default:
+			{
+				UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::SetMakeupDb: Argument BandIndex is out of range. "));
+			}
+		}
+		
 		Recalculate();
+	}
+	else
+	{
+		UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::SetMakeupDb: Could not get data context. "));
 	}
 }
 
-void FVM_ClathriQ::SetEnabled_Band2(bool bEnabled)
+bool FVM_ClathriQ::GetIsEnabled(int32 BandIndex)
 {
 	if (FEarPin* Pin = PullDataContext())
 	{
-		Pin->bBand2Enabled = bEnabled;
-		Recalculate();
+		switch (BandIndex)
+		{
+			case 0: return Pin->bBand1Enabled;
+			case 1: return Pin->bBand2Enabled;
+			case 2: return Pin->bBand3Enabled;
+			default:
+			{
+				UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::GetIsEnabled: Argument BandIndex is out of range. "));
+				return false;
+			}
+		}
 	}
+
+	UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::GetIsEnabled: Could not get data context. "));
+	return false;
 }
 
-void FVM_ClathriQ::SetFrequency_Band2(float InFrequency)
+float FVM_ClathriQ::GetFrequency(int32 BandIndex)
 {
 	if (FEarPin* Pin = PullDataContext())
 	{
-		Pin->Band2Frequency = InFrequency;
-		Recalculate();
+		switch (BandIndex)
+		{
+			case 0: return Pin->Band1Frequency;
+			case 1: return Pin->Band2Frequency;
+			case 2: return Pin->Band3Frequency;
+			default:
+			{
+				UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::GetFrequency: Argument BandIndex is out of range. "));
+				return 1000.f;
+			}
+		}
 	}
+
+	UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::GetFrequency: Could not get data context. "));
+	return 1000.f;
 }
 
-void FVM_ClathriQ::SetAmountDb_Band2(float InAmountDb)
+float FVM_ClathriQ::GetAmountDb(int32 BandIndex)
 {
 	if (FEarPin* Pin = PullDataContext())
 	{
-		Pin->Band2AmountDb = InAmountDb;
-		Recalculate();
+		switch (BandIndex)
+		{
+			case 0: return Pin->Band1AmountDb;
+			case 1: return Pin->Band2AmountDb;
+			case 2: return Pin->Band3AmountDb;
+			default:
+			{
+				UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::GetAmountDb: Argument BandIndex is out of range. "));
+				return 0.f;
+			}
+		}
 	}
+
+	UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::GetAmountDb: Could not get data context. "));
+	return 0.f;
 }
 
-void FVM_ClathriQ::SetQuality_Band2(float InQuality)
+float FVM_ClathriQ::GetQuality(int32 BandIndex)
 {
 	if (FEarPin* Pin = PullDataContext())
 	{
-		Pin->Band2Quality = InQuality;
-		Recalculate();
+		switch (BandIndex)
+		{
+			case 0: return Pin->Band1Quality;
+			case 1: return Pin->Band2Quality;
+			case 2: return Pin->Band3Quality;
+			default:
+			{
+				UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::GetQuality: Argument BandIndex is out of range. "));
+				return 1.f;
+			}
+		}
 	}
+
+	UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::GetQuality: Could not get data context. "));
+	return 1.f;
 }
 
-void FVM_ClathriQ::SetMakeupDb_Band2(float InMakeupDb)
+float FVM_ClathriQ::GetMakeupDb(int32 BandIndex)
 {
 	if (FEarPin* Pin = PullDataContext())
 	{
-		Pin->Band2MakeupDb = InMakeupDb;
-		Recalculate();
+		switch (BandIndex)
+		{
+			case 0: return Pin->Band1MakeupDb;
+			case 1: return Pin->Band2MakeupDb;
+			case 2: return Pin->Band3MakeupDb;
+			default:
+			{
+				UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::GetMakeupDb: Argument BandIndex is out of range. "));
+				return 0.f;
+			}
+		}
 	}
+
+	UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::GetMakeupDb: Could not get data context. "));
+	return 0.f;
 }
 
-void FVM_ClathriQ::SetEnabled_Band3(bool bEnabled)
+float FVM_ClathriQ::GetResponseAvgDb(int32 BandIndex)
 {
-	if (FEarPin* Pin = PullDataContext())
+	switch (BandIndex)
 	{
-		Pin->bBand3Enabled = bEnabled;
-		Recalculate();
-	}
-}
-
-void FVM_ClathriQ::SetFrequency_Band3(float InFrequency)
-{
-	if (FEarPin* Pin = PullDataContext())
-	{
-		Pin->Band3Frequency = InFrequency;
-		Recalculate();
-	}
-}
-
-void FVM_ClathriQ::SetAmountDb_Band3(float InAmountDb)
-{
-	if (FEarPin* Pin = PullDataContext())
-	{
-		Pin->Band3AmountDb = InAmountDb;
-		Recalculate();
-	}
-}
-
-void FVM_ClathriQ::SetQuality_Band3(float InQuality)
-{
-	if (FEarPin* Pin = PullDataContext())
-	{
-		Pin->Band3Quality = InQuality;
-		Recalculate();
-	}
-}
-
-void FVM_ClathriQ::SetMakeupDb_Band3(float InMakeupDb)
-{
-	if (FEarPin* Pin = PullDataContext())
-	{
-		Pin->Band3MakeupDb = InMakeupDb;
-		Recalculate();
+		case 0: return ResponseAvgDb_Band1;
+		case 1: return ResponseAvgDb_Band2;
+		case 2: return ResponseAvgDb_Band3;
+		default:
+		{
+			UE_LOG(LogSonafridgeEditor, Error, TEXT("FVM_ClathriQ::GetMakeupDb: Argument BandIndex is out of range. "));
+			return 0.f;
+		}
 	}
 }
 
@@ -201,6 +311,34 @@ float FVM_ClathriQ::DtftDb(float InFrequency) const
 	(
 		FMath::Lerp(Response[Index1], Response[Index2], Alpha)
 	);
+}
+
+FEarPin* FVM_ClathriQ::PullDataContext() const
+{
+	if (PinIndex != INDEX_NONE && Settings.IsValid())
+	{
+		if (Settings->GetEarData().EarPinsL.Num() > PinIndex)
+		{
+			return &Settings->GetEarData().EarPinsL[PinIndex];
+		}
+	}
+
+	return nullptr;
+}
+
+void FVM_ClathriQ::PushDataContext()
+{
+	if (Settings.IsValid())
+	{
+		Settings->CopyLeftToRight();
+
+		if (!Settings->MarkPackageDirty())
+		{
+			UE_LOG(LogSonafridgeEditor,
+			       Error,
+			       TEXT("FVM_ClathriQ::PushDataContext: Could not mark package dirty. "));
+		}
+	}
 }
 
 void FVM_ClathriQ::Recalculate()
@@ -268,14 +406,15 @@ void FVM_ClathriQ::Recalculate()
 		// Bake response.
 		//
 
-		ResponseAvgDb = 0.f;
+		FEcn Angle0, Angle1, Angle2;
 
 		for (int32 I = 0; I < Resolution + 1; ++I)
 		{
 			Response[I] = 1.f;
 		}
 
-		FEcn Angle0, Angle1, Angle2;
+		// Band1. Low-shelf filter. 
+		ResponseAvgDb_Band1 = 0.f;
 		for (int32 I = 0; I < Resolution + 1; ++I)
 		{
 			float F = FMath::Exp(I * FLS + FLMin);
@@ -296,10 +435,14 @@ void FVM_ClathriQ::Recalculate()
 			float Alpha96Db = (ThisDb - DynamicMin) / (DynamicMax - DynamicMin);
 			ThisDb *= 2.f * Alpha96Db;
 
-			ResponseAvgDb += ThisDb;
+			ResponseAvgDb_Band1 += ThisDb;
 			Response[I] *= ThisResponse;
 		}
 
+		ResponseAvgDb_Band1 /= Resolution + 1;
+
+		// Band 2. Band-cut filter.
+		ResponseAvgDb_Band2 = 0.f;
 		float PrevResponse = 1.f;
 		for (int32 I = 0; I < Resolution + 1; ++I)
 		{
@@ -327,11 +470,15 @@ void FVM_ClathriQ::Recalculate()
 			const float Diff = FMath::Abs(ThisDb - PrevDb);
 			ThisDb *= 4.f * FMath::Pow(Diff, .5f);
 
-			ResponseAvgDb += ThisDb;
+			ResponseAvgDb_Band2 += ThisDb;
 			PrevResponse = ThisResponse;
 			Response[I] *= ThisResponse;
 		}
 
+		ResponseAvgDb_Band2 /= Resolution + 1;
+
+		// Band 3. High-shelf filter.
+		ResponseAvgDb_Band3 = 0.f;
 		for (int32 I = 0; I < Resolution + 1; ++I)
 		{
 			float F = FMath::Exp(I * FLS + FLMin);
@@ -352,42 +499,14 @@ void FVM_ClathriQ::Recalculate()
 			float Alpha96Db = (ThisDb - DynamicMin) / (DynamicMax - DynamicMin);
 			ThisDb *= 2.f * Alpha96Db;
 
-			ResponseAvgDb += ThisDb;
+			ResponseAvgDb_Band2 += ThisDb;
 			Response[I] *= ThisResponse;
 		}
 
-		constexpr float NumberOfBands = 3.f;
-		ResponseAvgDb /= NumberOfBands * (Resolution + 1);
+		ResponseAvgDb_Band3 /= Resolution + 1;
 	}
 }
 
-FEarPin* FVM_ClathriQ::PullDataContext() const
-{
-	if (Settings.IsValid())
-	{
-		if (Settings->GetEarData().EarPinsL.Num() > PinIndex)
-		{
-			return &Settings->GetEarData().EarPinsL[PinIndex];
-		}
-	}
-
-	return nullptr;
-}
-
-void FVM_ClathriQ::PushDataContext()
-{
-	if (Settings.IsValid())
-	{
-		Settings->CopyLeftToRight();
-
-		if (!Settings->MarkPackageDirty())
-		{
-			UE_LOG(LogSonafridgeEditor,
-			       Error,
-			       TEXT("FVM_ClathriQ::PushDataContext: Could not mark package dirty. "));
-		}
-	}
-}
 
 
 
