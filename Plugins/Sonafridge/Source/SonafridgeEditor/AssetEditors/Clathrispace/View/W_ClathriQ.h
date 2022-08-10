@@ -51,8 +51,8 @@ protected:
 	UW_ClathriQFrequencyResponse* FrequencyResponse;
 	TDelegate<void(int32)>        PinIndexChanged;
 
-	//UPROPERTY(meta = (BindWidget))
-	//UW_ClathriQBandPopup* BandPopup;
+	UPROPERTY(meta = (BindWidget))
+	UW_ClathriQBandPopup* BandPopup;
 
 private:
 	FVector2D LastSize;

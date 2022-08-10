@@ -14,23 +14,8 @@
 #include "AudioDevice.h"
 #include "Kismet/KismetInputLibrary.h"
 
+using namespace SonafridgeEditor;
 
-enum class ESignMode { NegativeOnly, Always };
-
-
-FText FloatToText(float     InValue,
-                  int32     NumDigits,
-                  ESignMode SignMode = ESignMode::NegativeOnly)
-{
-	return UKismetTextLibrary::Conv_FloatToText(InValue,
-	                                            HalfFromZero,
-	                                            SignMode == ESignMode::Always,
-	                                            false,
-	                                            1,
-	                                            324,
-	                                            NumDigits,
-	                                            NumDigits);
-}
 
 void UEW_SonaQBandPopup::Init(UEW_SonaQ* InRootWidget, TSharedPtr<FVM_SonaQ> InViewModel)
 {

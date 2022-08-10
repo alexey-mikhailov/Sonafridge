@@ -413,97 +413,126 @@ void FVM_ClathriQ::Recalculate()
 			Response[I] = 1.f;
 		}
 
-		// Band1. Low-shelf filter. 
-		ResponseAvgDb_Band1 = 0.f;
-		for (int32 I = 0; I < Resolution + 1; ++I)
+		// Band1. Low-shelf filter.
+		if (Pin->bBand1Enabled)
 		{
-			float F = FMath::Exp(I * FLS + FLMin);
-			Omega = 2.f * PI * F / SampleRate;
-			Angle0 = FEcn(Omega) ^ -0;
-			Angle1 = FEcn(Omega) ^ -1;
-			Angle2 = FEcn(Omega) ^ -2;
+			ResponseAvgDb_Band1 = 0.f;
+			for (int32 I = 0; I < Resolution + 1; ++I)
+			{
+				float F = FMath::Exp(I * FLS + FLMin);
+				Omega = 2.f * PI * F / SampleRate;
+				Angle0 = FEcn(Omega) ^ -0;
+				Angle1 = FEcn(Omega) ^ -1;
+				Angle2 = FEcn(Omega) ^ -2;
 
-			float ThisResponse = 
-			(
-				(Band1B[0] * Angle0 + Band1B[1] * Angle1 + Band1B[2] * Angle2) /
-				(Band1A[0] * Angle0 + Band1A[1] * Angle1 + Band1A[2] * Angle2)
-			)
-			.Radius;
+				float ThisResponse =
+					(
+					(Band1B[0] * Angle0 + Band1B[1] * Angle1 + Band1B[2] * Angle2) /
+					(Band1A[0] * Angle0 + Band1A[1] * Angle1 + Band1A[2] * Angle2)
+					)
+					.Radius;
 
-			float ThisDb = MathLogTool::LinearToVigesibel(ThisResponse);
+				float ThisDb = MathLogTool::LinearToVigesibel(ThisResponse);
 
-			float Alpha96Db = (ThisDb - DynamicMin) / (DynamicMax - DynamicMin);
-			ThisDb *= 2.f * Alpha96Db;
+				float Alpha96Db = (ThisDb - DynamicMin) / (DynamicMax - DynamicMin);
+				ThisDb *= 2.f * Alpha96Db;
 
-			ResponseAvgDb_Band1 += ThisDb;
-			Response[I] *= ThisResponse;
+				ResponseAvgDb_Band1 += ThisDb;
+				Response[I] *= ThisResponse;
+			}
+
+			ResponseAvgDb_Band1 /= Resolution + 1;
 		}
-
-		ResponseAvgDb_Band1 /= Resolution + 1;
 
 		// Band 2. Band-cut filter.
-		ResponseAvgDb_Band2 = 0.f;
-		float PrevResponse = 1.f;
-		for (int32 I = 0; I < Resolution + 1; ++I)
+		if (Pin->bBand2Enabled)
 		{
-			float F = FMath::Exp(I * FLS + FLMin);
-			Omega = 2.f * PI * F / SampleRate;
-			Angle0 = FEcn(Omega) ^ -0;
-			Angle1 = FEcn(Omega) ^ -1;
-			Angle2 = FEcn(Omega) ^ -2;
+			ResponseAvgDb_Band2 = 0.f;
+			float PrevResponse = 1.f;
+			for (int32 I = 0; I < Resolution + 1; ++I)
+			{
+				float F = FMath::Exp(I * FLS + FLMin);
+				Omega = 2.f * PI * F / SampleRate;
+				Angle0 = FEcn(Omega) ^ -0;
+				Angle1 = FEcn(Omega) ^ -1;
+				Angle2 = FEcn(Omega) ^ -2;
 
-			float ThisResponse = 
-			(
-				(Band2B[0] * Angle0 + Band2B[1] * Angle1 + Band2B[2] * Angle2) /
-				(Band2A[0] * Angle0 + Band2A[1] * Angle1 + Band2A[2] * Angle2)
-			)
-			.Radius;
+				float ThisResponse =
+					(
+					(Band2B[0] * Angle0 + Band2B[1] * Angle1 + Band2B[2] * Angle2) /
+					(Band2A[0] * Angle0 + Band2A[1] * Angle1 + Band2A[2] * Angle2)
+					)
+					.Radius;
 
-			float ThisDb = MathLogTool::LinearToVigesibel(ThisResponse);
-			float PrevDb = MathLogTool::LinearToVigesibel(PrevResponse);
+				float ThisDb = MathLogTool::LinearToVigesibel(ThisResponse);
+				float PrevDb = MathLogTool::LinearToVigesibel(PrevResponse);
 
-			float Alpha96Db = (ThisDb - DynamicMin) / (DynamicMax - DynamicMin);
-			ThisDb *= 1.5f * Alpha96Db;
-			Alpha96Db = (PrevDb - DynamicMin) / (DynamicMax - DynamicMin);
-			PrevDb *= 1.5f * Alpha96Db;
+				float Alpha96Db = (ThisDb - DynamicMin) / (DynamicMax - DynamicMin);
+				ThisDb *= 1.5f * Alpha96Db;
+				Alpha96Db = (PrevDb - DynamicMin) / (DynamicMax - DynamicMin);
+				PrevDb *= 1.5f * Alpha96Db;
 
-			const float Diff = FMath::Abs(ThisDb - PrevDb);
-			ThisDb *= 4.f * FMath::Pow(Diff, .5f);
+				const float Diff = FMath::Abs(ThisDb - PrevDb);
+				ThisDb *= 4.f * FMath::Pow(Diff, .5f);
 
-			ResponseAvgDb_Band2 += ThisDb;
-			PrevResponse = ThisResponse;
-			Response[I] *= ThisResponse;
+				ResponseAvgDb_Band2 += ThisDb;
+				PrevResponse = ThisResponse;
+				Response[I] *= ThisResponse;
+			}
+
+			ResponseAvgDb_Band2 /= Resolution + 1;
 		}
-
-		ResponseAvgDb_Band2 /= Resolution + 1;
 
 		// Band 3. High-shelf filter.
-		ResponseAvgDb_Band3 = 0.f;
-		for (int32 I = 0; I < Resolution + 1; ++I)
+		if (Pin->bBand3Enabled)
 		{
-			float F = FMath::Exp(I * FLS + FLMin);
-			Omega = 2.f * PI * F / SampleRate;
-			Angle0 = FEcn(Omega) ^ -0;
-			Angle1 = FEcn(Omega) ^ -1;
-			Angle2 = FEcn(Omega) ^ -2;
+			ResponseAvgDb_Band3 = 0.f;
+			for (int32 I = 0; I < Resolution + 1; ++I)
+			{
+				float F = FMath::Exp(I * FLS + FLMin);
+				Omega = 2.f * PI * F / SampleRate;
+				Angle0 = FEcn(Omega) ^ -0;
+				Angle1 = FEcn(Omega) ^ -1;
+				Angle2 = FEcn(Omega) ^ -2;
 
-			float ThisResponse = 
-			(
-				(Band3B[0] * Angle0 + Band3B[1] * Angle1 + Band3B[2] * Angle2) /
-				(Band3A[0] * Angle0 + Band3A[1] * Angle1 + Band3A[2] * Angle2)
-			)
-			.Radius;
+				float ThisResponse =
+					(
+					(Band3B[0] * Angle0 + Band3B[1] * Angle1 + Band3B[2] * Angle2) /
+					(Band3A[0] * Angle0 + Band3A[1] * Angle1 + Band3A[2] * Angle2)
+					)
+					.Radius;
 
-			float ThisDb = MathLogTool::LinearToVigesibel(ThisResponse);
+				float ThisDb = MathLogTool::LinearToVigesibel(ThisResponse);
 
-			float Alpha96Db = (ThisDb - DynamicMin) / (DynamicMax - DynamicMin);
-			ThisDb *= 2.f * Alpha96Db;
+				float Alpha96Db = (ThisDb - DynamicMin) / (DynamicMax - DynamicMin);
+				ThisDb *= 2.f * Alpha96Db;
 
-			ResponseAvgDb_Band2 += ThisDb;
-			Response[I] *= ThisResponse;
+				ResponseAvgDb_Band2 += ThisDb;
+				Response[I] *= ThisResponse;
+			}
+
+			ResponseAvgDb_Band3 /= Resolution + 1;
 		}
 
-		ResponseAvgDb_Band3 /= Resolution + 1;
+		if (bIsEnabled)
+		{
+			float MakeupCoeff1 = Pin->bBand1Enabled
+			                     ? MathLogTool::VigesibelToLinear(GetMakeupDb(0))
+			                     : 1.f;
+
+			float MakeupCoeff2 = Pin->bBand2Enabled
+			                     ? MathLogTool::VigesibelToLinear(GetMakeupDb(1))
+			                     : 1.f;
+
+			float MakeupCoeff3 = Pin->bBand3Enabled
+			                     ? MathLogTool::VigesibelToLinear(GetMakeupDb(2))
+			                     : 1.f;
+
+			for (int32 I = 0; I < Resolution + 1; ++I)
+			{
+				Response[I] = Response[I] * MakeupCoeff1 * MakeupCoeff2 * MakeupCoeff3;
+			}
+		}
 	}
 }
 

@@ -2,26 +2,28 @@
 
 #pragma once
 
-#include "SonafridgeEditor/AssetEditors/SonaQ/ViewModel/VM_SonaQBand.h"
+#include "SonafridgeEditor/AssetEditors/Clathrispace/ViewModel/VM_ClathriQ.h"
 #include "SonafridgeEditor/SonafridgeEditorCommon.h"
+#include "Sonafridge/SonafridgeCommon.h"
 #include "EditorUtilityWidget.h"
 #include "CoreMinimal.h"
-#include "EW_SonaQBandPopup.generated.h"
+#include "W_ClathriQBandPopup.generated.h"
 
-class FVM_SonaQ;
+class FVM_ClathriQ;
 class UNaveledKnob;
 class UToggleKnob;
 class UTextBlock;
 class UEditableTextBox;
-class UEW_SonaQ;
+class UW_ClathriQ;
 
 UCLASS()
-class SONAFRIDGEEDITOR_API UEW_SonaQBandPopup : public UEditorUtilityWidget
+class SONAFRIDGEEDITOR_API UW_ClathriQBandPopup : public UEditorUtilityWidget
 {
 	GENERATED_BODY()
 
 public:
-	void Init(UEW_SonaQ* InRootWidget, TSharedPtr<FVM_SonaQ> InViewModel);
+	UW_ClathriQBandPopup();
+	void Init(UW_ClathriQ* InRootWidget, TSharedPtr<FVM_ClathriQ> InViewModel);
 	void FollowBand();
 
 protected:
@@ -69,28 +71,20 @@ protected:
 	void OnQualityEntrance();
 	void OnMakeupGainEntrance();
 
-	void OnListenEntrance();
-	void OnBandTypeEntrance();
-	void OnButtonRemoveEntrance();
 	void OnToggleOnOffEntrance();
-
-	void OnListenExit();
-	void OnBandTypeExit();
-	void OnButtonRemoveExit();
 	void OnToggleOnOffExit();
-	
-	void OnBandSelectionChanged(TSharedPtr<FVM_SonaQBand> InBand);
-	void OnBandChanging(TSharedPtr<FVM_SonaQBand> InBand);
-	void OnBandChanged(TSharedPtr<FVM_SonaQBand> InBand);
+
+	void OnPinIndexChanged(int32 InPinIndex);
+	void OnBandSelectionChanged(int32 InBandIndex);
+	void OnBandChanging(int32 BandChanging);
+	void OnBandChanged(int32 BandChanging);
 	void OnFrequencyDelta(float OldFrequency01, float NewFrequency01, const FPointerEvent& InMouseEvent, bool& bInOutHaveAllHandlersAccepted);
 	void OnAmountDelta(float OldAmount01, float NewAmount01, const FPointerEvent& InMouseEvent, bool& bInOutHaveAllHandlersAccepted);
 	void OnQualityDelta(float OldQuality01, float NewQuality01, const FPointerEvent& InMouseEvent, bool& bInOutHaveAllHandlersAccepted);
 	void OnMakeupGainDelta(float OldMakeupGain01, float NewMakeupGain01, const FPointerEvent& InMouseEvent, bool& bInOutHaveAllHandlersAccepted);
 	void OnListenDelta(float FrequencyDelta, const FPointerEvent& InMouseEvent);
-	void OnBandTypeChanged(float BandTypeDeltaAsFloat, const FPointerEvent& InMouseEvent);
 	void OnToggleNavelRemoveValueChanged(float QualityDelta01, const FPointerEvent& InMouseEvent);
 	void OnToggleNavelOnOffValueChanged(float MakeupGainDelta01, const FPointerEvent& InMouseEvent);
-	void OnRemoveClick();
 	void OnToggleNavelOnOffStateChanged(bool bOldValue, bool bNewValue);
 
 	void OnFrequencyCapture();
@@ -101,8 +95,6 @@ protected:
 	void OnQualityCommit();
 	void OnMakeupGainCapture();
 	void OnMakeupGainCommit();
-	void OnListenStarted();
-	void OnListenFinished();
 
 	void OnFrequencyClick();
 	void OnAmountClick();
@@ -127,16 +119,14 @@ private:
 	void                  RefreshVisual();
 	static EEQBandType    GetBandTypeByPopupType(EBandPopupType InBandPopupType);
 	static EBandPopupType GetPopupTypeByBandType(EEQBandType InBandPopupType);
-	UTexture*             GetBandIconByType(EBandPopupType InBandPopup);
 	FVector2D             GetBandWPos();
 	void                  TryAutoMakeup(const FPointerEvent& InMouseEvent);
 
 	UPROPERTY(Transient)
-	UEW_SonaQ* RootWidget = nullptr;
+	UW_ClathriQ* RootWidget = nullptr;
 
-	TSharedPtr<FVM_SonaQ>     ViewModel;
-	TSharedPtr<FVM_SonaQBand> Band;
-	float                     BandPopupTypeFloat = 0.f;
+	TSharedPtr<FVM_ClathriQ> ViewModel;
+	int32                    BandIndex;
 
 	float PresstimeMakeupDb = 0.f;
 	float PresstimeAvgDb = 0.f;

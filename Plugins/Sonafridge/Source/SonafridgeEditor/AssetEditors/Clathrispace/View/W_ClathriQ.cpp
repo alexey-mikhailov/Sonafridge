@@ -2,7 +2,7 @@
 
 #include "W_ClathriQ.h"
 #include "W_ClathriQFrequencyResponse.h"
-//#include "W_ClathriQBandPopup.h"
+#include "W_ClathriQBandPopup.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
 #include "Components/CanvasPanelSlot.h"
 #include "AudioDevice.h"
@@ -48,13 +48,16 @@ void UW_ClathriQ::NativeConstruct()
 	Super::NativeConstruct();
 
 	FrequencyResponse->Init(this, ViewModel);
-	//BandPopup->Init(this, ViewModel);
-	//BandPopup->SetVisibility(ESlateVisibility::Hidden);
+	BandPopup->Init(this, ViewModel);
+	BandPopup->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UW_ClathriQ::OnSizeChanged(const FVector2D& OldSize, const FVector2D& NewSize)
 {
-	//BandPopup->FollowBand();
+	if (IsValid(BandPopup))
+	{
+		BandPopup->FollowBand();
+	}
 }
 
 void UW_ClathriQ::OnInternalChanging(int32 BandIndex)
