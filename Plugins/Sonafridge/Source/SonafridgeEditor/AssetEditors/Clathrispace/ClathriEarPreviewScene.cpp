@@ -13,7 +13,7 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Sonafridge/Tools/MathTools.h"
 
-IMPLEMENT_HIT_PROXY(HEarPinProxy, HComponentVisProxy);
+IMPLEMENT_HIT_PROXY(HEarPinProxy, HHitProxy);
 
 FClathriEarPreviewScene::FClathriEarPreviewScene(ConstructionValues CVS)
 {
@@ -107,10 +107,10 @@ void FClathriEarVisualizer::Draw(const FClathriEarViewportClient*  InViewportCli
 				PDI->SetHitProxy(DanglingProxy);
 				PDI->DrawLine(FVector::ZeroVector, EndPos, HSR(.62f, .667f, .5f), 0);
 				PrimitiveBakery::DrawSphere(PDI,
-											SphereCake,
-											FTranslationMatrix(EndPos),
 											Material,
-											DanglingProxy->Id);
+											SphereCake,
+											FTranslationMatrix(EndPos));
+
 				PDI->SetHitProxy(nullptr);
 			}
 		}
@@ -129,10 +129,9 @@ void FClathriEarVisualizer::Draw(const FClathriEarViewportClient*  InViewportCli
 				PDI->SetHitProxy(DanglingProxy);
 				PDI->DrawLine(FVector::ZeroVector, EndPos, HSR(.62f, .667f, .5f), 0);
 				PrimitiveBakery::DrawSphere(PDI,
-				                            SphereCake,
-				                            FTranslationMatrix(EndPos),
 				                            Material,
-				                            DanglingProxy->Id);
+				                            SphereCake,
+				                            FTranslationMatrix(EndPos));
 				PDI->SetHitProxy(nullptr);
 			}
 		}

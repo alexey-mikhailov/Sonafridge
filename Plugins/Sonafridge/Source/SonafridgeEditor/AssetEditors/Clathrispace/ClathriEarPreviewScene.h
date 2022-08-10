@@ -37,9 +37,13 @@ struct HEarPinProxy : HHitProxy
 {
 	DECLARE_HIT_PROXY();
 
-	HEarPinProxy(int32 InPinIndex) : PinIndex(InPinIndex)
+	HEarPinProxy(int32 InPinIndex)
+		: HHitProxy(HPP_UI)
+		, PinIndex(InPinIndex)
 	{
 	}
+
+	virtual bool AlwaysAllowsTranslucentPrimitives() const { return true; }
 
 	int32 PinIndex;
 };

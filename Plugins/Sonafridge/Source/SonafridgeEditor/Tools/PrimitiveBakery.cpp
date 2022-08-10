@@ -69,7 +69,12 @@ FPrimitiveCake PrimitiveBakery::BuildSphere(float Radius,
 	uint32 Index = 0ui32;
 	for (const FVector& N : Normals)
 	{
-		Result.Vertices[Index] = N.GetUnsafeNormal() * Radius;
+		FVector Normal = N.GetUnsafeNormal();
+		FVector Tangent = Normal.RotateAngleAxis(90.f, FVector::ForwardVector);
+		Result.Vertices[Index] = FDynamicMeshVertex
+		{
+			Normal * Radius, Tangent, Normal, .5f * FVector2D::UnitVector, FColor::White
+		};
 		Result.Indices[Index] = Index;
 		++Index;
 	}
@@ -78,15 +83,12 @@ FPrimitiveCake PrimitiveBakery::BuildSphere(float Radius,
 }
 
 void PrimitiveBakery::DrawSphere(FPrimitiveDrawInterface*  PDI,
-                                 const FPrimitiveCake&     Cake,
-                                 const FMatrix&            Matrix,
                                  const UMaterialInterface* Material,
-                                 const FHitProxyId         HitProxyId)
+                                 const FPrimitiveCake&     Cake,
+                                 const FMatrix&            Matrix)
 {
-	if (!PDI)
-	{
-		return;
-	}
+	if (!PDI) return;
+	if (!Material) return;
 
 	const ERHIFeatureLevel::Type FeatureLevel = PDI->View->FeatureLevel;
 
@@ -94,5 +96,5 @@ void PrimitiveBakery::DrawSphere(FPrimitiveDrawInterface*  PDI,
 	FDynamicMeshBuilder MeshBuilder(FeatureLevel);
 	MeshBuilder.AddVertices(Cake.Vertices);
 	MeshBuilder.AddTriangles(Cake.Indices);
-	MeshBuilder.Draw(PDI, Matrix, Material->GetRenderProxy(), SDPG_Foreground, false, true, HitProxyId);
+	MeshBuilder.Draw(PDI, Matrix, Material->GetRenderProxy(), SDPG_Foreground, false, true);
 }
