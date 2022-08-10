@@ -155,6 +155,7 @@ void UW_ClathriQBandPopup::OnToggleOnOffExit()
 void UW_ClathriQBandPopup::OnPinIndexChanged(int32 InPinIndex)
 {
 	SetVisibility(InPinIndex == INDEX_NONE ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
+	FollowBand();
 }
 
 void UW_ClathriQBandPopup::OnBandSelectionChanged(int32 InBandIndex)
