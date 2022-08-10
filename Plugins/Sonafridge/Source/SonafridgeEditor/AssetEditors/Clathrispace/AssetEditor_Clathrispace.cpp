@@ -13,7 +13,6 @@
 const FName FAssetEditor_Clathrispace::Identifier(TEXT("AssetEditor_Clathrispace"));
 const FName FAssetEditor_Clathrispace::ToolkitFName(TEXT("AssetEditorToolkit_Clathrispace"));
 
-const FName FAssetEditor_Clathrispace::DetailsTabId(TEXT("AssetEditor_Clathrispace_PropertiesTab"));
 const FName FAssetEditor_Clathrispace::ClathriEarTabId(TEXT("AssetEditor_Clathrispace_ClathriEarTab"));
 
 FAssetEditor_Clathrispace::FAssetEditor_Clathrispace()
@@ -28,7 +27,6 @@ void FAssetEditor_Clathrispace::Init(TSharedPtr<IToolkitHost> InToolkitHost, UCl
 {
 	EToolkitMode::Type Mode = InToolkitHost.IsValid() ? EToolkitMode::WorldCentric : EToolkitMode::Standalone;
 
-	ClathrispacePreset = InPreset;
 
 	FPropertyEditorModule& PropertyEditorModule = 
 		FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
@@ -59,16 +57,10 @@ void FAssetEditor_Clathrispace::Init(TSharedPtr<IToolkitHost> InToolkitHost, UCl
 			FTabManager::NewSplitter()
 			->Split
 			(
-				FTabManager::NewStack()
-				->SetHideTabWell(true)
-				->SetSizeCoefficient(0.775f)
-				->AddTab(ClathriEarTabId, ETabState::OpenedTab)
 			)
 			->Split
 			(
 				FTabManager::NewStack()
-				->SetSizeCoefficient(0.225f)
-				->AddTab(DetailsTabId, ETabState::ClosedTab)
 			)
 		)
 	);
@@ -122,7 +114,6 @@ void FAssetEditor_Clathrispace::RegisterTabSpawners(const TSharedRef<FTabManager
 
 	FAssetEditorToolkit::RegisterTabSpawners(InTabManager);
 
-	const FString    ClassName = ClathrispacePreset->GetClass()->GetName();
 	const FSlateIcon BPIcon(FEditorStyle::GetStyleSetName(), "LevelEditor.CreateClassBlueprint");
 
 	InTabManager->RegisterTabSpawner(ClathriEarTabId,
@@ -168,14 +159,13 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_Properties(const FSpawn
 		];
 }
 
-TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathrispaceWidget(const FSpawnTabArgs& Args)
 {
 	const FText Label = FText::FromString(GetEditingObject()->GetName());
 
 	UWidgetBlueprint* Blueprint = LoadObject<UWidgetBlueprint>
 	(
 		nullptr,
-		TEXT("/Sonafridge/UI/WBP_Clathrispace.WBP_Clathrispace")
+		TEXT("/Sonafridge/UI/Clathrispace/ClathriQ/WBP_ClathriQ.WBP_ClathriQ")
 	);
 
 	UWorld* World = GEditor->GetEditorWorldContext().World();
@@ -189,7 +179,6 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathrispaceWidget(cons
 			World, static_cast<UClass*>(Blueprint->GeneratedClass)
 		);
 
-		ClathrispaceWidget->Init(ClathrispacePreset);
 
 		if (ClathrispaceWidget)
 		{
@@ -225,7 +214,6 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathriEar(const FSpawn
 	return SNew(SDockTab)
 		   .Label(LOCTEXT("ClathriEarTabTitle", "ClathriEar"))
 		   [
-	           SNew(SClathriEar).Settings(ClathrispacePreset)
 		   ];
 }
 

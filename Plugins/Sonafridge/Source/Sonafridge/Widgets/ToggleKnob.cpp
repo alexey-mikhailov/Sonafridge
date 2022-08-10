@@ -16,7 +16,7 @@ UToggleKnob::UToggleKnob(const FObjectInitializer& ObjectInitializer)
 	Material = LoadObject<UMaterialInterface>
 	(
 		nullptr,
-		TEXT("/Sonafridge/UI/Materials/M_ToggleKnob.M_ToggleKnob")
+		TEXT("/Sonafridge/UI/SonaQ/Materials/M_ToggleKnob.M_ToggleKnob")
 	);
 }
 

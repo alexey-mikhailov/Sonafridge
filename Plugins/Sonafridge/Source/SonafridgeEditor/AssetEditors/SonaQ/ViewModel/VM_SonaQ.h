@@ -46,19 +46,19 @@ public:
 	float Dtft(float InFrequency) const;
 	float DtftDb(float InFrequency) const;
 
-	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandSelectionChanged, TSharedPtr<FVM_SonaQBand>)
+	DECLARE_EVENT_OneParam(FVM_SonaQ, FBandSelectionChanged, TSharedPtr<FVM_SonaQBand>)
 	FBandSelectionChanged& GetEvent_BandSelectionChanged() { return BandSelectionChanged; }
 
-	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandChanging, TSharedPtr<FVM_SonaQBand>);
+	DECLARE_EVENT_OneParam(FVM_SonaQ, FBandChanging, TSharedPtr<FVM_SonaQBand>);
 	FBandChanging& GetEvent_BandChanging() { return BandChanging; }
 
-	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandChanged, TSharedPtr<FVM_SonaQBand>);
+	DECLARE_EVENT_OneParam(FVM_SonaQ, FBandChanged, TSharedPtr<FVM_SonaQBand>);
 	FBandChanged& GetEvent_BandChanged() { return BandChanged; }
 
-	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandAdded, TSharedPtr<FVM_SonaQBand>);
+	DECLARE_EVENT_OneParam(FVM_SonaQ, FBandAdded, TSharedPtr<FVM_SonaQBand>);
 	FBandAdded& GetEvent_BandAdded() { return BandAdded; }
 
-	DECLARE_EVENT_OneParam(UEW_SonaQ, FBandRemoved, TSharedPtr<FVM_SonaQBand>);
+	DECLARE_EVENT_OneParam(FVM_SonaQ, FBandRemoved, TSharedPtr<FVM_SonaQBand>);
 	FBandRemoved& GetEvent_BandRemoved() { return BandRemoved; }
 
 private:

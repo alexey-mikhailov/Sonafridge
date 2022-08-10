@@ -16,7 +16,7 @@ UNaveledKnob::UNaveledKnob(const FObjectInitializer& ObjectInitializer)
 	Material = LoadObject<UMaterialInterface>
 	(
 		nullptr,
-		TEXT("/Sonafridge/UI/Materials/M_NaveledKnob.M_NaveledKnob")
+		TEXT("/Sonafridge/UI/SonaQ/Materials/M_NaveledKnob.M_NaveledKnob")
 	);
 }
 

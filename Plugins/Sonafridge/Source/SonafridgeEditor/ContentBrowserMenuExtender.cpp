@@ -103,7 +103,7 @@ void FSonafridgeContentBrowserMenuExtender::AddMenuEntryForSonaQs(FMenuBuilder& 
 			UWidgetBlueprint* Blueprint = LoadObject<UWidgetBlueprint>
 			(
 				nullptr,
-				TEXT("/Sonafridge/UI/EW_SonaQ.EW_SonaQ")
+				TEXT("/Sonafridge/UI/SonaQ/EWBP_SonaQ.EWBP_SonaQ")
 			);
 
 			UWorld* World = GEditor->GetEditorWorldContext().World();
