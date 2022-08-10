@@ -7,17 +7,18 @@
 #include "SEditorViewport.h"
 
 
-class FClathrispacePreviewScene;
+class FClathriEarVisualizer;
+class FClathriEarPreviewScene;
 class SClathriEar;
 class UClathrispaceSettings;
 
 
-class FClathrispaceViewportClient final : public FEditorViewportClient
+class FClathriEarViewportClient final : public FEditorViewportClient
 {
 public:
-	FClathrispaceViewportClient(FEditorModeTools*                InModeTools,
-	                            FPreviewScene*                   InPreviewScene         = nullptr,
-	                            const TWeakPtr<SEditorViewport>& InEditorViewportWidget = nullptr);
+	FClathriEarViewportClient(FEditorModeTools*                InModeTools,
+	                          FPreviewScene*                   InPreviewScene = nullptr,
+	                          const TWeakPtr<SEditorViewport>& InEditorViewportWidget = nullptr);
 
 	//
 	// FViewportClient interface
@@ -66,10 +67,12 @@ public:
 	FPinIndexChanged& GetEvent_PinIndexChanged() { return PinIndexChanged; }
 
 private:
-	FClathrispacePreviewScene* ClathriEarScene = nullptr;
+	FClathriEarPreviewScene* ClathriEarScene = nullptr;
 
 	friend SClathriEar;
 	UClathrispaceSettings* Settings = nullptr;
+
+	TSharedPtr<FClathriEarVisualizer> Visualizer;
 
 	FPinIndexChanged PinIndexChanged;
 };

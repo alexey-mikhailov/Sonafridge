@@ -8,7 +8,7 @@
 #include "Clathrispace.generated.h"
 
 class FClathrispace;
-class FClathrispacePreviewScene;
+class FClathriEarPreviewScene;
 
 
 USTRUCT(BlueprintType)
@@ -135,17 +135,17 @@ protected:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
 	friend FClathrispace;
-	friend FClathrispacePreviewScene;
+	friend FClathriEarPreviewScene;
 	UPROPERTY(GlobalConfig, EditAnywhere, Category = "Clathri Ear (Spatializer)")
 	FClathriEarData EarData;
 
 	friend FClathrispace;
-	friend FClathrispacePreviewScene;
+	friend FClathriEarPreviewScene;
 	UPROPERTY(GlobalConfig, EditAnywhere, Category = "Clathri Ear (Spatializer)")
 	FClathriMazeData MazeData;
 
 	friend FClathrispace;
-	friend FClathrispacePreviewScene;
+	friend FClathriEarPreviewScene;
 	UPROPERTY(GlobalConfig, EditAnywhere, Category = "Clathri Ear (Spatializer)")
 	FClathriumData RoomData;
 

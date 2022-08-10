@@ -4,8 +4,8 @@
 
 #include "Sonafridge/Attenuator/Clathrispace.h"
 #include "Sonafridge/Tools/MathTools.h"
-#include "SonafridgeEditor/AssetEditors/Clathrispace/ClathrispaceEditorPreview.h"
-#include "SonafridgeEditor/AssetEditors/Clathrispace/ClathrispacePreviewScene.h"
+#include "SonafridgeEditor/AssetEditors/Clathrispace/ClathriEarEditorPreview.h"
+#include "SonafridgeEditor/AssetEditors/Clathrispace/ClathriEarPreviewScene.h"
 
 
 TSharedRef<SEditorViewport> SClathriEar::GetViewportWidget()
@@ -14,7 +14,7 @@ TSharedRef<SEditorViewport> SClathriEar::GetViewportWidget()
 }
 
 SClathriEar::SClathriEar()
-	: PreviewScene(MakeShared<FClathrispacePreviewScene>(FPreviewScene::ConstructionValues()))
+	: PreviewScene(MakeShared<FClathriEarPreviewScene>(FPreviewScene::ConstructionValues()))
 {
 }
 
@@ -46,7 +46,7 @@ void SClathriEar::OnFloatingButtonClicked()
 
 TSharedRef<FEditorViewportClient> SClathriEar::MakeEditorViewportClient()
 {
-	ViewportClient = MakeShared<FClathrispaceViewportClient>
+	ViewportClient = MakeShared<FClathriEarViewportClient>
 	(
 		nullptr,
 		PreviewScene.Get(),

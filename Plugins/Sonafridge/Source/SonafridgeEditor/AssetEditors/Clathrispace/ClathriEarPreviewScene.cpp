@@ -1,8 +1,8 @@
 // Sonafridge 2022
 
-#include "ClathrispacePreviewScene.h"
+#include "ClathriEarPreviewScene.h"
 
-#include "ClathrispaceEditorPreview.h"
+#include "ClathriEarEditorPreview.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
 #include "SonafridgeEditor/Tools/PrimitiveBakery.h"
 #include "Sonafridge/Tools/HSRColor.h"
@@ -14,7 +14,7 @@
 
 IMPLEMENT_HIT_PROXY(HEarPinProxy, HComponentVisProxy);
 
-FClathrispacePreviewScene::FClathrispacePreviewScene(ConstructionValues CVS)
+FClathriEarPreviewScene::FClathriEarPreviewScene(ConstructionValues CVS)
 {
 	// World setting
 	GetWorld()->GetWorldSettings()->NotifyBeginPlay();
@@ -34,7 +34,7 @@ FClathrispacePreviewScene::FClathrispacePreviewScene(ConstructionValues CVS)
 
 	// Test head
 	HelmetMesh = LoadObject<UStaticMesh>(NULL, TEXT("/Sonafridge/Meshes/TestHead/TestHalfHead.TestHalfHead"), NULL, LOAD_None, NULL);
-	HelmetComp = NewObject<UClathrispaceHelmetComponent>();
+	HelmetComp = NewObject<UClathriEarHelmetComponent>();
 	HelmetComp->SetStaticMesh(HelmetMesh);
 	AddComponent(HelmetComp, FTransform::Identity);
 
@@ -42,13 +42,13 @@ FClathrispacePreviewScene::FClathrispacePreviewScene(ConstructionValues CVS)
 	HelmetComp->SetRelativeScale3D({ 1.f, -1.f, 1.f });
 }
 
-void FClathrispacePreviewScene::SetSettings(UClathrispaceSettings* InSettings)
+void FClathriEarPreviewScene::SetSettings(UClathrispaceSettings* InSettings)
 {
 	Settings = InSettings;
 	HelmetComp->Init(InSettings);
 }
 
-void UClathrispaceHelmetComponent::Init(UClathrispaceSettings* InSettings)
+void UClathriEarHelmetComponent::Init(UClathrispaceSettings* InSettings)
 {
 	Settings = InSettings;
 
@@ -69,16 +69,16 @@ void UClathrispaceHelmetComponent::Init(UClathrispaceSettings* InSettings)
 	SelectedEarPinMaterial->SetVectorParameterValue("Color", HSR(.62f, 1.f, .5));
 }
 
-FHelmetVisualizer::FHelmetVisualizer()
+FClathriEarVisualizer::FClathriEarVisualizer()
 {
 	SphereCake = PrimitiveBakery::BuildSphere(1.5f, 2);
 }
 
-void FHelmetVisualizer::Draw(const UActorComponent*   Component,
-                             const FSceneView*        View,
-                             FPrimitiveDrawInterface* PDI)
+void FClathriEarVisualizer::Draw(const UActorComponent*   Component,
+                                 const FSceneView*        View,
+                                 FPrimitiveDrawInterface* PDI)
 {
-	if (const UClathrispaceHelmetComponent* Helmet = Cast<UClathrispaceHelmetComponent>(Component))
+	if (const UClathriEarHelmetComponent* Helmet = Cast<UClathriEarHelmetComponent>(Component))
 	{
 		UClathrispaceSettings* Settings = Helmet->GetSettings();
 		FVector Origin = Helmet->GetComponentLocation();
@@ -137,13 +137,13 @@ void FHelmetVisualizer::Draw(const UActorComponent*   Component,
 			}
 		}
 
-		HelmetComponent = const_cast<UClathrispaceHelmetComponent*>(Helmet);
+		HelmetComponent = const_cast<UClathriEarHelmetComponent*>(Helmet);
 	}
 }
 
-bool FHelmetVisualizer::ProcessClick(FEditorViewportClient* InViewportClient,
-                                     HHitProxy*             HitProxy,
-                                     const FViewportClick&  Click)
+bool FClathriEarVisualizer::ProcessClick(FEditorViewportClient* InViewportClient,
+                                         HHitProxy*             HitProxy,
+                                         const FViewportClick&  Click)
 {
 	if (HitProxy)
 	{
@@ -156,9 +156,9 @@ bool FHelmetVisualizer::ProcessClick(FEditorViewportClient* InViewportClient,
 			SelectedPinIndex = INDEX_NONE;
 		}
 
-		if (FClathrispaceViewportClient* CVC = (FClathrispaceViewportClient*)(InViewportClient))
+		if (FClathriEarViewportClient* Client = (FClathriEarViewportClient*)(InViewportClient))
 		{
-			CVC->GetEvent_PinIndexChanged().Broadcast(SelectedPinIndex);
+			Client->GetEvent_PinIndexChanged().Broadcast(SelectedPinIndex);
 		}
 
 		return true;
@@ -166,19 +166,19 @@ bool FHelmetVisualizer::ProcessClick(FEditorViewportClient* InViewportClient,
 
 	SelectedPinIndex = INDEX_NONE;
 
-	if (FClathrispaceViewportClient* CVC = (FClathrispaceViewportClient*)(InViewportClient))
+	if (FClathriEarViewportClient* Client = (FClathriEarViewportClient*)(InViewportClient))
 	{
-		CVC->GetEvent_PinIndexChanged().Broadcast(SelectedPinIndex);
+		Client->GetEvent_PinIndexChanged().Broadcast(SelectedPinIndex);
 	}
 
 	return false;
 }
 
-bool FHelmetVisualizer::HandleInputDelta(FEditorViewportClient* ViewportClient,
-                                         FViewport*             Viewport,
-                                         FVector&               DeltaTranslate,
-                                         FRotator&              DeltaRotate,
-                                         FVector&               DeltaScale)
+bool FClathriEarVisualizer::HandleInputDelta(FEditorViewportClient* ViewportClient,
+                                             FViewport*             Viewport,
+                                             FVector&               DeltaTranslate,
+                                             FRotator&              DeltaRotate,
+                                             FVector&               DeltaScale)
 {
 	bool bHandled = false;
 
@@ -231,12 +231,12 @@ bool FHelmetVisualizer::HandleInputDelta(FEditorViewportClient* ViewportClient,
 	return bHandled;
 }
 
-bool FHelmetVisualizer::HandleInputKey(FViewport*  Viewport,
-                                       int32       ControllerId,
-                                       FKey        Key,
-                                       EInputEvent Event,
-                                       float       AmountDepressed,
-                                       bool        bGamepad)
+bool FClathriEarVisualizer::HandleInputKey(FViewport*  Viewport,
+                                           int32       ControllerId,
+                                           FKey        Key,
+                                           EInputEvent Event,
+                                           float       AmountDepressed,
+                                           bool        bGamepad)
 {
 	if (Key == EKeys::Delete)
 	{

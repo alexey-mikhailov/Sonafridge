@@ -1,9 +1,9 @@
 // Sonafridge 2022
 
-#include "ClathrispaceEditorPreview.h"
+#include "ClathriEarEditorPreview.h"
 
 #include "EditorModeManager.h"
-#include "SonafridgeEditor/AssetEditors/Clathrispace/ClathrispacePreviewScene.h"
+#include "SonafridgeEditor/AssetEditors/Clathrispace/ClathriEarPreviewScene.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
 #include "Sonafridge/Tools/MathTools.h"
 #include "Components/DirectionalLightComponent.h"
@@ -12,14 +12,14 @@
 #include "Engine/Selection.h"
 
 
-FClathrispaceViewportClient::FClathrispaceViewportClient(FEditorModeTools* InModeTools,
-                                                         FPreviewScene*    InPreviewScene,
-                                                         const TWeakPtr<SEditorViewport>& InEditorViewportWidget)
+FClathriEarViewportClient::FClathriEarViewportClient(FEditorModeTools*                InModeTools,
+                                                     FPreviewScene*                   InPreviewScene,
+                                                     const TWeakPtr<SEditorViewport>& InEditorViewportWidget)
 	: FEditorViewportClient(InModeTools,
 	                        InPreviewScene,
 	                        InEditorViewportWidget)
 {
-	ClathriEarScene = static_cast<FClathrispacePreviewScene*>(InPreviewScene);
+	ClathriEarScene = static_cast<FClathriEarPreviewScene*>(InPreviewScene);
 
 	SetViewLocation(FVector::ZeroVector);
 	SetViewRotation(FRotator(-45.0f, 135.0f, 0.0f));
@@ -39,31 +39,32 @@ FClathrispaceViewportClient::FClathrispaceViewportClient(FEditorModeTools* InMod
 	DrawHelper.GridColorMajor = FColor(72, 72, 72);
 	DrawHelper.GridColorMinor = FColor(64, 64, 64);
 	DrawHelper.PerspectiveGridSize = HALF_WORLD_MAX1;
+
+	Visualizer = MakeShared<FClathriEarVisualizer>();
 }
 
-void FClathrispaceViewportClient::ProcessClick(FSceneView& View,
-                                               HHitProxy*  HitProxy,
-                                               FKey        Key,
-                                               EInputEvent Event,
-                                               uint32      HitX,
-                                               uint32      HitY)
+void FClathriEarViewportClient::ProcessClick(FSceneView& View,
+                                             HHitProxy*  HitProxy,
+                                             FKey        Key,
+                                             EInputEvent Event,
+                                             uint32      HitX,
+                                             uint32      HitY)
 {
 	SetWidgetMode(FWidget::WM_Rotate);
 
 	if (ClathriEarScene && IsValid(ClathriEarScene->HelmetComp))
 	{
-		TSharedPtr<FHelmetVisualizer> Visualizer = ClathriEarScene->HelmetComp->GetVisualizer();
 		const FViewportClick Click(&View, this, Key, Event, HitX, HitY);
 		Visualizer->ProcessClick(this, HitProxy, Click);
 	}
 }
 
-bool FClathrispaceViewportClient::InputKey(FViewport*  InViewport,
-                                           int32       ControllerId,
-                                           FKey        Key,
-                                           EInputEvent Event,
-                                           float       AmountDepressed,
-                                           bool        bGamepad)
+bool FClathriEarViewportClient::InputKey(FViewport*  InViewport,
+                                         int32       ControllerId,
+                                         FKey        Key,
+                                         EInputEvent Event,
+                                         float       AmountDepressed,
+                                         bool        bGamepad)
 {
 	bool bResult = FEditorViewportClient::InputKey(InViewport,
 	                                               ControllerId,
@@ -74,24 +75,22 @@ bool FClathrispaceViewportClient::InputKey(FViewport*  InViewport,
 
 	if (ClathriEarScene && IsValid(ClathriEarScene->HelmetComp))
 	{
-		TSharedPtr<FHelmetVisualizer> Visualizer = ClathriEarScene->HelmetComp->GetVisualizer();
 		bResult |= Visualizer->HandleInputKey(InViewport, ControllerId, Key, Event, AmountDepressed, bGamepad);
 	}
 
 	return bResult;
 }
 
-bool FClathrispaceViewportClient::InputWidgetDelta(FViewport*      InViewport,
-                                                   EAxisList::Type CurrentAxis,
-                                                   FVector&        Drag,
-                                                   FRotator&       Rot,
-                                                   FVector&        Scale)
+bool FClathriEarViewportClient::InputWidgetDelta(FViewport*      InViewport,
+                                                 EAxisList::Type CurrentAxis,
+                                                 FVector&        Drag,
+                                                 FRotator&       Rot,
+                                                 FVector&        Scale)
 {
 	if (ClathriEarScene && IsValid(ClathriEarScene->HelmetComp))
 	{
 		if (Widget->IsDragging())
 		{
-			TSharedPtr<FHelmetVisualizer> Visualizer = ClathriEarScene->HelmetComp->GetVisualizer();
 			return Visualizer->HandleInputDelta(this, InViewport, Drag, Rot, Scale);
 		}
 	}
@@ -99,14 +98,14 @@ bool FClathrispaceViewportClient::InputWidgetDelta(FViewport*      InViewport,
 	return false;
 }
 
-void FClathrispaceViewportClient::MouseMove(FViewport* InViewport, int32 x, int32 y)
+void FClathriEarViewportClient::MouseMove(FViewport* InViewport, int32 x, int32 y)
 {
 	FEditorViewportClient::MouseMove(InViewport, x, y);
 }
 
-void FClathrispaceViewportClient::CapturedMouseMove(FViewport* InViewport,
-                                                    int32      InMouseX,
-                                                    int32      InMouseY)
+void FClathriEarViewportClient::CapturedMouseMove(FViewport* InViewport,
+                                                  int32      InMouseX,
+                                                  int32      InMouseY)
 {
 	FEditorViewportClient::CapturedMouseMove(InViewport, InMouseX, InMouseY);
 
@@ -131,30 +130,27 @@ void FClathrispaceViewportClient::CapturedMouseMove(FViewport* InViewport,
 	}
 }
 
-void FClathrispaceViewportClient::Draw(FViewport* InViewport, FCanvas* Canvas)
+void FClathriEarViewportClient::Draw(FViewport* InViewport, FCanvas* Canvas)
 {
 	FEditorViewportClient::Draw(InViewport, Canvas);
 }
 
-FVector FClathrispaceViewportClient::GetWidgetLocation() const
+FVector FClathriEarViewportClient::GetWidgetLocation() const
 {
 	return FVector::ZeroVector;
 }
 
-void FClathrispaceViewportClient::Draw(const FSceneView* View, FPrimitiveDrawInterface* PDI)
+void FClathriEarViewportClient::Draw(const FSceneView* View, FPrimitiveDrawInterface* PDI)
 {
 	FEditorViewportClient::Draw(View, PDI);
 
 	if (ClathriEarScene && IsValid(ClathriEarScene->HelmetComp))
 	{
-		const FName Name = UClathrispaceHelmetComponent::StaticClass()->GetFName();
-
-		TSharedPtr<FHelmetVisualizer> Visualizer = ClathriEarScene->HelmetComp->GetVisualizer();
 		Visualizer->Draw(ClathriEarScene->HelmetComp, View, PDI);
 	}
 }
 
-void FClathrispaceViewportClient::Tick(float DeltaSeconds)
+void FClathriEarViewportClient::Tick(float DeltaSeconds)
 {
 	FEditorViewportClient::Tick(DeltaSeconds);
 
@@ -165,7 +161,7 @@ void FClathrispaceViewportClient::Tick(float DeltaSeconds)
 	}
 }
 
-bool FClathrispaceViewportClient::ShouldOrbitCamera() const
+bool FClathriEarViewportClient::ShouldOrbitCamera() const
 {
 	return true;
 }

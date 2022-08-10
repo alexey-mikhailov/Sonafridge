@@ -5,8 +5,8 @@
 #include "SEditorViewport.h"
 
 
-class FClathrispacePreviewScene;
-class FClathrispaceViewportClient;
+class FClathriEarPreviewScene;
+class FClathriEarViewportClient;
 class UClathrispaceSettings;
 
 
@@ -21,7 +21,7 @@ public:
 
 	void Construct(const FArguments& InArgs);
 
-	FORCEINLINE TSharedPtr<FClathrispaceViewportClient> GetOwnViewportClient() const { return ViewportClient; }
+	FORCEINLINE TSharedPtr<FClathriEarViewportClient> GetOwnViewportClient() const { return ViewportClient; }
 
 	// 
 	// Toolbar interface
@@ -40,8 +40,8 @@ protected:
 	virtual TSharedPtr<SWidget>               MakeViewportToolbar() override;
 
 private:
-	TSharedPtr<FClathrispaceViewportClient> ViewportClient;
-	TSharedPtr<FClathrispacePreviewScene>   PreviewScene;
+	TSharedPtr<FClathriEarViewportClient> ViewportClient;
+	TSharedPtr<FClathriEarPreviewScene>   PreviewScene;
 
 	TAttribute<UClathrispaceSettings*> Settings;
 };

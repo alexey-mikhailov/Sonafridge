@@ -5,7 +5,7 @@
 
 #include "SonafridgeEditor/AssetEditors/Clathrispace/View/W_ClathriQ.h"
 #include "SonafridgeEditor/AssetEditors/Clathrispace/View/SClathriEar.h"
-#include "SonafridgeEditor/AssetEditors/Clathrispace/ClathrispaceEditorPreview.h"
+#include "SonafridgeEditor/AssetEditors/Clathrispace/ClathriEarEditorPreview.h"
 #include "Sonafridge/Attenuator/Clathrispace.h"
 #include "WidgetBlueprint.h"
 
@@ -243,10 +243,11 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathriEar(const FSpawn
 {
 	check(Args.GetTabId() == ClathriEarTabId);
 
-	TSharedRef<SClathriEar>           ClathriEar = SNew(SClathriEar).Settings(ClathrispaceSettings);
-	if (TSharedPtr<FClathrispaceViewportClient> CVC = ClathriEar->GetOwnViewportClient())
+	TSharedRef<SClathriEar> ClathriEar = SNew(SClathriEar).Settings(ClathrispaceSettings);
+
+	if (TSharedPtr<FClathriEarViewportClient> Client = ClathriEar->GetOwnViewportClient())
 	{
-		CVC->GetEvent_PinIndexChanged().AddRaw(this, &FAssetEditor_Clathrispace::OnPinIndexChanged);
+		Client->GetEvent_PinIndexChanged().AddRaw(this, &FAssetEditor_Clathrispace::OnPinIndexChanged);
 	}
 
 	return SNew(SDockTab)
