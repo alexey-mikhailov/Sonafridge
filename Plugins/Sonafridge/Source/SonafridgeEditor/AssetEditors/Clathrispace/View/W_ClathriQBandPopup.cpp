@@ -154,14 +154,19 @@ void UW_ClathriQBandPopup::OnToggleOnOffExit()
 
 void UW_ClathriQBandPopup::OnPinIndexChanged(int32 InPinIndex)
 {
-	SetVisibility(InPinIndex == INDEX_NONE ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
+	PinIndex = InPinIndex;
+	bool bIsPinFailed = PinIndex == INDEX_NONE;
+	bool bIsBandFailed = BandIndex == INDEX_NONE;
+	SetVisibility(bIsPinFailed || bIsBandFailed ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
 	FollowBand();
 }
 
 void UW_ClathriQBandPopup::OnBandSelectionChanged(int32 InBandIndex)
 {
 	BandIndex = InBandIndex;
-	SetVisibility(BandIndex == INDEX_NONE ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
+	bool bIsPinFailed = PinIndex == INDEX_NONE;
+	bool bIsBandFailed = BandIndex == INDEX_NONE;
+	SetVisibility(bIsPinFailed || bIsBandFailed ? ESlateVisibility::Hidden : ESlateVisibility::Visible);
 
 	if (BandIndex != INDEX_NONE)
 	{

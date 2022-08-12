@@ -126,7 +126,8 @@ private:
 	UW_ClathriQ* RootWidget = nullptr;
 
 	TSharedPtr<FVM_ClathriQ> ViewModel;
-	int32                    BandIndex;
+	int32                    BandIndex = INDEX_NONE;
+	int32                    PinIndex = INDEX_NONE;
 
 	float PresstimeMakeupDb = 0.f;
 	float PresstimeAvgDb = 0.f;
