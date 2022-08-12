@@ -150,7 +150,6 @@ TAudioSpatializationPtr FClathrispaceFactory::CreateNewSpatializationPlugin(FAud
 
 FClathrispace::FClathrispace()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, TEXT("FClathrispace::FClathrispace"));
 }
 
 void FClathrispace::Initialize(const FAudioPluginInitializationParams Params)
@@ -162,43 +161,21 @@ void FClathrispace::Initialize(const FAudioPluginInitializationParams Params)
 
 	FilterL.Init(SampleRate, 1, 0.f, EEQBandType::CutHighButterworth, 0.f);
 	FilterR.Init(SampleRate, 1, 0.f, EEQBandType::CutHighButterworth, 0.f);
-
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, TEXT("FClathrispace::Initialize"));
 }
 
 void FClathrispace::OnInitSource(const uint32                             SourceId,
                                  const FName&                             AudioComponentUserId,
                                  USpatializationPluginSourceSettingsBase* InSettings)
 {
-	GEngine->AddOnScreenDebugMessage(-1,
-	                                 1.f,
-	                                 FColor::Green,
-	                                 FString::Printf(
-		                                 TEXT("FClathrispace::OnInitSource. Source: %i, AudioComponent: %s"),
-		                                 SourceId,
-		                                 *AudioComponentUserId.ToString()));
-
 	Settings = Cast<UClathrispaceSettings>(InSettings);
 }
 
 void FClathrispace::OnReleaseSource(const uint32 SourceId)
 {
-	GEngine->AddOnScreenDebugMessage(-1,
-									1.f,
-									FColor::Green,
-									FString::Printf(
-										TEXT("FClathrispace::OnReleaseSource. Source: %i"),
-										SourceId));
 }
 
 bool FClathrispace::IsSpatializationEffectInitialized() const
 {
-	GEngine->AddOnScreenDebugMessage(-1,
-									1.f,
-									FColor::Green,
-									FString::Printf(
-										TEXT("FClathrispace::IsSpatializationEffectInitialized with Result %i"),
-										bInitialized));
 	return bInitialized;
 }
 
@@ -220,8 +197,6 @@ void FClathrispace::ProcessAudio(const FAudioPluginSourceInputData& InputData,
 	IsBackFromRight = .5f * (IsBackFromRight + 1.f);
 	IsBackFromLeft = FMath::Pow(IsBackFromLeft, 2.f);
 	IsBackFromRight = FMath::Pow(IsBackFromRight, 2.f);
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Green, FString::Printf(TEXT("IsBackFromLeft: %f"), IsBackFromLeft));
-	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("IsBackFromRight: %f"), IsBackFromRight));
 
 	FilterL.SetFrequency(FMath::Lerp(20000.f, 4000.f, IsBackFromLeft));
 	FilterR.SetFrequency(FMath::Lerp(20000.f, 4000.f, IsBackFromRight));
