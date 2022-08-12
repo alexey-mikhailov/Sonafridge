@@ -25,8 +25,11 @@ void FSonafridgeContentBrowserMenuExtender::Startup()
 
 	if (UAssetEditorSubsystem* AssetEditorSubsystem = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>())
 	{
-		auto EditorRequestedOpen = AssetEditorSubsystem->OnAssetEditorRequestedOpen();
-		EditorRequestedOpen.AddRaw(this, &FSonafridgeContentBrowserMenuExtender::OnAssetEditorRequestedOpen);
+		AssetEditorRequestedOpenDelegateHandle = AssetEditorSubsystem->OnAssetEditorRequestedOpen().AddRaw
+		(
+			this, 
+			&FSonafridgeContentBrowserMenuExtender::OnAssetEditorRequestedOpen
+		);
 	}
 }
 
@@ -48,6 +51,14 @@ void FSonafridgeContentBrowserMenuExtender::Shutdown()
 	});
 
 	MenuExtenderForSelectedSonaQs = {};
+
+	if (IsValid(GEngine))
+	{
+		if (UAssetEditorSubsystem* AssetEditorSubsystem = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>())
+		{
+			AssetEditorSubsystem->OnAssetEditorRequestedOpen().Remove(AssetEditorRequestedOpenDelegateHandle);
+		}
+	}
 }
 
 TSharedRef<FExtender> FSonafridgeContentBrowserMenuExtender::OnExtendAssetMenu(const TArray<FAssetData>& SelectedAssets)
@@ -134,7 +145,7 @@ void FSonafridgeContentBrowserMenuExtender::AddMenuEntryForSonaQs(FMenuBuilder& 
 
 void FSonafridgeContentBrowserMenuExtender::OnAssetEditorRequestedOpen(UObject* InObject)
 {
-
+	// Add handlers that trigger on opening asset. 
 }
 
 #undef LOCTEXT_NAMESPACE

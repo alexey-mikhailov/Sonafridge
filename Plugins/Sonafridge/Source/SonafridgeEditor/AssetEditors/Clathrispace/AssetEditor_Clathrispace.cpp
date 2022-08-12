@@ -238,7 +238,6 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathriQ(const FSpawnTa
 		];
 }
 
-// TODO: Rename it, because tab is named as ClathriEar, but widget named as Clathrispace. 
 TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathriEar(const FSpawnTabArgs& Args)
 {
 	check(Args.GetTabId() == ClathriEarTabId);
@@ -247,6 +246,8 @@ TSharedRef<SDockTab> FAssetEditor_Clathrispace::SpawnTab_ClathriEar(const FSpawn
 
 	if (TSharedPtr<FClathriEarViewportClient> Client = ClathriEar->GetOwnViewportClient())
 	{
+		// No need to keep handle, because life time of FAssetEditor_Clathrispace instance
+		// is guaranteed longer than life time of dependent FClathriEarViewportClient instance. 
 		Client->GetEvent_PinIndexChanged().AddRaw(this, &FAssetEditor_Clathrispace::OnPinIndexChanged);
 	}
 

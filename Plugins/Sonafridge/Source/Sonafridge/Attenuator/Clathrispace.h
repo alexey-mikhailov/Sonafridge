@@ -131,6 +131,9 @@ public:
 	DECLARE_EVENT(UClathrispaceSettings, FExternallyChanged);
 	FExternallyChanged& GetEvent_ExternallyChanged() { return ExternallyChanged; }
 
+	DECLARE_EVENT(UClathrispaceSettings, FInternallyChanged);
+	FInternallyChanged& GetEvent_InternallyChanged() { return InternallyChanged; }
+
 protected:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
@@ -150,6 +153,7 @@ protected:
 	FClathriumData RoomData;
 
 	FExternallyChanged ExternallyChanged;
+	FInternallyChanged InternallyChanged;
 };
 
 

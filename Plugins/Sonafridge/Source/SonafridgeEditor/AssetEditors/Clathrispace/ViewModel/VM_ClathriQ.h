@@ -26,6 +26,7 @@ public:
 	static const float FLS;
 
 	FVM_ClathriQ();
+	~FVM_ClathriQ();
 	void Init(UClathrispaceSettings*  InSettings,
 	          TDelegate<void(int32)>& InPinIndexChanged,
 	          float                   InSampleRate);
@@ -80,6 +81,8 @@ private:
 	FBandSelectionChanged BandSelectionChanged;
 	FBandChanging         BandChanging;
 	FBandChanged          BandChanged;
+
+	FDelegateHandle BandChangedDelegateHandle;
 
 	bool  bIsEnabled        = true;
 	float SampleRate        = 48000.f;

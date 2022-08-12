@@ -33,6 +33,11 @@ FVM_ClathriQ::FVM_ClathriQ()
 	for (int32 Index = 0; Index < Resolution + 1; ++Index) Response[Index] = 1.f;
 }
 
+FVM_ClathriQ::~FVM_ClathriQ()
+{
+	BandChanged.Remove(BandChangedDelegateHandle);
+}
+
 void FVM_ClathriQ::Init(UClathrispaceSettings*  InSettings,
                         TDelegate<void(int32)>& InPinIndexChanged,
                         float                   InSampleRate)
@@ -46,6 +51,8 @@ void FVM_ClathriQ::Init(UClathrispaceSettings*  InSettings,
 
 	Settings = InSettings;
 	SampleRate = InSampleRate;
+
+	BandChangedDelegateHandle = BandChanged.AddLambda([this](int32 InBandIndex) { Settings->GetEvent_InternallyChanged().Broadcast(); });
 }
 
 void FVM_ClathriQ::SetIsEnabled(int32 BandIndex, bool bEnabled)

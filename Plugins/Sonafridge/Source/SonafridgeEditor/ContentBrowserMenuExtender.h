@@ -17,4 +17,6 @@ private:
 	void                  OnAssetExtended(FMenuBuilder& MenuBuilder, TArray<FAssetData> SelectedAssets);
 	void                  AddMenuEntryForSonaQs(FMenuBuilder& MenuBuilder, const FAssetData& Asset);
 	void                  OnAssetEditorRequestedOpen(UObject* InObject);
+
+	FDelegateHandle AssetEditorRequestedOpenDelegateHandle;
 };
