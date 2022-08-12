@@ -171,8 +171,12 @@ public:
 		return PlatformName == FString(TEXT("Windows"));
 	}
 
-	virtual UClass* GetCustomSpatializationSettingsClass() const override { return UClathrispaceSettings::StaticClass(); }
+	virtual UClass* GetCustomSpatializationSettingsClass() const override
+	{
+		return UClathrispaceSettings::StaticClass();
+	}
 
+	virtual int32                   GetMaxSupportedChannels() override { return 2; }
 	virtual TAudioSpatializationPtr CreateNewSpatializationPlugin(FAudioDevice* OwningDevice) override;
 };
 
@@ -181,12 +185,9 @@ class FClathrispace final : public IAudioSpatialization
 {
 public:
 	FClathrispace();
-	virtual ~FClathrispace() override {}
 
 	virtual void Initialize(const FAudioPluginInitializationParams Params) override;
 
-	virtual void OnInitSource(const uint32 SourceId,
-	                          const FName& AudioComponentUserId,
 	                          USpatializationPluginSourceSettingsBase* InSettings) override;
 
 	virtual void OnReleaseSource(const uint32 SourceId) override;
@@ -202,8 +203,6 @@ private:
 	uint32 SampleRate = {};
 	uint32 BufferLength = {};
 
-	Sonafridge::FBiquadFilter FilterL;
-	Sonafridge::FBiquadFilter FilterR;
 
 	TWeakObjectPtr<UClathrispaceSettings> Settings;
 };
