@@ -2,6 +2,7 @@
 
 #include "W_ClathriQBandPopup.h"
 
+#include "Sonafridge/Attenuator/Clathrispace.h"
 #include "Sonafridge/Widgets/NaveledKnob.h"
 #include "Sonafridge/Widgets/ToggleKnob.h"
 #include "Sonafridge/Tools/MathTools.h"
@@ -10,16 +11,16 @@
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
 #include "Kismet/KismetTextLibrary.h"
+#include "Kismet/KismetInputLibrary.h"
 #include "Misc/DefaultValueHelper.h"
 #include "AudioDevice.h"
-#include "Kismet/KismetInputLibrary.h"
 
 using namespace SonafridgeEditor;
 
 
 UW_ClathriQBandPopup::UW_ClathriQBandPopup()
 {
-	BandsActivityBeforeListenTime.SetNum(FVM_ClathriQ::BandCount);
+	BandsActivityBeforeListenTime.SetNum(UClathrispaceSettings::BandCount);
 }
 
 void UW_ClathriQBandPopup::Init(UW_ClathriQ* InRootWidget, TSharedPtr<FVM_ClathriQ> InViewModel)

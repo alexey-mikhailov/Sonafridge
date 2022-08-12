@@ -8,7 +8,6 @@ class UClathrispaceSettings;
 class SONAFRIDGEEDITOR_API FVM_ClathriQ
 {
 public:
-	static constexpr int32 BandCount = 3;
 	static constexpr float FrequencyMin = 20.f;
 	static constexpr float FrequencyMax = 20000.f;
 	static constexpr float DynamicMin = -48.f;

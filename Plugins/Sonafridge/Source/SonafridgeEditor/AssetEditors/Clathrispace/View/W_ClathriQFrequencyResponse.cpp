@@ -3,15 +3,15 @@
 #include "W_ClathriQFrequencyResponse.h"
 #include "W_ClathriQ.h"
 #include "SonafridgeEditor/AssetEditors/Clathrispace/ViewModel/VM_ClathriQ.h"
+#include "Sonafridge/Attenuator/Clathrispace.h"
 #include "Sonafridge/Tools/HSRColor.h"
 #include "Sonafridge/Tools/MathTools.h"
 #include "Input/HittestGrid.h"
 #include "AudioDevice.h"
-#include "Sonafridge/Attenuator/Clathrispace.h"
 
 UW_ClathriQFrequencyResponse::UW_ClathriQFrequencyResponse()
 {
-	BandPoints.SetNumZeroed(FVM_ClathriQ::BandCount);
+	BandPoints.SetNumZeroed(UClathrispaceSettings::BandCount);
 	SizeChanged.AddUObject(this, &UW_ClathriQFrequencyResponse::OnSizeChanged);
 }
 
@@ -73,7 +73,7 @@ FReply UW_ClathriQFrequencyResponse::NativeOnMouseButtonDown(const FGeometry&   
 
 	PossessedBandIndex = -1;
 
-	for (int32 Index = 0; Index < FVM_ClathriQ::BandCount; ++Index)
+	for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
 	{
 		FVector2D       WBandPos = GetBandWPos(Index);
 		constexpr float ScreenSpaceTolerance = 10.f;
@@ -159,7 +159,7 @@ FReply UW_ClathriQFrequencyResponse::NativeOnMouseMove(const FGeometry&     InGe
 	bWasCtrlPressed = bCtrl;
 	bWasAltPressed = bAlt;
 
-	for (int32 Index = 0; Index < FVM_ClathriQ::BandCount; ++Index)
+	for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
 	{
 		FVector2D       WBandPos = GetBandWPos(Index);
 		constexpr float ScreenSpaceTolerance = 10.f;
@@ -349,7 +349,7 @@ int32 UW_ClathriQFrequencyResponse::NativePaint(const FPaintArgs&        Args,
 
 	FLinearColor PointColor = BandPointEnabledNormalColor;
 
-	for (int32 Index = 0; Index < FVM_ClathriQ::BandCount; ++Index)
+	for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
 	{
 		FVector2D P1 = BandPoints[Index] + FVector2D(0.f, -1.f);
 		FVector2D P2 = BandPoints[Index] + FVector2D(0.f, +1.f);
@@ -469,7 +469,7 @@ void UW_ClathriQFrequencyResponse::BakeResponse()
 		};
 	}
 
-	for (int32 Index = 0; Index < FVM_ClathriQ::BandCount; ++Index)
+	for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
 	{
 		float F = ViewModel->GetFrequency(Index);
 		float X = MathLogTool::TwentiethsToTribel(F);
