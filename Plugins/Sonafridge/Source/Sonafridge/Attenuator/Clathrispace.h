@@ -186,6 +186,14 @@ public:
 };
 
 
+struct FClathrispaceSource
+{
+	int32 SourceId;
+	FBiquadBufferMixer FilterL[UClathrispaceSettings::BandCount] {};
+	FBiquadBufferMixer FilterR[UClathrispaceSettings::BandCount] {};
+};
+
+
 class FClathrispace final : public IAudioSpatialization
 {
 public:
@@ -211,7 +219,7 @@ protected:
 	void OnAssetInternallyChanged();
 
 private:
-	void RecalculateEar(const FVector& InEmitterNormal);
+	void RecalculateEar(FClathrispaceSource* InSource, const FVector& InEmitterNormal);
 
 	bool    bInitialized = false;
 	uint32  NumDstChannels = 2;
@@ -219,8 +227,7 @@ private:
 	uint32  NumSamples = {};
 	FVector PreviousEmitterDirection = FVector::ZeroVector;
 
-	FBiquadBufferMixer FilterL[UClathrispaceSettings::BandCount] {};
-	FBiquadBufferMixer FilterR[UClathrispaceSettings::BandCount] {};
+	TMap<uint32, FClathrispaceSource> Sources;
 
 	TWeakObjectPtr<UClathrispaceSettings> Settings;
 

@@ -178,16 +178,6 @@ void FClathrispace::Initialize(const FAudioPluginInitializationParams Params)
 	SampleRate = Params.SampleRate;
 	NumSamples = Params.BufferLength;
 
-	for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
-	{
-		FilterL[Index].Init(SampleRate);
-		FilterL[Index].SetNumDstChannels(NumDstChannels);
-		FilterL[Index].SetDstChannelIndex(0);
-		FilterR[Index].Init(SampleRate);
-		FilterR[Index].SetNumDstChannels(NumDstChannels);
-		FilterR[Index].SetDstChannelIndex(1);
-	}
-
 	StatDrawer->Initialize();
 }
 
@@ -215,6 +205,19 @@ void FClathrispace::OnInitSource(const uint32                             Source
 		(
 			this, &FClathrispace::OnAssetInternallyChanged
 		);
+
+		FClathrispaceSource Csrc;
+		for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
+		{
+			Csrc.Delay.Init(SampleRate, 3.f);
+			Csrc.FilterL[Index].Init(SampleRate);
+			Csrc.FilterL[Index].SetNumDstChannels(NumDstChannels);
+			Csrc.FilterL[Index].SetDstChannelIndex(0);
+			Csrc.FilterR[Index].Init(SampleRate);
+			Csrc.FilterR[Index].SetNumDstChannels(NumDstChannels);
+			Csrc.FilterR[Index].SetDstChannelIndex(1);
+		}
+		Sources.Add(SourceId, Csrc);
 	}
 	else
 	{
@@ -227,6 +230,17 @@ void FClathrispace::OnInitSource(const uint32                             Source
 
 void FClathrispace::OnReleaseSource(const uint32 SourceId)
 {
+	if (Sources.Find(SourceId))
+	{
+		Sources.Remove(SourceId);
+	}
+	else
+	{
+		UE_LOG(LogSonafridge,
+		       Error,
+		       TEXT("FClathrispace::OnReleaseSource: "
+			        "There are no corresponding FClathrispaceSource for this SourceId. "));
+	}
 }
 
 bool FClathrispace::IsSpatializationEffectInitialized() const
@@ -246,42 +260,45 @@ void FClathrispace::ProcessAudio(const FAudioPluginSourceInputData& Src,
 		PreviousEmitterDirection = EmitterDirection;
 	}
 
-	RecalculateEar(EmitterDirection.GetUnsafeNormal());
-
-	for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
+	if (FClathrispaceSource* Csrc = Sources.Find(Src.SourceId))
 	{
-		FilterL[Index].SetNumSrcChannels(Src.NumChannels);
-		FilterL[Index].SetMode
-		(
-			Src.NumChannels == 1
-			? EBiquadMixerMode::BroadcastMono
-			: Src.NumChannels == 2
-			  ? EBiquadMixerMode::BroadcastMonoFromStereo
-			  : EBiquadMixerMode::BroadcastMonoFromMultichannel
-		);
+		RecalculateEar(Csrc, EmitterDirection.GetUnsafeNormal());
 
-		FilterR[Index].SetNumSrcChannels(Src.NumChannels);
-		FilterR[Index].SetMode
-		(
-			Src.NumChannels == 1
-			? EBiquadMixerMode::BroadcastMono
-			: Src.NumChannels == 2
-			  ? EBiquadMixerMode::BroadcastMonoFromStereo
-			  : EBiquadMixerMode::BroadcastMonoFromMultichannel
-		);
-	}
+		for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
+		{
+			Csrc->FilterL[Index].SetNumSrcChannels(Src.NumChannels);
+			Csrc->FilterL[Index].SetMode
+			(
+				Src.NumChannels == 1
+				? EBiquadMixerMode::BroadcastMono
+				: Src.NumChannels == 2
+				? EBiquadMixerMode::BroadcastMonoFromStereo
+				: EBiquadMixerMode::BroadcastMonoFromMultichannel
+			);
 
-	if (Src.AudioBuffer)
-	{
-		float* SrcBuffer = Src.AudioBuffer->GetData();
-		float* DstBuffer = Dst.AudioBuffer.GetData();
+			Csrc->FilterR[Index].SetNumSrcChannels(Src.NumChannels);
+			Csrc->FilterR[Index].SetMode
+			(
+				Src.NumChannels == 1
+				? EBiquadMixerMode::BroadcastMono
+				: Src.NumChannels == 2
+				? EBiquadMixerMode::BroadcastMonoFromStereo
+				: EBiquadMixerMode::BroadcastMonoFromMultichannel
+			);
+		}
 
-		FilterL[0].ProcessInterlaced(SrcBuffer, DstBuffer, FilterL[0].GetMixerMode(), NumSamples, Src.NumChannels, NumDstChannels, 0);
-		FilterL[1].ProcessInterlaced(DstBuffer, DstBuffer, EBiquadMixerMode::NoBlending, NumSamples, NumDstChannels, NumDstChannels, 0);
-		FilterL[2].ProcessInterlaced(DstBuffer, DstBuffer, EBiquadMixerMode::NoBlending, NumSamples, NumDstChannels, NumDstChannels, 0);
-		FilterR[0].ProcessInterlaced(SrcBuffer, DstBuffer, FilterR[0].GetMixerMode(), NumSamples, Src.NumChannels, NumDstChannels, 1);
-		FilterR[1].ProcessInterlaced(DstBuffer, DstBuffer, EBiquadMixerMode::NoBlending, NumSamples, NumDstChannels, NumDstChannels, 1);
-		FilterR[2].ProcessInterlaced(DstBuffer, DstBuffer, EBiquadMixerMode::NoBlending, NumSamples, NumDstChannels, NumDstChannels, 1);
+		if (Src.AudioBuffer)
+		{
+			float* SrcBuffer = Src.AudioBuffer->GetData();
+			float* DstBuffer = Dst.AudioBuffer.GetData();
+
+			Csrc->FilterL[0].ProcessInterlaced(SrcBuffer, DstBuffer, Csrc->FilterL[0].GetMixerMode(), NumSamples, Src.NumChannels, NumDstChannels, 0);
+			Csrc->FilterL[1].ProcessInterlaced(DstBuffer, DstBuffer, EBiquadMixerMode::NoBlending, NumSamples, NumDstChannels, NumDstChannels, 0);
+			Csrc->FilterL[2].ProcessInterlaced(DstBuffer, DstBuffer, EBiquadMixerMode::NoBlending, NumSamples, NumDstChannels, NumDstChannels, 0);
+			Csrc->FilterR[0].ProcessInterlaced(SrcBuffer, DstBuffer, Csrc->FilterR[0].GetMixerMode(), NumSamples, Src.NumChannels, NumDstChannels, 1);
+			Csrc->FilterR[1].ProcessInterlaced(DstBuffer, DstBuffer, EBiquadMixerMode::NoBlending, NumSamples, NumDstChannels, NumDstChannels, 1);
+			Csrc->FilterR[2].ProcessInterlaced(DstBuffer, DstBuffer, EBiquadMixerMode::NoBlending, NumSamples, NumDstChannels, NumDstChannels, 1);
+		}
 	}
 
 	PreviousEmitterDirection = EmitterDirection;
@@ -301,8 +318,11 @@ void FClathrispace::OnAssetInternallyChanged()
 	// TODO: Pass settings here. 
 }
 
-void FClathrispace::RecalculateEar(const FVector& InEmitterNormal)
+void FClathrispace::RecalculateEar(FClathrispaceSource* InSource, const FVector& InEmitterNormal)
 {
+	// RecalculateEar is already used when value for given SourceId is checked. 
+	check(InSource);
+
 	if (!Settings.IsValid())
 	{
 		return;
@@ -351,6 +371,15 @@ void FClathrispace::RecalculateEar(const FVector& InEmitterNormal)
 		FQuat Q3 = FQuat::FindBetweenNormals(InEmitterNormal, Pin3.Direction.GetSafeNormal());
 
 		ClathriEarStatWeightsL = FMath::ComputeBaryCentric2D(FVector::ZeroVector, Q1.Euler(), Q2.Euler(), Q3.Euler());
+
+		ClathriEarStatWeightsL[0] = FMath::SmoothStep(0.f, 1.f, ClathriEarStatWeightsL[0]);
+		ClathriEarStatWeightsL[1] = FMath::SmoothStep(0.f, 1.f, ClathriEarStatWeightsL[1]);
+		ClathriEarStatWeightsL[2] = FMath::SmoothStep(0.f, 1.f, ClathriEarStatWeightsL[2]);
+		float Sum = ClathriEarStatWeightsL[0] + ClathriEarStatWeightsL[1] + ClathriEarStatWeightsL[2];
+		ClathriEarStatWeightsL[0] /= Sum;
+		ClathriEarStatWeightsL[1] /= Sum;
+		ClathriEarStatWeightsL[2] /= Sum;
+
 		ClathriEarStatIdxL1 = Results[0].Index;
 		ClathriEarStatIdxL2 = Results[1].Index;
 		ClathriEarStatIdxL3 = Results[2].Index;
@@ -394,12 +423,12 @@ void FClathrispace::RecalculateEar(const FVector& InEmitterNormal)
 							  Pin2.Band3MakeupDb * ClathriEarStatWeightsL[1] +
 							  Pin3.Band3MakeupDb * ClathriEarStatWeightsL[2];
 
-		FilterL[0].NotifyBufferChanged();
-		FilterL[1].NotifyBufferChanged();
-		FilterL[2].NotifyBufferChanged();
-		FilterL[0].SetParams(EEQBandType::AttLow, Band1Frequency, Band1AmountDb, Band1Quality, Band1MakeupDb);
-		FilterL[1].SetParams(EEQBandType::AttBand, Band2Frequency, Band2AmountDb, Band2Quality, Band2MakeupDb);
-		FilterL[2].SetParams(EEQBandType::AttHigh, Band3Frequency, Band3AmountDb, Band3Quality, Band3MakeupDb);
+		InSource->FilterL[0].NotifyBufferChanged();
+		InSource->FilterL[1].NotifyBufferChanged();
+		InSource->FilterL[2].NotifyBufferChanged();
+		InSource->FilterL[0].SetParams(EEQBandType::AttLow, Band1Frequency, Band1AmountDb, Band1Quality, Band1MakeupDb);
+		InSource->FilterL[1].SetParams(EEQBandType::AttBand, Band2Frequency, Band2AmountDb, Band2Quality, Band2MakeupDb);
+		InSource->FilterL[2].SetParams(EEQBandType::AttHigh, Band3Frequency, Band3AmountDb, Band3Quality, Band3MakeupDb);
 	}
 
 	// Right pins. 
@@ -424,6 +453,15 @@ void FClathrispace::RecalculateEar(const FVector& InEmitterNormal)
 		FQuat Q3 = FQuat::FindBetweenNormals(InEmitterNormal, Pin3.Direction.GetSafeNormal());
 
 		ClathriEarStatWeightsR = FMath::ComputeBaryCentric2D(FVector::ZeroVector, Q1.Euler(), Q2.Euler(), Q3.Euler());
+
+		ClathriEarStatWeightsR[0] = FMath::SmoothStep(0.f, 1.f, ClathriEarStatWeightsR[0]);
+		ClathriEarStatWeightsR[1] = FMath::SmoothStep(0.f, 1.f, ClathriEarStatWeightsR[1]);
+		ClathriEarStatWeightsR[2] = FMath::SmoothStep(0.f, 1.f, ClathriEarStatWeightsR[2]);
+		float Sum = ClathriEarStatWeightsR[0] + ClathriEarStatWeightsR[1] + ClathriEarStatWeightsR[2];
+		ClathriEarStatWeightsR[0] /= Sum;
+		ClathriEarStatWeightsR[1] /= Sum;
+		ClathriEarStatWeightsR[2] /= Sum;
+
 		ClathriEarStatIdxR1 = Results[0].Index;
 		ClathriEarStatIdxR2 = Results[1].Index;
 		ClathriEarStatIdxR3 = Results[2].Index;
@@ -467,11 +505,11 @@ void FClathrispace::RecalculateEar(const FVector& InEmitterNormal)
 							  Pin2.Band3MakeupDb * ClathriEarStatWeightsR[1] +
 							  Pin3.Band3MakeupDb * ClathriEarStatWeightsR[2];
 
-		FilterR[0].NotifyBufferChanged();
-		FilterR[1].NotifyBufferChanged();
-		FilterR[2].NotifyBufferChanged();
-		FilterR[0].SetParams(EEQBandType::AttLow, Band1Frequency, Band1AmountDb, Band1Quality, Band1MakeupDb);
-		FilterR[1].SetParams(EEQBandType::AttBand, Band2Frequency, Band2AmountDb, Band2Quality, Band2MakeupDb);
-		FilterR[2].SetParams(EEQBandType::AttHigh, Band3Frequency, Band3AmountDb, Band3Quality, Band3MakeupDb);
+		InSource->FilterR[0].NotifyBufferChanged();
+		InSource->FilterR[1].NotifyBufferChanged();
+		InSource->FilterR[2].NotifyBufferChanged();
+		InSource->FilterR[0].SetParams(EEQBandType::AttLow, Band1Frequency, Band1AmountDb, Band1Quality, Band1MakeupDb);
+		InSource->FilterR[1].SetParams(EEQBandType::AttBand, Band2Frequency, Band2AmountDb, Band2Quality, Band2MakeupDb);
+		InSource->FilterR[2].SetParams(EEQBandType::AttHigh, Band3Frequency, Band3AmountDb, Band3Quality, Band3MakeupDb);
 	}
 }
