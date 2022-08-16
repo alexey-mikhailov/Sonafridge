@@ -1,14 +1,17 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Sonafridge 2022
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "IAudioExtensionPlugin.h"
-#include "Sonafridge/SignalProcessing/DSPCore/BiquadFilter.h"
+#include "Sonafridge/SignalProcessing/DSPCore/BiquadBufferMixer.h"
 #include "Clathrispace.generated.h"
+
+using namespace Sonafridge;
 
 class FClathrispace;
 class FClathriEarPreviewScene;
+class FClathriEarStatDrawer;
 
 
 USTRUCT(BlueprintType)
@@ -103,6 +106,8 @@ class SONAFRIDGE_API UClathrispaceSettings : public USpatializationPluginSourceS
 	GENERATED_BODY()
 	
 public:
+	static constexpr int32 BandCount = 3;
+
 	UClathrispaceSettings();
 
 #if WITH_EDITOR
@@ -185,25 +190,59 @@ class FClathrispace final : public IAudioSpatialization
 {
 public:
 	FClathrispace();
+	virtual ~FClathrispace() override;
 
 	virtual void Initialize(const FAudioPluginInitializationParams Params) override;
+	virtual void Shutdown() override;
 
+	virtual void OnInitSource(const uint32                             SourceId,
+	                          const FName&                             AudioComponentUserId,
 	                          USpatializationPluginSourceSettingsBase* InSettings) override;
 
 	virtual void OnReleaseSource(const uint32 SourceId) override;
 
 	virtual bool IsSpatializationEffectInitialized() const override;
 
-	virtual void ProcessAudio(const FAudioPluginSourceInputData& InputData,
-	                          FAudioPluginSourceOutputData& OutputData) override;
+	virtual void ProcessAudio(const FAudioPluginSourceInputData& Src,
+	                          FAudioPluginSourceOutputData& Dst) override;
+
+protected:
+	void OnAssetExternallyChanged();
+	void OnAssetInternallyChanged();
 
 private:
-	bool   bInitialized = false;
-	uint32 NumberOfOutputs = 2;
-	uint32 SampleRate = {};
-	uint32 BufferLength = {};
+	void RecalculateEar(const FVector& InEmitterNormal);
 
+	bool    bInitialized = false;
+	uint32  NumDstChannels = 2;
+	uint32  SampleRate = {};
+	uint32  NumSamples = {};
+	FVector PreviousEmitterDirection = FVector::ZeroVector;
+
+	FBiquadBufferMixer FilterL[UClathrispaceSettings::BandCount] {};
+	FBiquadBufferMixer FilterR[UClathrispaceSettings::BandCount] {};
 
 	TWeakObjectPtr<UClathrispaceSettings> Settings;
+
+	FDelegateHandle ExternallyChangedDelegateHandle;
+	FDelegateHandle InternallyChangedDelegateHandle;
+
+	TSharedPtr<FClathriEarStatDrawer> StatDrawer;
+
+	friend FClathriEarStatDrawer;
+	int32 ClathriEarStatIdxL1{INDEX_NONE},
+	      ClathriEarStatIdxL2{INDEX_NONE},
+	      ClathriEarStatIdxL3{INDEX_NONE};
+
+	friend FClathriEarStatDrawer;
+	int32 ClathriEarStatIdxR1{INDEX_NONE},
+	      ClathriEarStatIdxR2{INDEX_NONE},
+	      ClathriEarStatIdxR3{INDEX_NONE};
+
+	friend FClathriEarStatDrawer;
+	FVector ClathriEarStatWeightsL;
+
+	friend FClathriEarStatDrawer;
+	FVector ClathriEarStatWeightsR;
 };
 
