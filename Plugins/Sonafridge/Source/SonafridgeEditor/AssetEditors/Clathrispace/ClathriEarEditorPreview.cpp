@@ -122,14 +122,15 @@ void FClathriEarViewportClient::CapturedMouseMove(FViewport* InViewport,
 		              ? EVisibleSide::Left
 		              : EVisibleSide::Right;
 
-		FVector Location = VisibleSide == EVisibleSide::Left
-			                   ? Settings->GetEarData().EarPositionL
-			                   : Settings->GetEarData().EarPositionR;
+		FVector OppositeLocation = Settings->GetEarData().EarPosition;
 
-		MathTool::ReflectVectorY(Location);
+		if (VisibleSide == EVisibleSide::Right)
+		{
+			MathTool::ReflectVectorY(OppositeLocation);
+		}
 
 		float Scale = VisibleSide == EVisibleSide::Left ? -1.f : 1.f;
-		ClathriEarScene->HelmetComp->SetRelativeLocation(Location);
+		ClathriEarScene->HelmetComp->SetRelativeLocation(OppositeLocation);
 		ClathriEarScene->HelmetComp->SetRelativeScale3D({ 1.f, Scale, 1.f });
 	}
 }

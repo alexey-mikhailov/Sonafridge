@@ -11,7 +11,7 @@
 
 UW_ClathriQFrequencyResponse::UW_ClathriQFrequencyResponse()
 {
-	BandPoints.SetNumZeroed(UClathrispaceSettings::BandCount);
+	BandPoints.SetNumZeroed(ClathriEar::BandCount);
 	SizeChanged.AddUObject(this, &UW_ClathriQFrequencyResponse::OnSizeChanged);
 }
 
@@ -73,7 +73,7 @@ FReply UW_ClathriQFrequencyResponse::NativeOnMouseButtonDown(const FGeometry&   
 
 	PossessedBandIndex = -1;
 
-	for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
+	for (int32 Index = 0; Index < ClathriEar::BandCount; ++Index)
 	{
 		FVector2D       WBandPos = GetBandWPos(Index);
 		constexpr float ScreenSpaceTolerance = 10.f;
@@ -159,7 +159,7 @@ FReply UW_ClathriQFrequencyResponse::NativeOnMouseMove(const FGeometry&     InGe
 	bWasCtrlPressed = bCtrl;
 	bWasAltPressed = bAlt;
 
-	for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
+	for (int32 Index = 0; Index < ClathriEar::BandCount; ++Index)
 	{
 		FVector2D       WBandPos = GetBandWPos(Index);
 		constexpr float ScreenSpaceTolerance = 10.f;
@@ -349,7 +349,7 @@ int32 UW_ClathriQFrequencyResponse::NativePaint(const FPaintArgs&        Args,
 
 	FLinearColor PointColor = BandPointEnabledNormalColor;
 
-	for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
+	for (int32 Index = 0; Index < ClathriEar::BandCount; ++Index)
 	{
 		FVector2D P1 = BandPoints[Index] + FVector2D(0.f, -1.f);
 		FVector2D P2 = BandPoints[Index] + FVector2D(0.f, +1.f);
@@ -469,7 +469,7 @@ void UW_ClathriQFrequencyResponse::BakeResponse()
 		};
 	}
 
-	for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
+	for (int32 Index = 0; Index < ClathriEar::BandCount; ++Index)
 	{
 		float F = ViewModel->GetFrequency(Index);
 		float X = MathLogTool::TwentiethsToTribel(F);

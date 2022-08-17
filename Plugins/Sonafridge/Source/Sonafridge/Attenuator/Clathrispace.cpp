@@ -4,148 +4,6 @@
 
 #include "AudioDevice.h"
 #include "ClathriEarStatDrawer.h"
-#include "Sonafridge/Tools/MathTools.h"
-
-UClathrispaceSettings::UClathrispaceSettings()
-{
-	EarData.EarPinsL.Add
-	({
-		FVector::LeftVector,
-		true, 100.f, 0.f, 1.f, 0.f,
-		true, 667.f, 0.f, 1.f, 0.f,
-		true, 4444.f, 0.f, 1.f, 0.f,
-	});
-	EarData.EarPinsL.Add
-	({
-		FVector::RightVector,
-		true, 100.f, 0.f, 1.f, 0.f,
-		true, 667.f, 0.f, 1.f, 0.f,
-		true, 4444.f, 0.f, 1.f, 0.f,
-	});
-	EarData.EarPinsL.Add
-	({
-		FVector::UpVector,
-		true, 100.f, 0.f, 1.f, 0.f,
-		true, 667.f, 0.f, 1.f, 0.f,
-		true, 4444.f, 0.f, 1.f, 0.f,
-	});
-	EarData.EarPinsL.Add
-	({
-		FVector::DownVector,
-		true, 100.f, 0.f, 1.f, 0.f,
-		true, 667.f, 0.f, 1.f, 0.f,
-		true, 4444.f, 0.f, 1.f, 0.f,
-	});
-	EarData.EarPinsL.Add
-	({
-		FVector::ForwardVector,
-		true, 100.f, 0.f, 1.f, 0.f,
-		true, 667.f, 0.f, 1.f, 0.f,
-		true, 4444.f, 0.f, 1.f, 0.f,
-	});
-	EarData.EarPinsL.Add
-	({
-		FVector::BackwardVector,
-		true, 100.f, 0.f, 1.f, 0.f,
-		true, 667.f, 0.f, 1.f, 0.f,
-		true, 4444.f, 0.f, 1.f, 0.f,
-	});
-	EarData.EarPinsR.Add
-	({
-		FVector::RightVector,
-		true, 100.f, 0.f, 1.f, 0.f,
-		true, 667.f, 0.f, 1.f, 0.f,
-		true, 4444.f, 0.f, 1.f, 0.f,
-	});
-	EarData.EarPinsR.Add
-	({
-		FVector::LeftVector,
-		true, 100.f, 0.f, 1.f, 0.f,
-		true, 667.f, 0.f, 1.f, 0.f,
-		true, 4444.f, 0.f, 1.f, 0.f,
-	});
-	EarData.EarPinsR.Add
-	({
-		FVector::UpVector,
-		true, 100.f, 0.f, 1.f, 0.f,
-		true, 667.f, 0.f, 1.f, 0.f,
-		true, 4444.f, 0.f, 1.f, 0.f,
-	});
-	EarData.EarPinsR.Add
-	({
-		FVector::DownVector,
-		true, 100.f, 0.f, 1.f, 0.f,
-		true, 667.f, 0.f, 1.f, 0.f,
-		true, 4444.f, 0.f, 1.f, 0.f,
-	});
-	EarData.EarPinsR.Add
-	({
-		FVector::ForwardVector,
-		true, 100.f, 0.f, 1.f, 0.f,
-		true, 667.f, 0.f, 1.f, 0.f,
-		true, 4444.f, 0.f, 1.f, 0.f,
-	});
-	EarData.EarPinsR.Add
-	({
-		FVector::BackwardVector,
-		true, 100.f, 0.f, 1.f, 0.f,
-		true, 667.f, 0.f, 1.f, 0.f,
-		true, 4444.f, 0.f, 1.f, 0.f,
-	});
-}
-
-bool UClathrispaceSettings::CanEditChange(const FProperty* InProperty) const
-{
-	return Super::CanEditChange(InProperty);
-}
-
-void UClathrispaceSettings::CopyLeftToRight()
-{
-	EarData.EarPositionR = EarData.EarPositionL;
-	MathTool::ReflectVectorY(EarData.EarPositionR);
-
-	EarData.EarPinsR.SetNum(EarData.EarPinsL.Num());
-	for (int32 Index = 0; Index < EarData.EarPinsL.Num(); ++Index)
-	{
-		FEarPin& LeftPin  = EarData.EarPinsL[Index];
-		FEarPin& RightPin = EarData.EarPinsR[Index];
-
-		RightPin = LeftPin;
-		MathTool::ReflectVectorY(RightPin.Direction);
-	}
-
-	if (!MarkPackageDirty())
-	{
-		UE_LOG(LogSonafridge, Error, TEXT("UClathrispaceSettings::CopyLeftToRight: Could not mark package dirty. "));
-	}
-}
-
-void UClathrispaceSettings::CopyRightToLeft()
-{
-	EarData.EarPositionL = EarData.EarPositionR;
-	MathTool::ReflectVectorY(EarData.EarPositionL);
-
-	EarData.EarPinsL.SetNum(EarData.EarPinsR.Num());
-	for (int32 Index = 0; Index < EarData.EarPinsR.Num(); ++Index)
-	{
-		FEarPin& LeftPin = EarData.EarPinsL[Index];
-		FEarPin& RightPin = EarData.EarPinsR[Index];
-
-		LeftPin = RightPin;
-		MathTool::ReflectVectorY(LeftPin.Direction);
-	}
-
-	if (!MarkPackageDirty())
-	{
-		UE_LOG(LogSonafridge, Error, TEXT("UClathrispaceSettings::CopyRightToLeft: Could not mark package dirty. "));
-	}
-}
-
-void UClathrispaceSettings::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-	ExternallyChanged.Broadcast();
-}
 
 TAudioSpatializationPtr FClathrispaceFactory::CreateNewSpatializationPlugin(FAudioDevice* OwningDevice)
 {
@@ -193,10 +51,13 @@ void FClathrispace::OnInitSource(const uint32                             Source
                                  const FName&                             AudioComponentUserId,
                                  USpatializationPluginSourceSettingsBase* InSettings)
 {
-	Settings = Cast<UClathrispaceSettings>(InSettings);
+	UClathrispaceSettings* ClathrispaceSettings = Cast<UClathrispaceSettings>(InSettings);
 
-	if (Settings.IsValid())
+	if (ClathrispaceSettings)
 	{
+		Settings = MakeShared<FClathrispaceSettingsProxy>();
+		Settings->Init(ClathrispaceSettings);
+
 		ExternallyChangedDelegateHandle = Settings->GetEvent_ExternallyChanged().AddRaw
 		(
 			this, &FClathrispace::OnAssetExternallyChanged
@@ -207,7 +68,7 @@ void FClathrispace::OnInitSource(const uint32                             Source
 		);
 
 		FClathrispaceSource Csrc;
-		for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
+		for (int32 Index = 0; Index < ClathriEar::BandCount; ++Index)
 		{
 			// 100 ms should be enough. 
 			constexpr float BinauralDelay = .1f;
@@ -273,7 +134,7 @@ void FClathrispace::ProcessAudio(const FAudioPluginSourceInputData& Src,
 	{
 		RecalculateEar(Csrc, EmitterDirection.GetUnsafeNormal());
 
-		for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
+		for (int32 Index = 0; Index < ClathriEar::BandCount; ++Index)
 		{
 			Csrc->FilterL[Index].SetNumSrcChannels(Src.NumChannels);
 			Csrc->FilterL[Index].SetMode

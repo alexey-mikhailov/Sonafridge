@@ -324,9 +324,9 @@ FEarPin* FVM_ClathriQ::PullDataContext() const
 {
 	if (PinIndex != INDEX_NONE && Settings.IsValid())
 	{
-		if (Settings->GetEarData().EarPinsL.Num() > PinIndex)
+		if (Settings->GetEarData().EarPins.Num() > PinIndex)
 		{
-			return &Settings->GetEarData().EarPinsL[PinIndex];
+			return &Settings->GetEarData().EarPins[PinIndex];
 		}
 	}
 
@@ -337,8 +337,6 @@ void FVM_ClathriQ::PushDataContext()
 {
 	if (Settings.IsValid())
 	{
-		Settings->CopyLeftToRight();
-
 		if (!Settings->MarkPackageDirty())
 		{
 			UE_LOG(LogSonafridgeEditor,

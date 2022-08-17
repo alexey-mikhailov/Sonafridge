@@ -69,9 +69,7 @@ UClathriEarHelmetComponent::UClathriEarHelmetComponent()
 
 void UClathriEarHelmetComponent::Init(UClathrispaceSettings* InSettings)
 {
-	FVector Location = InSettings->GetEarData().EarPositionL;
-	MathTool::ReflectVectorY(Location);
-	SetRelativeLocation(Location);
+	SetRelativeLocation(InSettings->GetEarData().EarPosition);
 }
 
 FClathriEarVisualizer::FClathriEarVisualizer(const TWeakObjectPtr<UMaterialInstanceDynamic>& InOrdinaryPinMaterial,
@@ -94,9 +92,10 @@ void FClathriEarVisualizer::Draw(const FClathriEarViewportClient*  InViewportCli
 
 		if (InViewportClient->GetVisibleSide() == EVisibleSide::Left)
 		{
-			for (int32 Index = 0; Index < EarData.EarPinsL.Num(); ++Index)
+			for (int32 Index = 0; Index < EarData.EarPins.Num(); ++Index)
 			{
-				const FEarPin Pin = EarData.EarPinsL[Index];
+				FEarPin Pin = EarData.EarPins[Index];
+				MathTool::ReflectVectorY(Pin.Direction);
 				const FVector EndPos = 25.f * Pin.Direction;
 
 				const UMaterialInstanceDynamic* Material = Index == SelectedPinIndex
@@ -116,9 +115,9 @@ void FClathriEarVisualizer::Draw(const FClathriEarViewportClient*  InViewportCli
 		}
 		else
 		{
-			for (int32 Index = 0; Index < EarData.EarPinsR.Num(); ++Index)
+			for (int32 Index = 0; Index < EarData.EarPins.Num(); ++Index)
 			{
-				const FEarPin Pin = EarData.EarPinsR[Index];
+				const FEarPin Pin = EarData.EarPins[Index];
 				const FVector EndPos = 25.f * Pin.Direction;
 
 				const UMaterialInstanceDynamic* Material = Index == SelectedPinIndex
@@ -180,32 +179,20 @@ bool FClathriEarVisualizer::HandleInputDelta(const FClathriEarViewportClient* In
 
 			if (InViewportClient->GetVisibleSide() == EVisibleSide::Left)
 			{
-				if (EarData.EarPinsL.Num() > SelectedPinIndex)
-				{
-					FRotator DeltaRotator(DeltaRotate.Pitch, DeltaRotate.Yaw, DeltaRotate.Roll);
-					FVector NewDirection = DeltaRotator.RotateVector(EarData.EarPinsL[SelectedPinIndex].Direction);
-					EarData.EarPinsL[SelectedPinIndex].Direction = NewDirection;
-				}
-				if (EarData.EarPinsR.Num() > SelectedPinIndex)
+				if (EarData.EarPins.Num() > SelectedPinIndex)
 				{
 					FRotator DeltaRotator(DeltaRotate.Pitch, -DeltaRotate.Yaw, -DeltaRotate.Roll);
-					FVector NewDirection = DeltaRotator.RotateVector(EarData.EarPinsR[SelectedPinIndex].Direction);
-					EarData.EarPinsR[SelectedPinIndex].Direction = NewDirection;
+					FVector NewDirection = DeltaRotator.RotateVector(EarData.EarPins[SelectedPinIndex].Direction);
+					EarData.EarPins[SelectedPinIndex].Direction = NewDirection;
 				}
 			}
 			else
 			{
-				if (EarData.EarPinsR.Num() > SelectedPinIndex)
+				if (EarData.EarPins.Num() > SelectedPinIndex)
 				{
 					FRotator DeltaRotator(DeltaRotate.Pitch, DeltaRotate.Yaw, DeltaRotate.Roll);
-					FVector NewDirection = DeltaRotator.RotateVector(EarData.EarPinsR[SelectedPinIndex].Direction);
-					EarData.EarPinsR[SelectedPinIndex].Direction = NewDirection;
-				}
-				if (EarData.EarPinsL.Num() > SelectedPinIndex)
-				{
-					FRotator DeltaRotator(DeltaRotate.Pitch, -DeltaRotate.Yaw, -DeltaRotate.Roll);
-					FVector NewDirection = DeltaRotator.RotateVector(EarData.EarPinsL[SelectedPinIndex].Direction);
-					EarData.EarPinsL[SelectedPinIndex].Direction = NewDirection;
+					FVector NewDirection = DeltaRotator.RotateVector(EarData.EarPins[SelectedPinIndex].Direction);
+					EarData.EarPins[SelectedPinIndex].Direction = NewDirection;
 				}
 			}
 
@@ -238,13 +225,7 @@ bool FClathriEarVisualizer::HandleInputKey(const FClathriEarViewportClient* InVi
 		{
 			if (UClathrispaceSettings* Settings = InViewportClient->GetSettings())
 			{
-				TArray<FEarPin>& LeftPins = Settings->GetEarData().EarPinsL;
-				if (LeftPins.Num() > SelectedPinIndex)
-				{
-					LeftPins.RemoveAt(SelectedPinIndex);
-				}
-
-				TArray<FEarPin>& RightPins = Settings->GetEarData().EarPinsR;
+				TArray<FEarPin>& RightPins = Settings->GetEarData().EarPins;
 				if (RightPins.Num() > SelectedPinIndex)
 				{
 					RightPins.RemoveAt(SelectedPinIndex);

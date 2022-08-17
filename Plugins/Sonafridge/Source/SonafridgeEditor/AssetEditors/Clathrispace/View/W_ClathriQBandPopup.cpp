@@ -20,7 +20,7 @@ using namespace SonafridgeEditor;
 
 UW_ClathriQBandPopup::UW_ClathriQBandPopup()
 {
-	BandsActivityBeforeListenTime.SetNum(UClathrispaceSettings::BandCount);
+	BandsActivityBeforeListenTime.SetNum(ClathriEar::BandCount);
 }
 
 void UW_ClathriQBandPopup::Init(UW_ClathriQ* InRootWidget, TSharedPtr<FVM_ClathriQ> InViewModel)
