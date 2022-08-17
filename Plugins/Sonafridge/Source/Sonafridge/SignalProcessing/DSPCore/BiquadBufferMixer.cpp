@@ -162,7 +162,7 @@ namespace Sonafridge
 	                                           int32            InNumSamples,
 	                                           int32            InNumSrcChannels,
 	                                           int32            InNumDstChannels,
-	                                           int32            InDstChannelIndex)
+	                                           int32            InChannelIndex)
 	{
 		if (bDoFilter)
 		{
@@ -171,24 +171,22 @@ namespace Sonafridge
 			if (InMode == EBiquadMixerMode::NoBlending)
 			{
 				int32 SampleIndex = INDEX_NONE;
-				int32 SrcIndex = InDstChannelIndex;
-				int32 DstIndex = InDstChannelIndex;
+				int32 ChIndex = InChannelIndex;
 				float BlendAlpha;
 
 				while (++SampleIndex < InNumSamples)
 				{
 					BlendAlpha = (float) SampleIndex / InNumSamples;
-					DstBuffer[DstIndex] = FMath::Lerp(BiquadOld->ProcessAudio(SrcBuffer[SrcIndex]) * MakeupCoeffOld, 
-													  BiquadNew->ProcessAudio(SrcBuffer[SrcIndex]) * MakeupCoeffNew, 
-													  BlendAlpha);
-					SrcIndex += InNumSrcChannels;
-					DstIndex += InNumDstChannels;
+					DstBuffer[ChIndex] = FMath::Lerp(BiquadOld->ProcessAudio(SrcBuffer[ChIndex]) * MakeupCoeffOld, 
+													 BiquadNew->ProcessAudio(SrcBuffer[ChIndex]) * MakeupCoeffNew, 
+													 BlendAlpha);
+					ChIndex += InNumSrcChannels;
 				}
 			}
 			else if (InMode == EBiquadMixerMode::BroadcastMono)
 			{
 				int32 SampleIndex = INDEX_NONE;
-				int32 DstIndex = InDstChannelIndex;
+				int32 DstIndex = InChannelIndex;
 				float BlendAlpha;
 
 				while (++SampleIndex < InNumSamples)
@@ -204,7 +202,7 @@ namespace Sonafridge
 			{
 				int32 SampleIndex = INDEX_NONE;
 				int32 SrcIndex = INDEX_NONE;
-				int32 DstIndex = InDstChannelIndex;
+				int32 DstIndex = InChannelIndex;
 				float MonoSample, BlendAlpha;
 
 				while (++SampleIndex < InNumSamples)
@@ -221,7 +219,7 @@ namespace Sonafridge
 			{
 				int32 SampleIndex = INDEX_NONE;
 				int32 SrcIndex = INDEX_NONE;
-				int32 DstIndex = InDstChannelIndex;
+				int32 DstIndex = InChannelIndex;
 				float MonoSample = 0.f, BlendAlpha;
 
 				while (++SampleIndex < InNumSamples)
@@ -247,8 +245,8 @@ namespace Sonafridge
 			if (InMode == EBiquadMixerMode::NoBlending)
 			{
 				int32 SampleIndex = INDEX_NONE;
-				int32 SrcIndex = InDstChannelIndex;
-				int32 DstIndex = InDstChannelIndex;
+				int32 SrcIndex = InChannelIndex;
+				int32 DstIndex = InChannelIndex;
 				while (++SampleIndex < InNumSamples)
 				{
 					DstBuffer[DstIndex] = SrcBuffer[SrcIndex];
@@ -259,7 +257,7 @@ namespace Sonafridge
 			else if (InMode == EBiquadMixerMode::BroadcastMono)
 			{
 				int32 SrcIndex = 0;
-				int32 DstIndex = InDstChannelIndex;
+				int32 DstIndex = InChannelIndex;
 				while (SrcIndex < InNumSamples)
 				{
 					DstBuffer[DstIndex] = SrcBuffer[SrcIndex];
@@ -271,7 +269,7 @@ namespace Sonafridge
 			{
 				int32 SampleIndex = INDEX_NONE;
 				int32 SrcIndex = INDEX_NONE;
-				int32 DstIndex = InDstChannelIndex;
+				int32 DstIndex = InChannelIndex;
 				while (++SampleIndex < InNumSamples)
 				{
 					DstBuffer[DstIndex]  = .5f * SrcBuffer[++SrcIndex];
@@ -283,7 +281,7 @@ namespace Sonafridge
 			{
 				int32 SampleIndex = INDEX_NONE;
 				int32 SrcIndex = INDEX_NONE;
-				int32 DstIndex = InDstChannelIndex;
+				int32 DstIndex = InChannelIndex;
 				while (++SampleIndex < InNumSamples)
 				{
 					DstBuffer[DstIndex] = 0.f;

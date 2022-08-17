@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "IAudioExtensionPlugin.h"
+#include "Sonafridge/SignalProcessing/DSPCore/DelayBufferMixer.h"
 #include "Sonafridge/SignalProcessing/DSPCore/BiquadBufferMixer.h"
 #include "Clathrispace.generated.h"
 
@@ -189,8 +190,9 @@ public:
 struct FClathrispaceSource
 {
 	int32 SourceId;
-	FBiquadBufferMixer FilterL[UClathrispaceSettings::BandCount] {};
-	FBiquadBufferMixer FilterR[UClathrispaceSettings::BandCount] {};
+	FDelayBufferMixer  Delay;
+	FBiquadBufferMixer FilterL[UClathrispaceSettings::BandCount]{};
+	FBiquadBufferMixer FilterR[UClathrispaceSettings::BandCount]{};
 };
 
 

@@ -209,7 +209,10 @@ void FClathrispace::OnInitSource(const uint32                             Source
 		FClathrispaceSource Csrc;
 		for (int32 Index = 0; Index < UClathrispaceSettings::BandCount; ++Index)
 		{
-			Csrc.Delay.Init(SampleRate, 3.f);
+			// 100 ms should be enough. 
+			constexpr float BinauralDelay = .1f;
+
+			Csrc.Delay.Init(SampleRate, BinauralDelay);
 			Csrc.FilterL[Index].Init(SampleRate);
 			Csrc.FilterL[Index].SetNumDstChannels(NumDstChannels);
 			Csrc.FilterL[Index].SetDstChannelIndex(0);
@@ -251,7 +254,13 @@ bool FClathrispace::IsSpatializationEffectInitialized() const
 void FClathrispace::ProcessAudio(const FAudioPluginSourceInputData& Src,
                                        FAudioPluginSourceOutputData& Dst)
 {
-	FVector EmitterDirection = Src.SpatializationParams->ListenerOrientation.Inverse()
+	if (!Settings.IsValid())
+	{
+		return;
+	}
+
+	FQuat   ListenerOrientationInverse = Src.SpatializationParams->ListenerOrientation.Inverse();
+	FVector EmitterDirection = ListenerOrientationInverse
 	                         *    (Src.SpatializationParams->EmitterWorldPosition 
 	                             - Src.SpatializationParams->ListenerPosition);
 
@@ -298,6 +307,9 @@ void FClathrispace::ProcessAudio(const FAudioPluginSourceInputData& Src,
 			Csrc->FilterR[0].ProcessInterlaced(SrcBuffer, DstBuffer, Csrc->FilterR[0].GetMixerMode(), NumSamples, Src.NumChannels, NumDstChannels, 1);
 			Csrc->FilterR[1].ProcessInterlaced(DstBuffer, DstBuffer, EBiquadMixerMode::NoBlending, NumSamples, NumDstChannels, NumDstChannels, 1);
 			Csrc->FilterR[2].ProcessInterlaced(DstBuffer, DstBuffer, EBiquadMixerMode::NoBlending, NumSamples, NumDstChannels, NumDstChannels, 1);
+			float IsLeft = FVector::DotProduct(FVector::LeftVector, EmitterDirection.GetUnsafeNormal());
+			EChannelId ChannelIdx = IsLeft > 0.f ? EChannelId::Right : EChannelId::Left;
+			Csrc->Delay.ProcessInterlaced(DstBuffer, DstBuffer, NumSamples, NumDstChannels, (int32)ChannelIdx);
 		}
 	}
 
@@ -320,13 +332,9 @@ void FClathrispace::OnAssetInternallyChanged()
 
 void FClathrispace::RecalculateEar(FClathrispaceSource* InSource, const FVector& InEmitterNormal)
 {
-	// RecalculateEar is already used when value for given SourceId is checked. 
+	// RecalculateEar is already used when all these ptrs are ok. 
 	check(InSource);
-
-	if (!Settings.IsValid())
-	{
-		return;
-	}
+	check(Settings.IsValid());
 
 	if (FMath::IsNaN(InEmitterNormal.X) || 
 		FMath::IsNaN(InEmitterNormal.Y) || 
@@ -423,6 +431,7 @@ void FClathrispace::RecalculateEar(FClathrispaceSource* InSource, const FVector&
 							  Pin2.Band3MakeupDb * ClathriEarStatWeightsL[1] +
 							  Pin3.Band3MakeupDb * ClathriEarStatWeightsL[2];
 
+		InSource->Delay.NotifyBufferChanged();
 		InSource->FilterL[0].NotifyBufferChanged();
 		InSource->FilterL[1].NotifyBufferChanged();
 		InSource->FilterL[2].NotifyBufferChanged();
@@ -511,5 +520,26 @@ void FClathrispace::RecalculateEar(FClathrispaceSource* InSource, const FVector&
 		InSource->FilterR[0].SetParams(EEQBandType::AttLow, Band1Frequency, Band1AmountDb, Band1Quality, Band1MakeupDb);
 		InSource->FilterR[1].SetParams(EEQBandType::AttBand, Band2Frequency, Band2AmountDb, Band2Quality, Band2MakeupDb);
 		InSource->FilterR[2].SetParams(EEQBandType::AttHigh, Band3Frequency, Band3AmountDb, Band3Quality, Band3MakeupDb);
+	}
+
+	//
+	// Ear distance
+	//
+
+	InSource->Delay.NotifyBufferChanged();
+
+	float IsLeft = FVector::DotProduct(FVector::LeftVector, InEmitterNormal);
+	float EarDistance = (Settings->EarData.EarPositionR - Settings->EarData.EarPositionL).Size();
+	constexpr float SoundVelocity = 34300.f;
+
+	if (IsLeft > 0.f)
+	{
+		float DelaySeconds = IsLeft * (EarDistance / SoundVelocity);
+		InSource->Delay.SetDelaySeconds(DelaySeconds);
+	}
+	else
+	{
+		float DelaySeconds = -IsLeft * (EarDistance / SoundVelocity);
+		InSource->Delay.SetDelaySeconds(DelaySeconds);
 	}
 }

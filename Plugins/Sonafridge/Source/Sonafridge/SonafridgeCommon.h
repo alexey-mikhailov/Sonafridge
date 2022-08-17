@@ -11,6 +11,13 @@ constexpr float MaxFilterFreq = 18000.f;
 constexpr float MinFilterFreq = 80.f;
 constexpr int32 MaxFilterChannels = 8;
 
+namespace Sonafridge
+{
+	enum class EChannelId
+	{
+		Left, Right,
+	};
+}
 
 UENUM()
 enum class EEQBandType : uint8

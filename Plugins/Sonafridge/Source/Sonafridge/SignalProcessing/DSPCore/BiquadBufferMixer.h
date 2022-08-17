@@ -49,7 +49,7 @@ namespace Sonafridge
 		                       int32            InNumSamples,
 		                       int32            InNumSrcChannels,
 		                       int32            InNumDstChannels,
-		                       int32            InDstChannelIndex);
+		                       int32            InChannelIndex);
 
 		void SetParams(EEQBandType InType,
 		               float       InFrequency,
