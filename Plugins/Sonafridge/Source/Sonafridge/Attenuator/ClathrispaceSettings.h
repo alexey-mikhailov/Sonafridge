@@ -124,7 +124,9 @@ public:
 	FInternallyChanged& GetEvent_InternallyChanged() { return InternallyChanged; }
 
 protected:
+#if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 
 	UPROPERTY(GlobalConfig, EditAnywhere, Category = "Clathri Ear (Spatializer)")
 	FClathriEarData EarData;

@@ -50,6 +50,7 @@ UClathrispaceSettings::UClathrispaceSettings()
 	});
 }
 
+#if WITH_EDITOR
 bool UClathrispaceSettings::CanEditChange(const FProperty* InProperty) const
 {
 	return Super::CanEditChange(InProperty);
@@ -60,4 +61,5 @@ void UClathrispaceSettings::PostEditChangeProperty(FPropertyChangedEvent& Proper
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 	ExternallyChanged.Broadcast();
 }
+#endif
 

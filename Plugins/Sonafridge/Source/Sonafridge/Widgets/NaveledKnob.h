@@ -110,7 +110,9 @@ protected:
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void                ReleaseSlateResources(bool bReleaseChildren) override;
 	virtual void                SynchronizeProperties() override;
+#if WITH_EDITOR
 	virtual const FText         GetPaletteCategory() override;
+#endif
 
 private:
 	FSizeChanged          SizeChanged;

@@ -95,10 +95,12 @@ void UNaveledKnob::SynchronizeProperties()
 	SWidget->UpdateMaterial();
 }
 
+#if WITH_EDITOR
 const FText UNaveledKnob::GetPaletteCategory()
 {
 	return LOCTEXT("Sonafridge", "Sonafridge");
 }
+#endif
 
 void UNaveledKnob::OnKnobEntrance() const
 {

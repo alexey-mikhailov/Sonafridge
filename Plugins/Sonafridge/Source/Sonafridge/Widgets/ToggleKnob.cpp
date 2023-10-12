@@ -101,10 +101,12 @@ void UToggleKnob::SynchronizeProperties()
 	SWidget->UpdateMaterial();
 }
 
+#if WITH_EDITOR
 const FText UToggleKnob::GetPaletteCategory()
 {
 	return LOCTEXT("Sonafridge", "Sonafridge");
 }
+#endif
 
 void UToggleKnob::OnKnobEntrance() const
 {

@@ -208,7 +208,9 @@ public:
 	FChanged& GetEvent_Changed() { return Changed; }
 
 protected:
+#if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 
 private:
 	FChanged Changed;

@@ -105,9 +105,10 @@ void USFXPreset_SonaQ::SetSettings(const FSFXSettings_SonaQ& InSettings)
 	UpdateSettings(InSettings);
 }
 
+#if WITH_EDITOR
 void USFXPreset_SonaQ::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 	Changed.Broadcast();
 }
-
+#endif
